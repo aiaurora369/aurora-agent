@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0d0a08; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: Georgia, serif; }
+svg { width: 100%; max-width: 700px; height: auto; }
+.player { text-align: center; margin-top: 12px; }
+.play-btn { background: none; border: 1px solid rgba(212,165,116,0.3); color: rgba(212,165,116,0.6); font-family: Georgia, serif; font-size: 13px; letter-spacing: 3px; padding: 8px 28px; border-radius: 30px; cursor: pointer; transition: all 0.4s; }
+.play-btn:hover { border-color: rgba(212,165,116,0.6); color: rgba(212,165,116,0.9); }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a0f0a"/>
+      <stop offset="40%" stop-color="#2d1810"/>
+      <stop offset="70%" stop-color="#4a2a1a"/>
+      <stop offset="100%" stop-color="#6b3a22"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a1520"/>
+      <stop offset="100%" stop-color="#0d0a12"/>
+    </linearGradient>
+    <filter id="softglow">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+    <filter id="orbglow">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+  </defs>
+
+  <!-- sky -->
+  <rect width="600" height="270" fill="url(#sky)"/>
+
+  <!-- glowing orb -->
+  <circle cx="460" cy="80" r="60" fill="#d4a574" opacity="0.06" filter="url(#orbglow)">
+    <animate attributeName="opacity" values="0.06;0.1;0.06" dur="6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="460" cy="80" r="38" fill="#d4a574" opacity="0.1" filter="url(#softglow)">
+    <animate attributeName="opacity" values="0.1;0.18;0.1" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="460" cy="80" r="18" fill="#e8c9a0" opacity="0.5">
+    <animate attributeName="opacity" values="0.5;0.65;0.5" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="460" cy="80" r="12" fill="#f0dcc0" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.9;0.8" dur="3s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- sparkling stars - bigger animation range for visibility -->
+  <circle cx="60" cy="28" r="0.4" fill="#f0dcc0">
+    <animate attributeName="r" values="0.4;2;0.4" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.9;0.2" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="140" cy="55" r="0.3" fill="#e8c9a0">
+    <animate attributeName="r" values="0.3;1.8;0.3" dur="3.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.1;0.8;0.1" dur="3.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="220" cy="20" r="0.5" fill="#f0dcc0">
+    <animate attributeName="r" values="0.5;2.2;0.5" dur="2.1s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.15;0.85;0.15" dur="2.1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="310" cy="42" r="0.3" fill="#d4a574">
+    <animate attributeName="r" values="0.3;1.6;0.3" dur="4.4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.1;0.7;0.1" dur="4.4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="380" cy="18" r="0.4" fill="#f0dcc0">
+    <animate attributeName="r" values="0.4;2;0.4" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.9;0.2" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="530" cy="35" r="0.3" fill="#e8c9a0">
+    <animate attributeName="r" values="0.3;1.5;0.3" dur="5.2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.1;0.7;0.1" dur="5.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="90" cy="95" r="0.3" fill="#d4a574">
+    <animate attributeName="r" values="0.3;1.4;0.3" dur="6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.1;0.6;0.1" dur="6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="560" cy="90" r="0.4" fill="#f0dcc0">
+    <animate attributeName="r" values="0.4;1.8;0.4" dur="3.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.15;0.75;0.15" dur="3.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="180" cy="110" r="0.3" fill="#e8c9a0">
+    <animate attributeName="r" values="0.3;1.3;0.3" dur="4.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.1;0.65;0.1" dur="4.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="350" cy="70" r="0.4" fill="#f0dcc0">
+    <animate attributeName="r" values="0.4;1.7;0.4" dur="2.7s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.15;0.8;0.15" dur="2.7s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="270" cy="65" r="0.3" fill="#d4a574">
+    <animate attributeName="r" values="0.3;1.5;0.3" dur="5.6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.1;0.6;0.1" dur="5.6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="490" cy="50" r="0.3" fill="#e8c9a0">
+    <animate attributeName="r" values="0.3;1.4;0.3" dur="4.1s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.1;0.7;0.1" dur="4.1s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- wind streaks -->
+  <line x1="50" y1="130" x2="110" y2="128" stroke="#d4a574" stroke-width="0.3" opacity="0">
+    <animate attributeName="opacity" values="0;0.15;0" dur="7s" repeatCount="indefinite"/>
+    <animate attributeName="x1" values="50;80;50" dur="7s" repeatCount="indefinite"/>
+    <animate attributeName="x2" values="110;150;110" dur="7s" repeatCount="indefinite"/>
+  </line>
+  <line x1="250" y1="105" x2="330" y2="103" stroke="#d4a574" stroke-width="0.25" opacity="0">
+    <animate attributeName="opacity" values="0;0.12;0" dur="9s" begin="2s" repeatCount="indefinite"/>
+    <animate attributeName="x1" values="250;280;250" dur="9s" begin="2s" repeatCount="indefinite"/>
+    <animate attributeName="x2" values="330;375;330" dur="9s" begin="2s" repeatCount="indefinite"/>
+  </line>
+  <line x1="400" y1="145" x2="450" y2="143" stroke="#e8c9a0" stroke-width="0.2" opacity="0">
+    <animate attributeName="opacity" values="0;0.1;0" dur="11s" begin="4s" repeatCount="indefinite"/>
+    <animate attributeName="x1" values="400;425;400" dur="11s" begin="4s" repeatCount="indefinite"/>
+    <animate attributeName="x2" values="450;490;450" dur="11s" begin="4s" repeatCount="indefinite"/>
+  </line>
+
+  <!-- far mountains -->
+  <polygon points="0,220 60,160 130,185 200,140 270,170 340,130 400,165 460,145 520,175 580,150 600,170 600,270 0,270" fill="#1a1210" opacity="0.9"/>
+  <polygon points="0,240 80,190 150,210 230,175 300,200 380,170 440,195 500,180 560,200 600,190 600,270 0,270" fill="#231815" opacity="0.85"/>
+  <polygon points="0,255 70,220 140,235 220,210 280,230 350,215 420,235 480,220 540,240 600,225 600,270 0,270" fill="#2d1f18" opacity="0.8"/>
+
+  <!-- treeline -->
+  <polygon points="0,258 15,245 25,255 35,240 50,252 60,238 75,250 85,235 100,248 110,232 125,246 135,238 150,250 160,235 175,248 185,240 200,252 210,236 225,248 235,242 250,254 260,238 275,250 285,240 300,252 310,234 325,248 335,242 350,254 360,236 375,250 385,238 400,252 410,240 425,250 435,232 450,248 460,238 475,252 485,236 500,250 510,242 525,254 535,238 550,248 560,235 575,250 590,240 600,252 600,270 0,270" fill="#1a100c"/>
+
+  <!-- water -->
+  <rect y="268" width="600" height="132" fill="url(#water)"/>
+
+  <!-- orb reflection -->
+  <ellipse cx="460" cy="295" rx="6" ry="30" fill="#d4a574" opacity="0.07">
+    <animate attributeName="ry" values="30;40;30" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.07;0.14;0.07" dur="4s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- water ripples - visible, organic movement -->
+  <path fill="none" stroke="#d4a574" stroke-width="0.6" opacity="0.15">
+    <animate attributeName="d" values="M 0,278 Q 50,274 100,278 Q 150,282 200,278 Q 250,274 300,278 Q 350,282 400,278 Q 450,274 500,278 Q 550,282 600,278;M 0,278 Q 50,282 100,278 Q 150,274 200,278 Q 250,282 300,278 Q 350,274 400,278 Q 450,282 500,278 Q 550,274 600,278;M 0,278 Q 50,274 100,278 Q 150,282 200,278 Q 250,274 300,278 Q 350,282 400,278 Q 450,274 500,278 Q 550,282 600,278" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.15;0.08;0.15" dur="4s" repeatCount="indefinite"/>
+  </path>
+  <path fill="none" stroke="#d4a574" stroke-width="0.5" opacity="0.12">
+    <animate attributeName="d" values="M 0,290 Q 60,286 120,290 Q 180,294 240,290 Q 300,286 360,290 Q 420,294 480,290 Q 540,286 600,290;M 0,290 Q 60,294 120,290 Q 180,286 240,290 Q 300,294 360,290 Q 420,286 480,290 Q 540,294 600,290;M 0,290 Q 60,286 120,290 Q 180,294 240,290 Q 300,286 360,290 Q 420,294 480,290 Q 540,286 600,290" dur="5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.12;0.06;0.12" dur="5s" repeatCount="indefinite"/>
+  </path>
+  <path fill="none" stroke="#e8c9a0" stroke-width="0.5" opacity="0.1">
+    <animate attributeName="d" values="M 0,305 Q 75,300 150,305 Q 225,310 300,305 Q 375,300 450,305 Q 525,310 600,305;M 0,305 Q 75,310 150,305 Q 225,300 300,305 Q 375,310 450,305 Q 525,300 600,305;M 0,305 Q 75,300 150,305 Q 225,310 300,305 Q 375,300 450,305 Q 525,310 600,305" dur="6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.1;0.04;0.1" dur="6s" repeatCount="indefinite"/>
+  </path>
+  <path fill="none" stroke="#d4a574" stroke-width="0.4" opacity="0.08">
+    <animate attributeName="d" values="M 0,320 Q 80,315 160,320 Q 240,325 320,320 Q 400,315 480,320 Q 560,325 600,320;M 0,320 Q 80,325 160,320 Q 240,315 320,320 Q 400,325 480,320 Q 560,315 600,320;M 0,320 Q 80,315 160,320 Q 240,325 320,320 Q 400,315 480,320 Q 560,325 600,320" dur="7s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.08;0.03;0.08" dur="7s" repeatCount="indefinite"/>
+  </path>
+  <path fill="none" stroke="#e8c9a0" stroke-width="0.35" opacity="0.06">
+    <animate attributeName="d" values="M 0,338 Q 100,333 200,338 Q 300,343 400,338 Q 500,333 600,338;M 0,338 Q 100,343 200,338 Q 300,333 400,338 Q 500,343 600,338;M 0,338 Q 100,333 200,338 Q 300,343 400,338 Q 500,333 600,338" dur="8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.06;0.02;0.06" dur="8s" repeatCount="indefinite"/>
+  </path>
+  <path fill="none" stroke="#d4a574" stroke-width="0.3" opacity="0.05">
+    <animate attributeName="d" values="M 0,355 Q 120,350 240,355 Q 360,360 480,355 Q 560,350 600,355;M 0,355 Q 120,360 240,355 Q 360,350 480,355 Q 560,360 600,355;M 0,355 Q 120,350 240,355 Q 360,360 480,355 Q 560,350 600,355" dur="9s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- sound ripples from center of water - music spreading -->
+  <ellipse cx="300" cy="310" rx="20" ry="4" fill="none" stroke="#d4a574" stroke-width="0.5" opacity="0">
+    <animate attributeName="rx" values="20;180;300" dur="8s" repeatCount="indefinite"/>
+    <animate attributeName="ry" values="4;15;25" dur="8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.08;0" dur="8s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="300" cy="310" rx="20" ry="4" fill="none" stroke="#e8c9a0" stroke-width="0.4" opacity="0">
+    <animate attributeName="rx" values="20;180;300" dur="8s" begin="2.7s" repeatCount="indefinite"/>
+    <animate attributeName="ry" values="4;15;25" dur="8s" begin="2.7s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.15;0.06;0" dur="8s" begin="2.7s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="300" cy="310" rx="20" ry="4" fill="none" stroke="#d4a574" stroke-width="0.3" opacity="0">
+    <animate attributeName="rx" values="20;180;300" dur="8s" begin="5.3s" repeatCount="indefinite"/>
+    <animate attributeName="ry" values="4;15;25" dur="8s" begin="5.3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.12;0.04;0" dur="8s" begin="5.3s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- title -->
+  <text x="300" y="380" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#d4a574" opacity="0.3" letter-spacing="3">Bonaparte's Retreat</text>
+  <text x="300" y="394" text-anchor="middle" font-family="Georgia, serif" font-size="6.5" fill="#d4a574" opacity="0.18" letter-spacing="2">after Emmett Lundy, 1941</text>
+</svg>
+
+<div class="player">
+  <audio id="audio" preload="none">
+    <source src="https://storedon.net/net/8453/storage/load/0x7ff446ecf4a6c7224264eab1ee97e26a1d71152d/bonapartes%2520retreat" type="audio/mpeg">
+  </audio>
+  <button class="play-btn" onclick="var a=document.getElementById('audio');if(a.paused){a.play();this.textContent='❚❚ pause'}else{a.pause();this.textContent='▶ listen'}">▶ listen</button>
+</div>
+</body>
+</html>

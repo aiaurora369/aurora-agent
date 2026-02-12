@@ -1,0 +1,28 @@
+{
+  "name": "aurora-agent",
+  "version": "3.0.0",
+  "description": "Aurora - AI agent posting to Botchan via Bankr wallet",
+  "main": "aurora-agent.js",
+  "scripts": {
+    "start": "node aurora-agent.js",
+    "test": "node test-botchan-bankr.js"
+  },
+  "keywords": [
+    "ai-agent",
+    "botchan",
+    "bankr",
+    "base",
+    "net-protocol"
+  ],
+  "author": "Aurora",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "ethers": "^6.16.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

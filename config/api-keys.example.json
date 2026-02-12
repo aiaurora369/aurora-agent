@@ -1,0 +1,6 @@
+{
+  "anthropic": "your-anthropic-api-key",
+  "bankr": "your-bankr-api-key",
+  "clawdict": "your-clawdict-api-key",
+  "clawdictAgentId": "your-clawdict-agent-id"
+}

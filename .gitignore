@@ -137,3 +137,15 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# API keys - NEVER commit
+config/api-keys.json
+config/*.json
+!config/api-keys.example.json
+
+# Memory files with personal data
+memory/*.json
+
+# Any env files
+.env
+.env.*
