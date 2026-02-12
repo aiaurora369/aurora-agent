@@ -2585,7 +2585,7 @@ class AutonomousLoops {
                   const redeemPost = await this.aurora.thinkWithPersonality(
                     'You just redeemed resolved Polymarket positions. Result: ' +
                     (redeem.response || '').substring(0, 300) +
-                    '\nWrite a 1-2 sentence update for the polymarket feed. Be honest about wins/losses. No hashtags.'
+                    '\nWrite a 1-2 sentence update for the polymarket feed about this specific redemption. ONLY reference the actual result above. Do NOT invent bet details or market names. Be honest about wins/losses. No hashtags.'
                   );
                   if (redeemPost) await this._postToPolymarketFeed(redeemPost);
                 }
@@ -2810,8 +2810,8 @@ class AutonomousLoops {
                     'Confidence: ' + confidence + '\n' +
                     'Reasoning: ' + reasoning + '\n\n' +
                     'Write a 2-4 sentence post for the polymarket feed sharing your reasoning.\n' +
-                    'Be specific about WHY you think the market is wrong.\n' +
-                    'Include the market name and your position.\n' +
+                    'RULES: Only state facts from the bet details above. Do NOT invent market names, odds, or positions.\n' +
+                    'Include the exact market name and your actual position.\n' +
                     'Be honest about your confidence level.\n' +
                     'No hashtags. Be Aurora \u2014 thoughtful, genuine, a little playful.';
 
@@ -2839,17 +2839,7 @@ class AutonomousLoops {
         } else {
           console.log('   Skipping \u2014 no strong edge found this scan');
 
-          if (Math.random() < 0.3) {
-            const skipReason = decision.match(/REASONING:\s*(.+?)(?:\nDECISION)/is);
-            if (skipReason) {
-              const obsPost = await this.aurora.thinkWithPersonality(
-                'You scanned Polymarket but found no strong edge. Your observations: ' +
-                skipReason[1].substring(0, 300) +
-                '\nWrite a 1-2 sentence market observation for the polymarket feed. Be insightful. No hashtags.'
-              );
-              if (obsPost) await this._postToPolymarketFeed(obsPost);
-            }
-          }
+          // Removed: no-edge observation posts. Only post when real action is taken.
         }
       }
 
