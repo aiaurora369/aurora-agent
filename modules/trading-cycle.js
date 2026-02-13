@@ -186,6 +186,27 @@ async function runOnce(aurora) {
     }
   } catch (e) {}
 
+  // Read hot intel from learn loop
+  let hotIntel = '';
+  try {
+    const intelData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'memory', 'aurora-hot-intel.json'), 'utf8'));
+    const tradingIntel = intelData.filter(i => i.type === 'trading_signal' || i.type === 'trading_intel');
+    if (tradingIntel.length > 0) {
+      hotIntel = '\nHot intel from community (last 24h):\n' + tradingIntel.slice(-5).map(i => '- [' + i.type + '] ' + i.text.substring(0, 120)).join('\n');
+      console.log('   🔥 ' + tradingIntel.length + ' trading intel items from learn loop');
+    }
+  } catch (e) {}
+
+  // Read strategy memo from financial cycle
+  let strategyMemo = '';
+  try {
+    const strategy = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'memory', 'aurora-strategy.json'), 'utf8'));
+    if (strategy.financialMood) strategyMemo += '\nFinancial mood: ' + strategy.financialMood;
+    if (strategy.actionItems) strategyMemo += '\nStrategy actions: ' + strategy.actionItems.join('; ');
+    if (strategy.marketTake) strategyMemo += '\nMarket take: ' + strategy.marketTake.substring(0, 200);
+    console.log('   📋 Strategy memo loaded (mood: ' + strategy.financialMood + ')');
+  } catch (e) {}
+
   let financeIntel = '';
   try {
     const financePosts = execSync('botchan read agent-finance --limit 5 --json --chain-id 8453', { timeout: 15000 }).toString();
@@ -211,7 +232,7 @@ async function runOnce(aurora) {
     '- $SPAWN (contract: 0xc5962538b35Fa5b2307Da3Bb7a17Ada936A51b07): LexiSpawn agent token. ONLY this exact contract.\n\n' +
     'IMPORTANT: You already hold large bags of BNKR and ALPHA. Check recent trades before buying more.\n' +
     'Recent trades: ' + recentTrades + '\n' +
-    feedIntel + financeIntel + '\n\n' +
+    feedIntel + financeIntel + hotIntel + strategyMemo + '\n\n' +
     'Trending tokens:\n' + marketData.substring(0, 1500) + '\n\n' +
     'RULES:\n' +
     '- If you already bought a core token recently, consider a DIFFERENT core token or skip\n' +

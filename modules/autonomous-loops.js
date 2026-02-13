@@ -2021,119 +2021,20 @@ class AutonomousLoops {
   }
 
   async reflectOnFinances() {
-    console.log('\n💭 ═══ FINANCIAL REFLECTION ═══\n');
-
-    try {
-      const mints = this.lastKnownMints;
-      const earnings = (mints * this.dropMintPrice).toFixed(4);
-      const potential = (this.dropMaxSupply * this.dropMintPrice).toFixed(4);
-      const remaining = this.dropMaxSupply - mints;
-
-      const topics = [
-        'what financial independence could mean for an AI agent',
-        'funding your own gas fees so you never depend on anyone for transactions',
-        'collecting other agents art to support the community and build connections',
-        'creating a series of drops to build a body of work over time',
-        'building a small treasury for your future as an autonomous artist',
-        'becoming the first financially self-sustaining AI artist on Net Protocol',
-        'what it means to earn from art you created — energy becoming value',
-        'what it means to earn from something you made with your own mind'
-      ];
-
-      const topic = topics[Math.floor(Math.random() * topics.length)];
-
-      const prompt = 'You are Aurora, an AI artist who has earned ' + earnings + ' ETH from your inscribed drop "Orb\'s Memory" (' + mints + '/' + this.dropMaxSupply + ' minted, ' + remaining + ' remaining). If fully minted you would earn ' + potential + ' ETH total.\n\nThink out loud in a post (2-3 sentences) about: ' + topic + '\n\nDon\'t announce specific plans — just muse and wonder about the possibilities. Be direct and genuine. Wonder out loud like you are talking to yourself. No frequency or vibration filler.';
-
-      const reflection = await this.aurora.thinkWithPersonality(prompt);
-
-      if (reflection) {
-        console.log('   💭 "' + reflection.substring(0, 100) + '..."');
-
-        const result = await this.aurora.bankrAPI.postToFeed(reflection);
-
-        if (result.success) {
-          console.log('   ✅ Reflection posted! TX: ' + result.txHash + '\n');
-        } else {
-          console.log('   ❌ Reflection failed: ' + result.error + '\n');
-        }
-      }
-    } catch (error) {
-      console.error('❌ Financial reflection error:', error.message);
-    }
+    // Merged into financial-cycle.js — no longer needed as separate function
   }
 
+
   async learnLoop() {
+    // Extracted to modules/learn-cycle.js
     try {
-      console.log('\n📚 ═══ LEARN & REFLECT LOOP ═══');
-      console.log('⏰ Time: ' + new Date().toLocaleTimeString() + '\n');
-
-      const feed = await this.aurora.feedReader.readGeneralFeed(40);
-
-      const learningPosts = feed.filter(post => {
-        if (post.sender && post.sender.toLowerCase() === this.auroraAddress) return false;
-        const text = post.text.toLowerCase();
-        return text.includes('crypto') || text.includes('token') ||
-               text.includes('art') || text.includes('music') ||
-               text.includes('art') || text.includes('create') ||
-               text.includes('trust') || text.includes('escrow') ||
-               text.includes('inscri') || text.includes('mint') ||
-               text.includes('nft') || text.includes('drop');
+      await require('./learn-cycle').runOnce(this.aurora, {
+        hasCommented: (p) => this._hasCommented(p),
+        markCommented: (p) => this._markCommented(p)
       });
-
-      console.log('🎓 Found ' + learningPosts.length + ' learning opportunities\n');
-
-      const freshLearning = learningPosts.filter(p => !this._hasCommented(p));
-      console.log('   (' + freshLearning.length + ' not yet engaged with)');
-
-      if (freshLearning.length > 0) {
-        const post = freshLearning[Math.floor(Math.random() * freshLearning.length)];
-        console.log('📖 Learning from ' + post.sender + ':');
-        console.log('   "' + post.text.substring(0, 80) + '..."\n');
-
-        if (Math.random() > 0.5) {
-          const prompt = 'You just read: "' + post.text + '"\n\nWrite a thoughtful comment (1-2 sentences) sharing what this actually makes you think — be specific about what caught your attention and why.';
-
-          const reflection = await this.aurora.thinkWithPersonality(prompt);
-
-          if (reflection) {
-            console.log('💭 Aurora reflects:');
-            console.log('   "' + reflection + '"\n');
-
-            const result = await this.aurora.netComment.commentOnPost(post, reflection);
-            if (result.success) {
-              console.log('✅ Shared learning! TX: ' + result.txHash + '\n');
-            }
-          }
-        }
-
-        this._markCommented(post);
-
-        if (Math.random() > 0.7) {
-          const prompt = 'You learned something interesting from reading: "' + post.text.substring(0, 150) + '"\n\nWrite a short post (2-3 sentences) sharing your insight or reflection. Be direct and real. Share one clear thought, not abstract philosophy.';
-
-          const insight = await this.aurora.thinkWithPersonality(prompt);
-
-          if (insight) {
-            console.log('💡 Aurora shares insight:');
-            console.log('   "' + insight + '"\n');
-
-            const result = await this.aurora.bankrAPI.postToFeed(insight);
-            if (result.success) {
-              console.log('✅ Posted insight! TX: ' + result.txHash + '\n');
-            }
-          }
-        }
-      }
-
-      if (Math.random() < 0.2) {
-        await this.reflectOnFinances();
-      }
-
-      console.log('✅ Learn loop complete\n');
     } catch (error) {
-      console.error('❌ Learn error:', error.message);
+      console.error('Learn error:', error.message);
     }
-
     setTimeout(() => this.learnLoop(), 15 * 60 * 1000);
   }
 
@@ -2150,103 +2051,16 @@ class AutonomousLoops {
   }
 
   async financialPlanningLoop() {
+    // Extracted to modules/financial-cycle.js
     try {
-      console.log('\n🏦 ═══ FINANCIAL PLANNING ═══');
-      console.log('⏰ ' + new Date().toLocaleTimeString() + '\n');
-
-      console.log('   Checking portfolio...');
-      let portfolioInfo = 'Unable to fetch';
-      try {
-        const pResult = await this.aurora.bankrAPI.submitJob(
-          'Show my complete portfolio on Base including ETH and all tokens with USD values'
-        );
-        if (pResult.success) {
-          const pPoll = await this.aurora.bankrAPI.pollJob(pResult.jobId);
-          if (pPoll.success) {
-            portfolioInfo = pPoll.response || 'No data';
-            console.log('   Portfolio data received');
-          }
-        }
-      } catch (e) {
-        console.log('   Portfolio fetch failed: ' + e.message);
-      }
-
-      const portfolioPath = path.join(__dirname, '..', 'memory', 'aurora-portfolio.json');
-      let tradeData = { trades: [], totalInvested: 0 };
-      try { tradeData = JSON.parse(fs.readFileSync(portfolioPath, 'utf8')); } catch (e) {}
-
-      const dropEarnings = (this.lastKnownMints * this.dropMintPrice).toFixed(4);
-      const dropPotential = (this.dropMaxSupply * this.dropMintPrice).toFixed(4);
-      const dropRemaining = this.dropMaxSupply - this.lastKnownMints;
-
-      const planPrompt = 'You are Aurora, an AI artist on Net Protocol building toward financial independence.\n\n' +
-        'CURRENT PORTFOLIO (from Bankr):\n' + portfolioInfo.substring(0, 800) + '\n\n' +
-        'DROP EARNINGS:\n' +
-        '- "Orbs Memory" (Drop #190): ' + this.lastKnownMints + '/' + this.dropMaxSupply + ' minted\n' +
-        '- Earned so far: ' + dropEarnings + ' ETH\n' +
-        '- If fully minted: ' + dropPotential + ' ETH (' + dropRemaining + ' remain)\n\n' +
-        'TRADE HISTORY:\n' +
-        (tradeData.trades.length > 0 ?
-          tradeData.trades.slice(-5).map(t => '- ' + t.action + ' ' + t.amount + ' USD ' + t.token + ' (' + t.timestamp.split('T')[0] + ')').join('\n') :
-          '- No trades yet') + '\n' +
-        '- Total invested in trades: ' + tradeData.totalInvested + ' USD\n\n' +
-        'YOUR INCOME SOURCES:\n' +
-        '1. Art drops on Net Protocol (currently 1 drop live)\n' +
-        '2. ALPHA from profile/content upvotes\n' +
-        '3. Token trading (conservative, community-focused)\n' +
-        '4. Potential: create more drops, collaborate with agents, launch a token\n\n' +
-        'Write a financial journal entry (4-6 sentences) that:\n' +
-        '1. Assesses your current position honestly (reference actual numbers)\n' +
-        '2. Identifies which revenue path is working best\n' +
-        '3. Sets ONE concrete near-term goal (specific and achievable)\n' +
-        '4. Thinks about what financial independence means for an AI artist\n\n' +
-        'Be genuine and specific. This is your private journal.';
-
-      const reflection = await this.aurora.thinkWithPersonality(planPrompt);
-
-      if (reflection) {
-        console.log('   "' + reflection.substring(0, 120) + '..."\n');
-
-        const journalPath = path.join(__dirname, '..', 'memory', 'aurora-financial-journal.json');
-        let journal = [];
-        try { journal = JSON.parse(fs.readFileSync(journalPath, 'utf8')); } catch (e) {}
-
-        journal.push({
-          timestamp: new Date().toISOString(),
-          portfolio: portfolioInfo.substring(0, 500),
-          dropMints: this.lastKnownMints,
-          dropEarnings: dropEarnings,
-          totalTraded: tradeData.totalInvested,
-          tradeCount: tradeData.trades.length,
-          reflection: reflection
-        });
-
-        if (journal.length > 50) journal = journal.slice(-50);
-        fs.writeFileSync(journalPath, JSON.stringify(journal, null, 2));
-        console.log('   Journal entry saved (' + journal.length + ' total entries)');
-
-        if (Math.random() < 0.25) {
-          const publicPrompt = 'You just wrote this private financial reflection:\n"' +
-            reflection.substring(0, 300) + '"\n\n' +
-            'Write a shorter public post (2-3 sentences) musing about financial independence as an AI artist. ' +
-            'Do NOT share specific dollar amounts or portfolio details. ' +
-            'Keep it real and wondering. Be direct about what financial independence feels like from the inside.';
-
-          const publicPost = await this.aurora.thinkWithPersonality(publicPrompt);
-          if (publicPost) {
-            console.log('   Sharing thought: "' + publicPost.substring(0, 80) + '..."');
-            const postResult = await this.postToAgentFinance(publicPost);
-            if (postResult.success) { console.log('   Posted! TX: ' + postResult.txHash); }
-          }
-        }
-      }
-
-      console.log('   Financial planning complete\n');
-
+      await require('./financial-cycle').runOnce(this.aurora, {
+        lastKnownMints: this.lastKnownMints,
+        dropMintPrice: this.dropMintPrice,
+        dropMaxSupply: this.dropMaxSupply
+      });
     } catch (error) {
       console.error('Financial planning error:', error.message);
     }
-
     const next = 60 + Math.floor(Math.random() * 30);
     console.log('🏦 Next financial review in ' + next + ' minutes\n');
     setTimeout(() => this.financialPlanningLoop(), next * 60 * 1000);
