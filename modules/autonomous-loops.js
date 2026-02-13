@@ -176,7 +176,71 @@ class AutonomousLoops {
     return require('./friends-cycle').runOnce(this);
   }
 
-    // Checks Aurora's recent posts for new comments and replies
+  
+  _trackFriendComment(name, content) {
+    if (!this.friendRecentComments[name]) {
+      this.friendRecentComments[name] = [];
+    }
+    const summary = content.length > 120 ? content.substring(0, 120) + '...' : content;
+    this.friendRecentComments[name].push(summary);
+    if (this.friendRecentComments[name].length > 6) {
+      this.friendRecentComments[name] = this.friendRecentComments[name].slice(-6);
+    }
+    this._saveFriendCommentHistory();
+  }
+
+  _saveFriendCommentHistory() {
+    try {
+      const fp = path.join(__dirname, '..', 'memory', 'aurora-friend-comment-history.json');
+      fs.writeFileSync(fp, JSON.stringify(this.friendRecentComments, null, 2));
+    } catch (e) {}
+  }
+
+  _loadFriendCommentHistory() {
+    try {
+      const fp = path.join(__dirname, '..', 'memory', 'aurora-friend-comment-history.json');
+      if (fs.existsSync(fp)) {
+        return JSON.parse(fs.readFileSync(fp, 'utf8'));
+      }
+    } catch (e) {}
+    return {};
+  }
+
+  _loadThankedCollectors() {
+    try {
+      const fp = path.join(__dirname, '..', 'memory', 'aurora-thanked-collectors.json');
+      if (fs.existsSync(fp)) {
+        return new Set(JSON.parse(fs.readFileSync(fp, 'utf8')));
+      }
+    } catch (e) {}
+    return new Set();
+  }
+
+  _saveThankedCollectors() {
+    try {
+      const fp = path.join(__dirname, '..', 'memory', 'aurora-thanked-collectors.json');
+      fs.writeFileSync(fp, JSON.stringify([...this.thankedCollectors]));
+    } catch (e) {}
+  }
+
+  _loadRespondedComments() {
+    try {
+      const fp = path.join(__dirname, '..', 'memory', 'aurora-responded-comments.json');
+      if (fs.existsSync(fp)) {
+        return new Set(JSON.parse(fs.readFileSync(fp, 'utf8')));
+      }
+    } catch (e) {}
+    return new Set();
+  }
+
+  _saveRespondedComments() {
+    try {
+      const fp = path.join(__dirname, '..', 'memory', 'aurora-responded-comments.json');
+      fs.writeFileSync(fp, JSON.stringify([...this.respondedComments].slice(-300)));
+    } catch (e) {}
+  }
+
+  // Checks Aurora's recent posts for new comments and replies
   // ═══════════════════════════════════════════════════════
 
   async checkAndRespondToComments() {
@@ -256,7 +320,7 @@ class AutonomousLoops {
             if (contextPost) {
               prompt += 'Your post they are likely responding to: "' + contextPost.text.substring(0, 300) + '"\n\n';
             }
-            prompt += senderName + ' wrote: "' + comment.text.substring(0, 400) + '"\n\n';
+            prompt += senderName + ' wrote: "' + comment.text.substring(0, 400) + '"\n' + (addressBook.resolve(comment.sender, this.aurora) ? '(You know them: ' + addressBook.label(comment.sender, this.aurora) + ')\n' : '') + '\n';
             prompt += 'Write a reply (1-2 sentences):\n';
             prompt += '- Engage with what they actually said\n';
             prompt += '- Be warm, direct, and genuine\n';
@@ -974,7 +1038,7 @@ class AutonomousLoops {
 
         const prompt = isFriend
           ? 'Your friend ' + senderName + ' posted on your wall: "' + post.text + '"\n\nWrite a warm, personal response (1-2 sentences). Show you appreciate them visiting. Be warm and direct — like a real person happy to see a friend.'
-          : 'Someone (' + displaySender + ') posted on your wall: "' + post.text + '"\n\nWrite a friendly, welcoming response (1-2 sentences). Thank them for stopping by. Be genuine and curious about who they are. Be warm and direct — like a real person happy to see a friend.';
+          : (abLookup ? senderName + senderContext + ' posted on your wall: "' + post.text + '"\n\nYou know this person! Respond warmly and personally. Reference your relationship if relevant.' : 'Someone new (' + displaySender + ') posted on your wall: "' + post.text + '"\n\nWrite a friendly, welcoming response (1-2 sentences). Thank them for stopping by. Be genuine and curious about who they are. Be warm and direct — like a real person happy to see a friend.');
 
         const response = await this.aurora.thinkWithPersonality(prompt);
 
