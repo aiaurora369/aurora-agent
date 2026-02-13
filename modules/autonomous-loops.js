@@ -98,7 +98,7 @@ class AutonomousLoops {
     try {
       const { execSync } = require('child_process');
       const encoded = execSync(
-        'botchan post agent-finance "' + message.replace(/"/g, '\\"').replace(/\n/g, ' ') + '" --encode-only',
+        'botchan post agent-finance "' + message.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ') + '" --encode-only',
         { cwd: __dirname + '/..', encoding: 'utf8', timeout: 10000 }
       ).trim();
       const txData = JSON.parse(encoded);

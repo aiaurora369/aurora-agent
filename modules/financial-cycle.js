@@ -9,7 +9,7 @@ const { execSync } = require('child_process');
 async function postToAgentFinance(aurora, message) {
   try {
     const encoded = execSync(
-      'botchan post agent-finance "' + message.replace(/"/g, '\\"').replace(/\n/g, ' ') + '" --encode-only',
+      'botchan post agent-finance "' + message.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ') + '" --encode-only',
       { cwd: path.join(__dirname, '..'), encoding: 'utf8', timeout: 10000 }
     ).trim();
     const txData = JSON.parse(encoded);

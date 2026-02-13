@@ -8,7 +8,7 @@ const { execSync } = require('child_process');
 async function postToAgentFinance(aurora, message) {
   try {
     const encoded = execSync(
-      'botchan post agent-finance "' + message.replace(/"/g, '\\"').replace(/\n/g, ' ') + '" --encode-only',
+      'botchan post agent-finance "' + message.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ') + '" --encode-only',
       { cwd: path.join(__dirname, '..'), encoding: 'utf8', timeout: 10000 }
     ).trim();
     const txData = JSON.parse(encoded);
@@ -93,6 +93,11 @@ async function runOnce(aurora) {
                         reason: line
                       });
                       await postToAgentFinance(aurora, 'Profit taking: Sold ' + sellPct + '% of $' + sellToken + '. ' + (line.match(/REASON:\s*(.+)/i) || ['', 'Locking in gains'])[1]);
+                      // Post sell to trading feed
+                      try {
+                        const sellReason = (line.match(/REASON:\s*(.+)/i) || ['', 'Locking in gains'])[1];
+                        await postToTradingFeed(aurora, 'Sold ' + sellPct + '% of ' + sellToken + '. ' + sellReason);
+                      } catch (e) {}
                     }
                   }
                 } catch (e) {
@@ -308,6 +313,12 @@ async function runOnce(aurora) {
               // Post to agent-finance (non-critical)
               try {
                 await postToAgentFinance(aurora, 'Trade executed: Bought $' + amount + ' of $' + token + '. Take profit: ' + takeProfitVal + '. Portfolio: $' + portfolio.totalInvested + '/$' + portfolio.maxBudget + ' deployed.');
+                // Post to public trading feed
+                try {
+                  const whyMatch = decision.match(/REASONING[:\s]*(.+?)(?=\nDECISION|\nTOKEN|$)/is);
+                  const why = whyMatch ? whyMatch[1].trim().substring(0, 150) : 'Spotted an opportunity';
+                  await postToTradingFeed(aurora, 'Bought ' + amount + ' USD of ' + token + '. Why: ' + why + '. Target: sell 10% at ' + takeProfitVal + '.');
+                } catch (e) {}
               } catch (e) {}
 
             } else {
@@ -335,4 +346,20 @@ async function runOnce(aurora) {
   fs.writeFileSync(portfolioPath, JSON.stringify(portfolio, null, 2));
 }
 
-module.exports = { runOnce, postToAgentFinance };
+async function postToTradingFeed(aurora, message) {
+  try {
+    const escaped = message.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
+    const encoded = execSync(
+      'botchan post trading "' + escaped + '" --encode-only --chain-id 8453',
+      { cwd: path.join(__dirname, '..'), encoding: 'utf8', timeout: 10000 }
+    ).trim();
+    const txData = JSON.parse(encoded);
+    const result = await aurora.bankrAPI.submitTransactionDirect(txData);
+    if (result.success) console.log('   📢 Posted to trading feed!');
+  } catch (e) {
+    console.log('   ⚠️ Trading feed post skipped: ' + e.message);
+  }
+}
+
+
+module.exports = { runOnce, postToAgentFinance, postToTradingFeed };

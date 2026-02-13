@@ -163,12 +163,12 @@ async function runOnce(ctx) {
         if (interactionType === 'art_gift') {
           // ── ART GIFT (5%) ──
           console.log('      \ud83c\udfa8 Art gift!');
-          await sendCollectorArtGift(displayName, addr, commentable);
+          await sendCollectorArtGift(displayName, addr, commentable, ctx);
 
         } else if (interactionType === 'poem') {
           // ── POEM (5%) ──
           console.log('      \ud83d\udcdd Writing poem...');
-          await sendCollectorPoem(displayName, addr, commentable);
+          await sendCollectorPoem(displayName, addr, commentable, ctx);
 
         } else {
           // ── COMMENT (90%) ──
