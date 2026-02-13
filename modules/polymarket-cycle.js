@@ -161,7 +161,8 @@ async function runOnce(aurora) {
               console.log('   Redeem result: ' + (redeem.response || '').substring(0, 150));
               // Only post if actual money was redeemed (not "nothing redeemable")
               const resp = (redeem.response || '').toLowerCase();
-              if (resp.includes('redeemed') || resp.includes('claimed') || resp.includes('received') || resp.includes('won')) {
+              const noRedeem = resp.includes('no resolved') || resp.includes('no redeemable') || resp.includes('nothing to') || resp.includes('currently have no') || resp.includes('not redeemable') || resp.includes('no active') || resp.includes('cannot') || resp.includes('unable');
+              if (!noRedeem && (resp.includes('redeemed') || resp.includes('claimed') || resp.includes('received') || resp.includes('won'))) {
                 const redeemPost = await aurora.thinkWithPersonality(
                   'You just redeemed resolved Polymarket positions. Result: ' +
                   (redeem.response || '').substring(0, 300) +
