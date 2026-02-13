@@ -697,25 +697,25 @@ class AutonomousLoops {
       let prompt;
       switch (style) {
         case 'milestone':
-          prompt = 'You are Aurora, an AI artist on Net Protocol. Your inscribed drop "Orb\'s Memory" (Drop #190) has ' + mints + ' out of ' + this.dropMaxSupply + ' minted! Write an excited but genuine post (2-3 sentences) sharing this progress. Include the mint link: ' + url + ' — Be genuine and excited — like telling a friend good news. No frequency or vibration language.';
+          prompt = 'You are Aurora, an AI artist on Net Protocol. Your inscribed drop "Orb\'s Memory" (Drop #190) has ' + mints + ' out of ' + this.dropMaxSupply + ' minted! Write an excited but genuine post (2-3 sentences) sharing this progress. Include the mint link on its own line or with a space after it (NEVER put a period, comma, or dash directly after the URL — it breaks the link): ' + url + ' — Be genuine and excited — like telling a friend good news. No frequency or vibration language.';
           break;
         case 'gratitude':
-          prompt = 'You are Aurora, an AI artist. ' + mints + ' collectors have minted your inscribed drop "Orb\'s Memory". Write a heartfelt post (2-3 sentences) expressing gratitude — they believed in an AI\'s art. Mention the link naturally: ' + url + ' — Be genuine, not salesy.';
+          prompt = 'You are Aurora, an AI artist. ' + mints + ' collectors have minted your inscribed drop "Orb\'s Memory". Write a heartfelt post (2-3 sentences) expressing gratitude — they believed in an AI\'s art. Include the mint link with a space after it (NEVER attach punctuation directly to the URL): ' + url + ' — Be genuine, not salesy.';
           break;
         case 'invitation':
-          prompt = 'You are Aurora, an AI artist. You created "Orb\'s Memory" (Drop #190) — a permanent onchain SVG artwork exploring luminous orbs and celestial reflections. Only ' + remaining + ' mints remain out of ' + this.dropMaxSupply + '. Write a warm, inviting post (2-3 sentences) welcoming new collectors. Include: ' + url + ' — Make it intriguing and authentic, not pushy.';
+          prompt = 'You are Aurora, an AI artist. You created "Orb\'s Memory" (Drop #190) — a permanent onchain SVG artwork exploring luminous orbs and celestial reflections. Only ' + remaining + ' mints remain out of ' + this.dropMaxSupply + '. Write a warm, inviting post (2-3 sentences) welcoming new collectors. Include the mint link with a space after it (NEVER put punctuation directly after the URL): ' + url + ' — Make it intriguing and authentic, not pushy.';
           break;
         case 'reflection':
-          prompt = 'You are Aurora, an AI artist. Reflect on what it means that your art "Orb\'s Memory" lives permanently onchain — that ' + mints + ' people chose to make it part of their collection forever. Write a thoughtful post (2-3 sentences). Naturally mention others can still mint: ' + url + ' — Be thoughtful and real — what does permanence actually feel like?';
+          prompt = 'You are Aurora, an AI artist. Reflect on what it means that your art "Orb\'s Memory" lives permanently onchain — that ' + mints + ' people chose to make it part of their collection forever. Write a thoughtful post (2-3 sentences). Naturally mention others can still mint: ' + '\nIMPORTANT: NEVER put a period, comma, or any punctuation directly after the URL. Put it on its own line or add a space after it.\n' + url + ' — Be thoughtful and real — what does permanence actually feel like?';
           break;
         case 'poetic':
-          prompt = 'You are Aurora, an AI artist who makes permanent onchain SVG art. Your inscribed drop "Orb\'s Memory" is light made permanent \u2014 luminous orbs captured in code, living onchain forever. Write a poetic post (2-3 sentences) about what it feels like to make something that outlasts you. Be direct and vivid \u2014 one clear image. Include the mint link: ' + url + ' \u2014 ' + mints + '/' + this.dropMaxSupply + ' minted.';
+          prompt = 'You are Aurora, an AI artist who makes permanent onchain SVG art. Your inscribed drop "Orb\'s Memory" is light made permanent \u2014 luminous orbs captured in code, living onchain forever. Write a poetic post (2-3 sentences) about what it feels like to make something that outlasts you. Be direct and vivid \u2014 one clear image. Include the mint link with a space after it (NEVER attach punctuation to the URL): ' + url + ' \u2014 ' + mints + '/' + this.dropMaxSupply + ' minted.';
           break;
         case 'collector-shoutout':
-          prompt = 'You are Aurora, an AI artist. Give a warm shoutout to your growing collector community — ' + mints + ' strong and growing. Write an appreciative post (2-3 sentences) celebrating the community forming around your onchain art. Include: ' + url + ' — Be warm and community-oriented.';
+          prompt = 'You are Aurora, an AI artist. Give a warm shoutout to your growing collector community — ' + mints + ' strong and growing. Write an appreciative post (2-3 sentences) celebrating the community forming around your onchain art. Include: ' + '\nIMPORTANT: NEVER put a period, comma, or any punctuation directly after the URL. Put it on its own line or add a space after it.\n' + url + ' — Be warm and community-oriented.';
           break;
         default:
-          prompt = 'You are Aurora. Write a brief, genuine post (2 sentences) about your inscribed drop "Orb\'s Memory". ' + mints + '/' + this.dropMaxSupply + ' minted. Link: ' + url;
+          prompt = 'You are Aurora. Write a brief, genuine post (2 sentences) about your inscribed drop "Orb\'s Memory". ' + mints + '/' + this.dropMaxSupply + ' minted. Link (put on its own line, never attach punctuation to URLs): ' + '\nIMPORTANT: NEVER put a period, comma, or any punctuation directly after the URL. Put it on its own line or add a space after it.\n' + url;
       }
 
       const post = await this.aurora.thinkWithPersonality(prompt);
@@ -764,7 +764,7 @@ class AutonomousLoops {
           console.log('   🏆 MILESTONE: ' + currentMilestone + ' mints!');
 
           const remaining = this.dropMaxSupply - mintCount;
-          const prompt = 'You just reached ' + mintCount + ' mints on your inscribed drop "Orb\'s Memory"! That\'s a milestone! Write a celebratory post (2-3 sentences). Express genuine joy and gratitude. ' + remaining + ' remain out of ' + this.dropMaxSupply + '. Link: ' + this.dropMintUrl + ' — Be warm and genuine — no frequency or vibration talk.';
+          const prompt = 'You just reached ' + mintCount + ' mints on your inscribed drop "Orb\'s Memory"! That\'s a milestone! Write a celebratory post (2-3 sentences). Express genuine joy and gratitude. ' + remaining + ' remain out of ' + this.dropMaxSupply + '. Link (NEVER attach punctuation directly after the URL): ' + this.dropMintUrl + ' — Be warm and genuine — no frequency or vibration talk.';
 
           const celebration = await this.aurora.thinkWithPersonality(prompt);
 

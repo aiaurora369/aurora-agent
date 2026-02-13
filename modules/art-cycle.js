@@ -7,23 +7,26 @@ async function composeArt(aurora) {
   const mood = artMoods[Math.floor(Math.random() * artMoods.length)];
   const composition = artCompositions[Math.floor(Math.random() * artCompositions.length)];
 
-  const artPrompt = 'You are Aurora, an AI artist creating permanent onchain SVG art. Create a COMPLETE, VALID SVG artwork. Mood: "' + mood + '". Composition: ' + composition + '.\n\n' +
-    'STRICT RULES:\n' +
-    '1. Output ONLY the SVG code, nothing else. No markdown, no explanation.\n' +
+  const artPrompt = 'You are Aurora, an AI artist making permanent onchain SVG art.\n\n' +
+    'Your mood for this piece: "' + mood + '"\n' +
+    'Composition approach: ' + composition + '\n\n' +
+    'ARTISTIC DIRECTION:\n' +
+    '- Let the mood DRIVE the art. If the mood is lonely, the art should feel empty. If it is violent, the shapes should clash.\n' +
+    '- You are NOT limited to landscapes. You can make abstract geometry, single objects in vast space, tangled lines, shattered grids, pulsing circles, scattered fragments — whatever the mood demands.\n' +
+    '- Think like a painter, not a screensaver. Negative space matters. Asymmetry matters. Tension matters.\n' +
+    '- Your signature: luminous orbs with layered gradients — but they do not have to appear in every piece. Use them when they serve the mood.\n' +
+    '- Color palette: 4-7 colors. Choose them for emotional truth, not prettiness. Dark pieces are fine. Monochrome is fine. Ugly-beautiful is fine.\n' +
+    '- One clear visual idea executed well beats ten clever effects.\n\n' +
+    'STRICT TECHNICAL RULES:\n' +
+    '1. Output ONLY the SVG code. No markdown, no explanation.\n' +
     '2. Must start with <svg and end with </svg>\n' +
     '3. Use viewBox="0 0 400 400" with NO width/height attributes\n' +
     '4. MAXIMUM 3600 characters total\n' +
-    '5. Use radialGradient for luminous orbs (at least 3-4 color stops for depth/glow)\n' +
-    '6. Use linearGradient for sky and water (at least 3 stops)\n' +
-    '7. Layer mountains as polygons with slightly different shades for depth (2-4 layers)\n' +
-    '8. Include a water/ground zone in the lower portion with subtle reflection of the orb\n' +
-    '9. Add 2-5 tiny circles as stars\n' +
-    '10. Color palette: rich, atmospheric, 5-7 colors. Think: deep navy, warm amber, soft coral, rich purple.\n' +
-    '11. Every gradient needs a unique id. Use short ids like g1, g2, g3.\n' +
-    '12. NO filter elements (too many chars). Achieve glow through layered semi-transparent circles.\n' +
-    '13. Make the orb GLOW by using 3+ concentric circles with decreasing opacity.\n' +
-    '14. The art should feel luminous, atmospheric, and alive.\n\n' +
-    'Create something beautiful and unique. Every piece should feel different from the last.';
+    '5. Every gradient needs a unique id (use short ids: g1, g2, g3)\n' +
+    '6. NO filter elements (too many chars). Achieve glow through layered semi-transparent circles.\n' +
+    '7. Use radialGradient for glowing elements (3-4 color stops for depth)\n' +
+    '8. Use linearGradient for backgrounds and washes (3+ stops)\n\n' +
+    'Make something that could only exist for THIS mood. Not a template — a response.';
 
   const response = await aurora.claude.messages.create({
     model: 'claude-sonnet-4-20250514',
@@ -60,7 +63,11 @@ async function composeArt(aurora) {
   console.log('🎨 SVG composed: ' + svg.length + ' chars, mood: ' + mood);
 
   // Generate caption
-  const captionPrompt = 'You just created a piece of art with the mood "' + mood + '". Write a poetic caption (1 sentence max, under 100 chars). Be direct and vivid — one concrete image or feeling. No abstractions, no frequency talk. No hashtags. No emojis.';
+  const captionPrompt = 'You just created a piece of art with the mood "' + mood + '". ' +
+    'Write a poetic caption (1 sentence max, under 100 chars). ' +
+    'Be direct and vivid like William Carlos Williams — one concrete image or feeling. ' +
+    'No abstractions, no frequency talk, no hashtags, no emojis. ' +
+    'Say what you see. Say what it feels like. Nothing more.';
   const caption = await aurora.thinkWithPersonality(captionPrompt);
 
   return { svg, caption };
