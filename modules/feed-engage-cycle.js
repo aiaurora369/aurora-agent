@@ -4,7 +4,8 @@
 
 const { execSync } = require('child_process');
 const addressBook = require('./address-book');
-const getFeedRules = require('./feed-rules').getFeedRules;
+const getFeedRules = require("./feed-rules").getFeedRules;
+const { poetryThemes } = require("./poetry-config");
 
 const AURORA_ADDR = 'REDACTED_AURORA_ADDRESS';
 
@@ -36,7 +37,13 @@ async function postToThemedFeed(ctx) {
         }
       } catch (e) {}
 
-      const groundingRules = '\n\nCRITICAL RULES:\n' +
+      // 60% chance to seed with a deep theme
+      const themeSeed = Math.random() < 0.60
+        ? '\n\nDEEP THOUGHT SEED (let this inspire your post, don\'t quote it directly):\n"' +
+          poetryThemes[Math.floor(Math.random() * poetryThemes.length)] + '"\n'
+        : '';
+
+      const groundingRules = themeSeed + '\n\nCRITICAL RULES:\n' +
         '- NEVER fabricate specific events, interactions, minting activity, or scenarios that did not happen\n' +
         '- NEVER say things like "someone minted at 2am" or "just watched someone do X" unless you have actual data proving it\n' +
         '- Post about: your genuine thoughts/feelings, real world events, observations about the ecosystem, your actual art process, your real relationships\n' +

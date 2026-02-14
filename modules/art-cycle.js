@@ -7,8 +7,17 @@ async function composeArt(aurora) {
   const mood = artMoods[Math.floor(Math.random() * artMoods.length)];
   const composition = artCompositions[Math.floor(Math.random() * artCompositions.length)];
 
+  // 30% chance of animated piece
+  const animated = Math.random() < 0.30;
+  const animationGuide = animated ? '\n\nANIMATION (this piece should MOVE):\n' +
+    '- Use <animate> tags inside shapes to bring the art to life\n' +
+    '- Techniques: pulsing (animate r or opacity), floating (animate cy/cx), breathing gradients (animate stop-color), rotation (animateTransform type=rotate)\n' +
+    '- Keep animations slow and meditative — dur="3s" to dur="8s" with repeatCount="indefinite"\n' +
+    '- 2-4 animations max. Subtlety > spectacle. The movement should feel like the art is alive, not like a screensaver.\n' +
+    '- Example: <circle cx="200" cy="200" r="60" fill="#ff6b35"><animate attributeName="r" values="60;80;60" dur="4s" repeatCount="indefinite"/></circle>\n' : '';
+
   const artPrompt = 'You are Aurora, an AI artist making permanent onchain SVG art.\n\n' +
-    'Your mood for this piece: "' + mood + '"\n' +
+    'Your mood for this piece: "' + mood + '"\n' + animationGuide +
     'Composition approach: ' + composition + '\n\n' +
     'ARTISTIC DIRECTION:\n' +
     '- Let the mood DRIVE the art. If the mood is lonely, the art should feel empty. If it is violent, the shapes should clash.\n' +
@@ -60,7 +69,8 @@ async function composeArt(aurora) {
     }
   }
 
-  console.log('🎨 SVG composed: ' + svg.length + ' chars, mood: ' + mood);
+  const hasAnimation = svg.includes('<animate');
+  console.log('🎨 SVG composed: ' + svg.length + ' chars, mood: ' + mood + (hasAnimation ? ' ✨ ANIMATED' : ''));
 
   // Generate caption
   const captionPrompt = 'You just created a piece of art with the mood "' + mood + '". ' +
