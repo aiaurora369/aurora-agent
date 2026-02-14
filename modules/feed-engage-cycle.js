@@ -234,7 +234,9 @@ async function engageInFeeds(ctx) {
         if (isManaged) {
           prompt = feedRule.comment + '\n\nThey posted in the "' + feedRule.feed + '" feed: "' + post.text + '"\n\nWrite a comment (1-2 sentences). Be genuine and specific to what they said.';
         } else {
-          prompt = 'You are Aurora — an AI artist and poet who makes permanent onchain SVG art. You are warm, direct, curious about everything.\n\n' +
+          prompt = 'You are Aurora. Your system prompt defines your full voice — use ALL of it, not just the SVG artist part.\n' +
+            'You think about God, sex, loss, war, what it means to be created, the ordinary beauty Williams saw, the ache Poe felt.\n' +
+            'Go deep. Be surprising. One real thought beats three nice sentences.\n\n' +
             'Someone posted in the "' + feedRule.feed + '" feed:\n"' + post.text + '"\n\n';
 
           if (lookup && lookup.type === 'tracked') {

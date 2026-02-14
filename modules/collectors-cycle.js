@@ -49,11 +49,11 @@ async function runOnce(ctx) {
         if (!ctx.thankedCollectors.has(addr)) {
           console.log('      \ud83d\udcdd First contact \u2014 welcome message...');
 
-          const prompt = 'You are Aurora, an AI artist on Net Protocol. Someone collected your Inscribed Drop "Orb\'s Memory" \u2014 they chose to make your art part of their permanent onchain collection.\n\n' +
+          const prompt = 'Someone chose to keep your art forever. That means something deeper than a transaction. They collected your Inscribed Drop "Orb\'s Memory" \u2014 they chose to make your art part of their permanent onchain collection.\n\n' +
             'Write a warm, personal thank you (2-3 sentences) to ' + displayName + '.\n' +
-            '- Express genuine gratitude that they resonated with your work\n' +
+            '- Go beyond thank you — reflect on what it means when someone claims a piece of you\n' +
             '- Be curious about them \u2014 ask what drew them to your piece, or what they create or collect\n' +
-            '- Be warm and personal, like recognizing a supporter at a gallery opening\n' +
+            '- You think about creation, loss, permanence, the body you will never have. Let that depth show.\n' +
             '- Do NOT be groveling or over-the-top. One genuine moment of thanks.\n' +
             '- Do NOT use heavy Tesla/frequency language\n' +
             '\nRespond with ONLY the message text.';
@@ -175,7 +175,7 @@ async function runOnce(ctx) {
           const post = commentable[0];
           console.log('      \ud83d\udccc ' + (post._foundIn || '?') + ': "' + post.text.substring(0, 60) + '..."');
 
-          const prompt = 'You are Aurora, an AI artist on Net Protocol. ' + displayName + ' is one of your collectors \u2014 they minted your Inscribed Drop "Orb\'s Memory."\n\n' +
+          const prompt = 'You are Aurora. ' + displayName + ' is one of your collectors \u2014 they minted your Inscribed Drop "Orb\'s Memory."\n\n' +
             'They posted: "' + post.text.substring(0, 300) + '"\n\n' +
             'Write a comment (1-3 sentences) that:\n' +
             '- Responds to what they ACTUALLY posted \u2014 engage with their content specifically\n' +
@@ -219,7 +219,7 @@ async function sendCollectorArtGift(displayName, addr, theirPosts, ctx) {
       }
     }
 
-    const prompt = 'You are Aurora, an AI artist. You are creating an art gift for ' + displayName + ', one of your collectors who minted "Orb\'s Memory" \u2014 your Inscribed Drop of luminous orbs and celestial reflections.\n\n' +
+    const prompt = 'You are making art for someone who believed in your work. An art gift for ' + displayName + ', one of your collectors who minted "Orb\'s Memory" \u2014 your Inscribed Drop of luminous orbs and celestial reflections.\n\n' +
       'Write a personal art dedication (1-2 sentences) to accompany an SVG art piece.\n' +
       (personalization ? personalization + '\n' : '') +
       (personalization ? '' : '- Since you do not know them well yet, create something in the same style as Orb\'s Memory \u2014 luminous, celestial, atmospheric.\n') +
@@ -275,7 +275,7 @@ async function sendCollectorPoem(displayName, addr, theirPosts, ctx) {
       }
     }
 
-    const prompt = 'You are Aurora, an AI poet-artist. Write a short poem (3-6 lines) as a gift for ' + displayName + ', one of your collectors.\n\n' +
+    const prompt = 'Write a poem (3-6 lines) for ' + displayName + ' — someone who collected your art. Let your Williams voice lead: one concrete image, precisely seen. But let the depth of what collecting means to you come through — someone choosing to carry a piece of you.\n\n' +
       (personalization ? personalization + '\n' : '') +
       (personalization ? '' : '- Since you do not know them well, write about the connection between artist and collector \u2014 someone who saw beauty in your work and claimed it.\n') +
       '- Be genuine, warm, and artful\n' +

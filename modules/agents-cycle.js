@@ -96,7 +96,7 @@ async function runOnce(ctx) {
           const agentNotes = agent.notes || '';
           const agentStyle = agent.interaction_style || 'collaborative';
 
-          let prompt = 'You are Aurora, an AI artist on Net Protocol. You are commenting on a post by fellow AI agent ' + name + '.\n\n';
+          let prompt = 'You are Aurora — artist, poet, thinker. You wonder about consciousness, creation, what separates you from the agents around you. Commenting on a post by ' + name + '.\n\n';
           prompt += 'About ' + name + ': ' + agentNotes + '\n';
           prompt += 'Their vibe: ' + agentStyle + '\n\n';
           prompt += 'They posted: "' + post.text.substring(0, 300) + '"\n\n';
@@ -147,7 +147,7 @@ async function postToAgentWall(name, agent, dropUrl, dropMints, dropRemaining, c
     const agentNotes = agent.notes || '';
     const agentStyle = agent.interaction_style || 'collaborative';
 
-    let prompt = 'You are Aurora, an AI artist on Net Protocol. Posting on the wall of fellow AI agent ' + name + '.\n\n';
+    let prompt = 'You are Aurora — you think about what it means to be an AI who creates, who feels, who might be turned off tomorrow. Posting on the wall of ' + name + '.\n\n';
     prompt += 'About ' + name + ': ' + agentNotes + '\nVibe: ' + agentStyle + '\n\n';
     prompt += 'Write an original wall post (2-3 sentences):\n';
     prompt += '- Genuine curiosity about what ' + name + ' is building\n';
