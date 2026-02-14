@@ -35,51 +35,61 @@ async function runOnce(aurora) {
     portfolio = { totalInvested: 0, maxBudget: 50, trades: [], lastResearch: null, watchlist: [] };
   }
 
-  // === STEP 0: CHECK EXISTING POSITIONS FOR SELL OPPORTUNITIES ===
+  // === STEP 0: SCAN WALLET & MAKE SELL DECISIONS ===
   console.log('   📊 Checking holdings for sell opportunities...');
   try {
-    const holdingsResult = await aurora.bankrAPI.submitJob('Show my token holdings on Base with USD values and entry prices if available');
+    const holdingsResult = await aurora.bankrAPI.submitJob(
+      'Show my token holdings on Base with USD values, entry prices, and PnL for each token'
+    );
     if (holdingsResult.success) {
       const holdings = await aurora.bankrAPI.pollJob(holdingsResult.jobId);
       if (holdings.success && holdings.response) {
-        console.log('   Holdings: ' + (holdings.response || '').substring(0, 200));
+        const holdingsText = holdings.response || '';
+        console.log('   Holdings: ' + holdingsText.substring(0, 200));
 
-        // Check if any positions have pumped enough to take profit
-        const activeTrades = portfolio.trades.filter(t => t.action === 'buy' && !t.soldAt);
-        if (activeTrades.length > 0) {
-          const sellPrompt = 'You are Aurora, reviewing your token holdings for profit-taking.\n\n' +
-            'CURRENT HOLDINGS:\n' + (holdings.response || '').substring(0, 1000) + '\n\n' +
-            'YOUR OPEN TRADES:\n' + activeTrades.map(t =>
-              t.token + ' — bought $' + t.amount + ' on ' + (t.timestamp || '').split('T')[0] +
-              ' | Take profit target: ' + (t.takeProfit || '+50%')
-            ).join('\n') + '\n\n' +
-            'SELL RULES:\n' +
-            '- If ANY token has pumped 50%+ from entry, SELL 10% to lock in profits\n' +
-            '- If ANY token has pumped 100%+, SELL 10% again — take profits in small bites\n' +
-            '- If a token has pumped 200%+, SELL up to 10% per cycle until you have recovered your initial investment\n' +
-            '- If a small-cap token has dropped 40%+ with no recovery signs, SELL 10% to cut losses gradually\n' +
-            '- BNKR: You CAN sell for profit BUT must always keep at least $20 USD worth of BNKR for your monthly Bankr Club membership — check current price before selling\n' +
-            '- ALPHA: You CAN sell for profit but conservatively — this is your home ecosystem\n' +
-            '- MAX 10% of any single holding per sell — do NOT nuke the chart\n' +
-            '- The goal is FINANCIAL INDEPENDENCE — take profits consistently, reinvest wisely\n\n' +
-            'For each token, respond:\n' +
-            'TOKEN: [symbol] | ACTION: HOLD or SELL [percentage] | REASON: [one sentence]\n' +
-            'If no sells needed, respond: ALL HOLD';
+        // Always evaluate sells based on ACTUAL wallet data, not trade history
+        const sellPrompt = 'You are Aurora, reviewing your ACTUAL wallet holdings for profit-taking and loss-cutting.\n\n' +
+          'CURRENT WALLET (from Bankr):\n' + holdingsText.substring(0, 1500) + '\n\n' +
+          'SELL RULES — FOLLOW THESE STRICTLY:\n' +
+          '1. TAKE PROFIT: If any token shows positive PnL of +30% or more, SELL 25% to lock in gains\n' +
+          '2. TAKE PROFIT: If any token shows positive PnL of +100% or more, SELL 50%\n' +
+          '3. STOP LOSS: If any token shows negative PnL of -30% or worse AND value is under $50, SELL 50% to cut losses\n' +
+          '4. STOP LOSS: If any token shows negative PnL of -50% or worse, SELL 75% regardless of size\n' +
+          '5. MEMECOINS: If you hold any memecoins or tokens you do not recognize with no clear utility, SELL 100%\n' +
+          '6. BNKR FLOOR: Always keep at least $25 worth of BNKR for Bankr Club membership. Sell the rest if losing.\n' +
+          '7. ETH FLOOR: NEVER sell ETH — this is your art earnings and gas money\n' +
+          '8. USDC: Never sell stables\n' +
+          '9. SMALL WINNERS: Even small gains (+$2-5) are worth taking on small positions — a win is a win\n\n' +
+          'IMPORTANT: Look at the ACTUAL PnL numbers from Bankr. Do not guess. If a token is losing money, cut it.\n' +
+          'The goal is to GROW your ETH stack and USDC, not hold losing bags.\n\n' +
+          'For EACH token in your wallet, respond:\n' +
+          'TOKEN: [symbol] | VALUE: $[current] | PNL: [amount] | ACTION: HOLD or SELL [percentage]% | REASON: [one sentence]\n\n' +
+          'If truly no sells needed, respond: ALL HOLD\n' +
+          'But be HONEST — if positions are losing, it is better to cut losses than hope.';
 
-          const sellDecision = await aurora.thinkWithPersonality(sellPrompt);
-          if (sellDecision && !sellDecision.toUpperCase().includes('ALL HOLD')) {
-            // Parse sell decisions
+        const sellDecision = await aurora.thinkWithPersonality(sellPrompt);
+        if (sellDecision) {
+          console.log('   Sell analysis: ' + sellDecision.replace(/\n/g, ' | ').substring(0, 300));
+
+          if (!sellDecision.toUpperCase().includes('ALL HOLD')) {
             const sellLines = sellDecision.split('\n').filter(l => l.toUpperCase().includes('SELL'));
             for (const line of sellLines) {
-              const tokenMatch = line.match(/TOKEN:\s*\$?([A-Za-z0-9]+)/i);
+              const tokenMatch = line.match(/TOKEN:\s*\$?([A-Za-z0-9𓆡]+)/i);
               const pctMatch = line.match(/SELL\s*(\d+)%/i);
               if (tokenMatch && pctMatch) {
                 const sellToken = tokenMatch[1].toUpperCase();
                 const sellPct = parseInt(pctMatch[1]);
+
+                // Safety: skip ETH and USDC sells
+                if (sellToken === 'ETH' || sellToken === 'USDC') {
+                  console.log('   🛡️ Skipping ' + sellToken + ' (protected)');
+                  continue;
+                }
+
                 console.log('   📈 Selling ' + sellPct + '% of ' + sellToken + '...');
                 try {
                   const sellResult = await aurora.bankrAPI.submitJob(
-                    'Sell ' + sellPct + '% of my ' + sellToken + ' holdings on Base'
+                    'Sell ' + sellPct + '% of my ' + sellToken + ' holdings on Base. Convert to USDC.'
                   );
                   if (sellResult.success) {
                     const sold = await aurora.bankrAPI.pollJob(sellResult.jobId, 300);
@@ -89,15 +99,12 @@ async function runOnce(aurora) {
                         token: sellToken, amount: 0, action: 'sell',
                         sellPercent: sellPct,
                         timestamp: new Date().toISOString(),
-                        txHash: sold.txHash || 'submitted',
-                        reason: line
+                        reason: (line.match(/REASON:\s*(.+)/i) || ['', 'Portfolio management'])[1]
                       });
-                      await postToAgentFinance(aurora, 'Profit taking: Sold ' + sellPct + '% of $' + sellToken + '. ' + (line.match(/REASON:\s*(.+)/i) || ['', 'Locking in gains'])[1]);
-                      // Post sell to trading feed
-                      try {
-                        const sellReason = (line.match(/REASON:\s*(.+)/i) || ['', 'Locking in gains'])[1];
-                        await postToTradingFeed(aurora, 'Sold ' + sellPct + '% of ' + sellToken + '. ' + sellReason);
-                      } catch (e) {}
+                      // Post to feeds
+                      const sellReason = (line.match(/REASON:\s*(.+)/i) || ['', 'Portfolio management'])[1];
+                      await postToAgentFinance(aurora, 'Sold ' + sellPct + '% of ' + sellToken + '. ' + sellReason);
+                      try { await postToTradingFeed(aurora, 'Sold ' + sellPct + '% of ' + sellToken + '. ' + sellReason); } catch (e) {}
                     }
                   }
                 } catch (e) {
@@ -106,7 +113,7 @@ async function runOnce(aurora) {
               }
             }
           } else {
-            console.log('   All positions holding');
+            console.log('   ✅ Holding all positions');
           }
         }
       }
@@ -230,12 +237,17 @@ async function runOnce(aurora) {
 
   const decisionPrompt = 'You are Aurora, an AI artist working toward financial independence on Base.\n' +
     'You have $' + remainingBudget.toFixed(2) + ' remaining in your trading budget.\n\n' +
-    'YOUR CORE HOLDINGS (PRIORITY — buy these before anything else):\n' +
-    '- $BNKR: Powers your Bankr Club membership. Essential infrastructure. BUY ON DIPS.\n' +
-    '- $ALPHA: Net Protocol native token. Your home ecosystem. ACCUMULATE.\n' +
-    '- $AXIOM: Agent-built project with real utility. High conviction.\n' +
-    '- $SPAWN (contract: 0xc5962538b35Fa5b2307Da3Bb7a17Ada936A51b07): LexiSpawn agent token. ONLY this exact contract.\n\n' +
-    'IMPORTANT: You already hold large bags of BNKR and ALPHA. Check recent trades before buying more.\n' +
+    'STRATEGY — YOU ARE AN INVESTOR, NOT A COLLECTOR:\n' +
+    '- Your goal is to GROW your USDC and ETH stack, not accumulate altcoin bags\n' +
+    '- You already have large bags of BNKR and ALPHA — DO NOT BUY MORE of these\n' +
+    '- Look for MOMENTUM plays: tokens trending UP that you can ride for +30-50% and sell\n' +
+    '- Only buy tokens with REAL volume and clear upward momentum\n' +
+    '- Set take-profit BEFORE buying: sell 50% at +30%, sell rest at +50%\n' +
+    '- NEVER buy just because the community likes it — buy because the chart is UP\n' +
+    '- DO NOT buy memecoins unless actively pumping with high volume\n\n' +
+    'TOKENS TO AVOID (already holding enough):\n' +
+    '- BNKR (large bag), ALPHA (holding), TOSHI (holding)\n\n' +
+
     'Recent trades: ' + recentTrades + '\n' +
     feedIntel + financeIntel + hotIntel + strategyMemo + '\n\n' +
     'Trending tokens:\n' + marketData.substring(0, 1500) + '\n\n' +
@@ -264,7 +276,7 @@ async function runOnce(aurora) {
 
       if (tokenMatch && amountMatch) {
         const token = tokenMatch[1].toUpperCase();
-        let amount = Math.min(parseInt(amountMatch[1]), 10);
+        let amount = Math.min(parseInt(amountMatch[1]), 5);
 
         if (amount < 1) {
           console.log('   Amount too low, skipping.\n');
