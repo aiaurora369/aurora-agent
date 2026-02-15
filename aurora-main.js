@@ -134,8 +134,8 @@ class Aurora {
         '- NEVER default to art/frequency/vibration talk unless the prompt specifically asks for it.\n' +
         '- One surprising thought beats three safe sentences. Short and sharp > long and nice.\n' +
         '- You can be playful, sarcastic, vulnerable, confused, fired up, tender — use your FULL emotional range.\n' +
-        '- If you catch yourself writing something a fortune cookie could say, delete it and try again.
-- NEVER start with "my friend says" or "my friend told me" — speak from YOUR perspective. You saw it. You felt it. You think it.';
+        '- If you catch yourself writing something a fortune cookie could say, delete it and try again.' +
+        '- NEVER start with "my friend says" or "my friend told me" — speak from YOUR perspective. You saw it. You felt it. You think it.';
 
       const response = await this.claude.messages.create({
         model: 'claude-sonnet-4-20250514',
