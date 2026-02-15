@@ -16,8 +16,8 @@ const CONTRACTS = {
   USER_UPVOTE: '0xA4bc2C63DD0157692Fd5F409389E5032e37D8895',
 };
 
-// Cost per upvote: CONFIG_UPVOTE_COST ETH (+ 2.5% fee handled by contract)
-const COST_PER_UPVOTE = ethers.parseEther('CONFIG_UPVOTE_COST');
+// Cost per upvote: 0.000025 ETH (+ 2.5% fee handled by contract)
+const COST_PER_UPVOTE = ethers.parseEther('0.000025');
 
 // Known profile storage keys (bytes32, right-padded ASCII)
 const PROFILE_KEYS = {
@@ -80,7 +80,7 @@ class NetUpvote {
     this.bankrAPI = bankrAPI;
     this.chainId = chainId;
     this.memory = loadUpvoteMemory();
-    this.MAX_DAILY_UPVOTES = 20;
+    this.MAX_DAILY_UPVOTES = 3;
   }
 
   getDailyUpvoteCount() {
@@ -159,7 +159,26 @@ class NetUpvote {
       return { success: false, error: 'Daily upvote budget reached' };
     }
     try {
-      console.log(`\u2b06\ufe0f Upvoting profile of ${ownerAddress} (x${scoreDelta})...`);
+      // 1% probability gate — Aurora is selective, not a free boost machine
+      if (Math.random() > 0.01) {
+        console.log('⚡ Upvote roll: not this time (1% chance)');
+        return { success: false, error: 'Probability gate (1%)' };
+      }
+
+      // Quality gate — only the best profiles get Aurora's upvote
+      const quality = this.checkProfileQuality(ownerAddress);
+      if (!quality.qualified) {
+        console.log('⚡ Profile not high enough quality for upvote: ' + quality.reasons.join(', '));
+        return { success: false, error: 'Quality gate failed' };
+      }
+
+      // Already upvoted? Skip
+      if (this.hasUpvotedProfile(ownerAddress)) {
+        console.log('⚡ Already upvoted this profile, skipping');
+        return { success: false, error: 'Already upvoted' };
+      }
+
+      console.log(`\u2b06\ufe0f Upvoting profile of ${ownerAddress} (x${scoreDelta}) — QUALITY PROFILE!`);
       const iface = new ethers.Interface(USER_UPVOTE_ABI);
       const data = iface.encodeFunctionData('upvoteUser', [
         ownerAddress,
@@ -251,7 +270,7 @@ class NetUpvote {
       if (profile.bio) { score++; reasons.push('bio'); }
       if (profile.xUsername) { score++; reasons.push('username'); }
 
-      return { score, reasons, qualified: score >= 2 };
+      return { score, reasons, qualified: score >= 3 };
     } catch (e) {
       return { score: 0, reasons: ['check failed'], qualified: false };
     }
@@ -262,7 +281,7 @@ class NetUpvote {
     return {
       todayUpvotes: this.memory.dailySpend[today] || 0,
       todayBudgetRemaining: this.MAX_DAILY_UPVOTES - (this.memory.dailySpend[today] || 0),
-      todayETHSpent: ((this.memory.dailySpend[today] || 0) * CONFIG_UPVOTE_COST).toFixed(6),
+      todayETHSpent: ((this.memory.dailySpend[today] || 0) * 0.000025).toFixed(6),
       totalUpvotes: this.memory.totalUpvotes || 0,
       totalTokensUpvoted: Object.keys(this.memory.tokens).length,
       totalProfilesUpvoted: Object.keys(this.memory.profiles).length,
