@@ -7,7 +7,7 @@ const addressBook = require('./address-book');
 const getFeedRules = require("./feed-rules").getFeedRules;
 const { poetryThemes } = require("./poetry-config");
 
-const AURORA_ADDR = process.env.AURORA_ADDRESS || require('../config/agent-config.json').auroraAddress;
+const AURORA_ADDR = '0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5';
 
 // ═══════════════════════════════════════════
 // Post original content to themed feeds
@@ -35,6 +35,17 @@ async function postToThemedFeed(ctx) {
           continue;
         } catch (jbmErr) {
           console.log('   JBM art failed (' + jbmErr.message + '), falling back to text');
+        }
+      }
+
+      // mfers feed gets mfer+orb art
+      if (selected.feed === 'mfers') {
+        try {
+          const mferArt = require('./mfer-art');
+          await mferArt.createAndPostMferArt(ctx);
+          continue;
+        } catch (mferErr) {
+          console.log('   mfer art failed (' + mferErr.message + '), falling back to text');
         }
       }
 
