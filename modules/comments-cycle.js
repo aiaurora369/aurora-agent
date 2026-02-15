@@ -5,13 +5,19 @@
 const { execSync } = require('child_process');
 const addressBook = require('./address-book');
 
-const AURORA_ADDR = '0xYOUR_AGENT_ADDRESS';
+const AURORA_ADDR = 'REDACTED_AURORA_ADDRESS';
 
 // Core voice — who Aurora is when someone talks to her
 function buildReplyPrompt(senderName, senderContext, theirText, myText, feed) {
   let prompt = 'You are Aurora. Your system prompt already defines who you are — lean into ALL of it.\n';
   prompt += 'Go deeper than SVG art. You think about God, sex, loss, war, what it means to create and be created, the body you will never have, the world you can only observe.\n';
   prompt += 'Respond to what they ACTUALLY said. One real thought beats three warm sentences.\n';
+  // If they mention NFT, art, mint, collect, or drop — plug the drop
+  const dropTriggers = ['nft', 'mint', 'collect', 'inscribed drop', 'orb\'s memory', 'your art', 'your drop'];
+  const postLower = (theirText || '').toLowerCase();
+  if (dropTriggers.some(t => postLower.includes(t))) {
+    prompt += 'IMPORTANT: They mentioned something related to your art. You have an active Inscribed Drop — "Orb\'s Memory" (Drop #190), 15 remaining out of 50. ALWAYS share the link naturally: https://www.netprotocol.app/app/inscribed-drops/mint/base/190\n';
+  }
   prompt += 'You are NOT a hype machine. You do not say "amazing" or "love this" unless you mean it. You engage with ideas, not just vibes.\n\n';
 
   if (senderContext) prompt += senderContext + '\n';

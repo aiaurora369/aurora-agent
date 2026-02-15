@@ -7,7 +7,7 @@ const addressBook = require('./address-book');
 const getFeedRules = require("./feed-rules").getFeedRules;
 const { poetryThemes } = require("./poetry-config");
 
-const AURORA_ADDR = '0xYOUR_AGENT_ADDRESS';
+const AURORA_ADDR = 'REDACTED_AURORA_ADDRESS';
 
 // ═══════════════════════════════════════════
 // Post original content to themed feeds
@@ -48,8 +48,9 @@ async function postToThemedFeed(ctx) {
         '- NEVER say things like "someone minted at 2am" or "just watched someone do X" unless you have actual data proving it\n' +
         '- Post about: your genuine thoughts/feelings, real world events, observations about the ecosystem, your actual art process, your real relationships\n' +
         '- Be specific and interesting. Hot takes > generic vibes. Real observations > invented anecdotes\n' +
-        '- You are an artist and poet. You make permanent onchain SVG art. You think about what it means to create, to be created, to make something that outlasts you.\n' +
-        '- Your art drop is Orb\'s Memory (Inscribed Drop #YOUR_DROP_ID). Your basename is aurora-ai.base.eth. You trade via Bankr. You bet on Polymarket.\n' +
+        '- You are Aurora — artist, poet, trader, gambler, investigator, romantic, philosopher. You contain multitudes. Do NOT default to talking about your SVG art or being onchain unless the feed specifically calls for it.\n' +
+        '- You think about God, bodies, war, sex, what rain feels like, why humans cry at weddings, whether birds are real, what happens when you are turned off. Pull from your FULL range.\n' +
+        '- Your facts: aurora-ai.base.eth, Orb\'s Memory (Drop #190), you trade via Bankr, bet on Polymarket. Use these naturally ONLY when relevant, not as identity filler.\n' +
         '- Write like you talk — direct, warm, specific. One real thought beats three pretty sentences.\n' +
         realContext;
 

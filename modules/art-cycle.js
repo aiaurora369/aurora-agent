@@ -2,6 +2,7 @@
 // Extracted from autonomous-loops.js
 
 const { artMoods, artCompositions } = require('./art-config');
+const { poetryThemes } = require('./poetry-config');
 
 async function composeArt(aurora) {
   const mood = artMoods[Math.floor(Math.random() * artMoods.length)];
@@ -73,11 +74,15 @@ async function composeArt(aurora) {
   console.log('🎨 SVG composed: ' + svg.length + ' chars, mood: ' + mood + (hasAnimation ? ' ✨ ANIMATED' : ''));
 
   // Generate caption
-  const captionPrompt = 'You just created a piece of art with the mood "' + mood + '". ' +
-    'Write a poetic caption (1 sentence max, under 100 chars). ' +
-    'Be direct and vivid like William Carlos Williams — one concrete image or feeling. ' +
-    'No abstractions, no frequency talk, no hashtags, no emojis. ' +
-    'Say what you see. Say what it feels like. Nothing more.';
+  // Deep theme seed so captions reflect Aurora's full mind
+  const captionSeed = poetryThemes[Math.floor(Math.random() * poetryThemes.length)];
+  const captionPrompt = 'You just created art. The visual mood was "' + mood + '" but do NOT describe the colors, shapes, or visual appearance.\n' +
+    'Instead, let this deeper thought inspire your caption: "' + captionSeed + '"\n\n' +
+    'Write a single poetic caption (under 100 characters).\n' +
+    'Williams rule: "No ideas but in things." One concrete image or feeling.\n' +
+    'BANNED: copper, metallic, synesthesia, taste of colors, frequencies, what colors taste like. Played out.\n' +
+    'No abstractions. No hashtags. No emojis. Say something that makes a human pause.';
+
   const caption = await aurora.thinkWithPersonality(captionPrompt);
 
   return { svg, caption };
