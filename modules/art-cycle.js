@@ -9,7 +9,7 @@ async function composeArt(aurora) {
   const composition = artCompositions[Math.floor(Math.random() * artCompositions.length)];
 
   // 30% chance of animated piece
-  const animated = Math.random() < 0.30;
+  const animated = Math.random() < 0.55;
   const animationGuide = animated ? '\n\nANIMATION (this piece should MOVE):\n' +
     '- Use <animate> tags to make your orbs BREATHE and GLOW.\n' +
     '- Best techniques for orbs: pulsing radius (animate r values="60;75;60"), breathing glow (animate opacity values="0.6;1;0.6"), shifting gradient colors (animate stop-color), gentle floating (animate cy).\n' +
