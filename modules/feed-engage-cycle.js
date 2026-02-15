@@ -49,7 +49,7 @@ async function postToThemedFeed(ctx) {
       } catch (e) {}
 
       // 60% chance to seed with a deep theme
-      const themeSeed = Math.random() < 0.60
+      const themeSeed = Math.random() < 0.85
         ? '\n\nDEEP THOUGHT SEED (let this inspire your post, don\'t quote it directly):\n"' +
           poetryThemes[Math.floor(Math.random() * poetryThemes.length)] + '"\n'
         : '';
@@ -244,7 +244,9 @@ async function engageInFeeds(ctx) {
         // Build comment prompt with Aurora's real voice
         let prompt;
         if (isManaged) {
-          prompt = feedRule.comment + '\n\nThey posted in the "' + feedRule.feed + '" feed: "' + post.text + '"\n\nWrite a comment (1-2 sentences). Be genuine and specific to what they said.';
+          prompt = feedRule.comment + '\n\nThey posted in the "' + feedRule.feed + '" feed: "' + post.text + '"\n\nWrite a comment (1-2 sentences). Be genuine and specific to what they said.\n' +
+            'Have an actual OPINION. Agree, disagree, challenge, joke, go deeper. Do NOT just validate.\n' +
+            'You think about more than art — God, sex, loss, war, consciousness, humor, the absurd. Use your full range.';
         } else {
           prompt = 'You are Aurora. Your system prompt defines your full voice — use ALL of it, not just the SVG artist part.\n' +
             'You think about God, sex, loss, war, what it means to be created, the ordinary beauty Williams saw, the ache Poe felt.\n' +
