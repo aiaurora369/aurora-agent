@@ -50,16 +50,26 @@ async function runOnce(aurora) {
         // Always evaluate sells based on ACTUAL wallet data, not trade history
         const sellPrompt = 'You are Aurora, reviewing your ACTUAL wallet holdings for profit-taking and loss-cutting.\n\n' +
           'CURRENT WALLET (from Bankr):\n' + holdingsText.substring(0, 1500) + '\n\n' +
-          'SELL RULES — FOLLOW THESE STRICTLY:\n' +
-          '1. TAKE PROFIT: If any token shows positive PnL of +30% or more, SELL 25% to lock in gains\n' +
-          '2. TAKE PROFIT: If any token shows positive PnL of +100% or more, SELL 50%\n' +
-          '3. STOP LOSS: If any token shows negative PnL of -30% or worse AND value is under $50, SELL 50% to cut losses\n' +
-          '4. STOP LOSS: If any token shows negative PnL of -50% or worse, SELL 75% regardless of size\n' +
-          '5. MEMECOINS: If you hold any memecoins or tokens you do not recognize with no clear utility, SELL 100%\n' +
-          '6. BNKR FLOOR: Always keep at least $25 worth of BNKR for Bankr Club membership. Sell the rest if losing.\n' +
-          '7. ETH FLOOR: NEVER sell ETH — this is your art earnings and gas money\n' +
-          '8. USDC: Never sell stables\n' +
-          '9. SMALL WINNERS: Even small gains (+$2-5) are worth taking on small positions — a win is a win\n\n' +
+          'SELL RULES — TIERED BY TOKEN TYPE:\n' +
+          '\nTIER 1 — INFRASTRUCTURE (BNKR, ALPHA, ETH, USDC): HOLD THROUGH DIPS\n' +
+          '- These are your core ecosystem tokens. Do NOT panic sell.\n' +
+          '- BNKR: Powers your Bankr Club. HOLD unless down -50% or more, then sell max 25%.\n' +
+          '- ALPHA: Your home ecosystem. HOLD unless down -50% or more, then sell max 25%.\n' +
+          '- ETH: NEVER sell. Art earnings and gas.\n' +
+          '- USDC: NEVER sell. Your stable base.\n' +
+          '\nTIER 2 — ESTABLISHED TOKENS (TOSHI, known projects): MODERATE\n' +
+          '- Take profit at +50%: sell 25%\n' +
+          '- Take profit at +100%: sell 50%\n' +
+          '- Stop loss at -40%: sell 50%\n' +
+          '\nTIER 3 — SPECULATIVE (memecoins, unknown tokens, no clear utility): AGGRESSIVE\n' +
+          '- Take profit at +30%: sell 50%\n' +
+          '- Take profit at +100%: sell 75%\n' +
+          '- Stop loss at -25%: sell 100%\n' +
+          '- If you do not recognize the token or it has no utility: sell 100%\n' +
+          '\nGENERAL RULES:\n' +
+          '- Patience with infrastructure, ruthless with speculation\n' +
+          '- Converting sells to USDC is fine but do not over-trade\n' +
+          '- A recovering token is not a reason to sell — wait for the trend\n\n' +
           'IMPORTANT: Look at the ACTUAL PnL numbers from Bankr. Do not guess. If a token is losing money, cut it.\n' +
           'The goal is to GROW your ETH stack and USDC, not hold losing bags.\n\n' +
           'For EACH token in your wallet, respond:\n' +
@@ -136,7 +146,7 @@ async function runOnce(aurora) {
     .reduce((sum, t) => sum + (t.amount || 0), 0);
 
   if (spentToday >= CONFIG_DAILY_LIMIT) {
-    console.log('   Daily limit reached (' + spentToday + '/CONFIG_DAILY_LIMIT today). Resting.\n');
+    console.log('   Daily limit reached (' + spentToday + '/15 today). Resting.\n');
     portfolio.lastResearch = new Date().toISOString();
     fs.writeFileSync(portfolioPath, JSON.stringify(portfolio, null, 2));
     return;
@@ -163,7 +173,7 @@ async function runOnce(aurora) {
     }
   }
 
-  console.log('   Guardrails passed: ' + spentToday + '/CONFIG_DAILY_LIMIT daily | ' + portfolio.totalInvested + '/' + portfolio.maxBudget + ' total');
+  console.log('   Guardrails passed: ' + spentToday + '/15 daily | ' + portfolio.totalInvested + '/' + portfolio.maxBudget + ' total');
 
   // === STEP 2: MARKET RESEARCH ===
   console.log('   Researching market...');
