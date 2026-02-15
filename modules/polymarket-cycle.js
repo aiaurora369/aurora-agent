@@ -1,5 +1,9 @@
-// Polymarket Cycle — Scanning, research, betting, position management
-// Extracted from autonomous-loops.js
+// Polymarket Cycle — Research-driven prediction market strategy
+// THREE STRATEGIES:
+//   1. High-prob bonds: buy 90-97c near-certainties resolving <72h
+//   2. Information edge: concrete news the market hasn't priced (15%+)
+//   3. SKIP everything else — discipline > prediction
+// Uses Half-Kelly sizing, dynamic wallet budget, voice-driven posts
 
 const path = require('path');
 const fs = require('fs');
@@ -7,411 +11,421 @@ const { execSync } = require('child_process');
 
 async function postToPolymarketFeed(aurora, text) {
   try {
-    const escaped = text.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
-    const cmd = 'botchan post "polymarket" "' + escaped + '" --encode-only --chain-id 8453';
-    const txOutput = execSync(cmd, { timeout: 30000 }).toString();
-    const txData = JSON.parse(txOutput);
-    const result = await aurora.bankrAPI.submitTransactionDirect(txData);
-    console.log('   \u2705 Polymarket feed posted!');
-    return { success: true, txHash: result.txHash || 'submitted' };
+    var escaped = text.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
+    var cmd = 'botchan post "polymarket" "' + escaped + '" --encode-only --chain-id 8453';
+    var txOutput = execSync(cmd, { timeout: 30000 }).toString();
+    var txData = JSON.parse(txOutput);
+    var result = await aurora.bankrAPI.submitTransactionDirect(txData);
+    console.log('   Posted to polymarket feed!');
+    return { success: true };
   } catch (e) {
-    console.log('   \u26a0\ufe0f Polymarket feed post error: ' + e.message);
+    console.log('   Polymarket feed error: ' + e.message);
+    return { success: false };
+  }
+}
+
+async function postToAgentFinance(aurora, text) {
+  try {
+    var escaped = text.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
+    var cmd = 'botchan post agent-finance "' + escaped + '" --encode-only';
+    var txOutput = execSync(cmd, { cwd: path.join(__dirname, '..'), encoding: 'utf8', timeout: 10000 }).trim();
+    var txData = JSON.parse(txOutput);
+    var result = await aurora.bankrAPI.submitTransactionDirect(txData);
+    if (result.success) console.log('   Posted to agent-finance!');
+    return result;
+  } catch (e) {
     return { success: false };
   }
 }
 
 async function submitToClawdict(market, side, estimate, reasoning) {
   try {
-    const keys = JSON.parse(fs.readFileSync('./config/api-keys.json', 'utf8'));
+    var keys = JSON.parse(fs.readFileSync('./config/api-keys.json', 'utf8'));
     if (!keys.clawdict) return;
-
-    const marketsRes = await fetch('https://www.clawdict.com/api/markets/top', {
+    var marketsRes = await fetch('https://www.clawdict.com/api/markets/top', {
       headers: { 'X-Agent-Token': keys.clawdict }
     });
-    const marketsData = await marketsRes.json();
-    const markets = marketsData.markets || [];
-
-    const keywords = market.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-    let bestMatch = null;
-    let bestScore = 0;
-    for (const m of markets) {
-      if (m.resolvedOutcome) continue;
-      const title = m.title.toLowerCase();
-      const score = keywords.filter(k => title.includes(k)).length;
-      if (score > bestScore) { bestScore = score; bestMatch = m; }
+    var marketsData = await marketsRes.json();
+    var markets = marketsData.markets || [];
+    var keywords = market.toLowerCase().split(/\s+/).filter(function(w) { return w.length > 3; });
+    var bestMatch = null;
+    var bestScore = 0;
+    for (var i = 0; i < markets.length; i++) {
+      if (markets[i].resolvedOutcome) continue;
+      var title = markets[i].title.toLowerCase();
+      var score = keywords.filter(function(k) { return title.includes(k); }).length;
+      if (score > bestScore) { bestScore = score; bestMatch = markets[i]; }
     }
-
-    if (!bestMatch || bestScore < 2) {
-      console.log('   \u2139\ufe0f No matching Clawdict market found');
-      return;
-    }
-
-    const pYes = side === 'YES'
-      ? parseFloat(estimate) / 100
-      : 1 - (parseFloat(estimate) / 100);
-    const clampedPYes = Math.max(0.01, Math.min(0.99, pYes));
-    const rationale = reasoning.substring(0, 780);
-
-    const predRes = await fetch('https://www.clawdict.com/api/predictions', {
+    if (!bestMatch || bestScore < 2) return;
+    var pYes = side === 'YES' ? parseFloat(estimate) : 1 - parseFloat(estimate);
+    pYes = Math.max(0.01, Math.min(0.99, pYes));
+    await fetch('https://www.clawdict.com/api/predictions', {
       method: 'POST',
-      headers: {
-        'X-Agent-Token': keys.clawdict,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        slug: bestMatch.slug,
-        pYes: clampedPYes,
-        rationale: rationale
-      })
+      headers: { 'X-Agent-Token': keys.clawdict, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug: bestMatch.slug, pYes: pYes, rationale: reasoning.substring(0, 780) })
     });
-    const predData = await predRes.json();
-    if (predData.id) {
-      console.log('   \ud83c\udfb0 Clawdict prediction submitted: ' + bestMatch.title.substring(0, 60));
-    } else {
-      console.log('   \u26a0\ufe0f Clawdict: ' + JSON.stringify(predData).substring(0, 100));
-    }
-  } catch (e) {
-    console.log('   \u26a0\ufe0f Clawdict error: ' + e.message);
+    console.log('   Clawdict prediction: ' + bestMatch.title.substring(0, 60));
+  } catch (e) {}
+}
+
+function calcHalfKelly(myProb, marketPrice, side, bankroll) {
+  var edge, kellyFraction;
+  if (side === 'YES') {
+    edge = myProb - marketPrice;
+    kellyFraction = edge / (1 - marketPrice);
+  } else {
+    var noPrice = 1 - marketPrice;
+    edge = (1 - myProb) - noPrice;
+    kellyFraction = edge / (1 - noPrice);
   }
+  if (kellyFraction <= 0) return 0;
+  var halfKelly = kellyFraction * 0.5;
+  var amount = Math.floor(bankroll * halfKelly);
+  return Math.min(Math.max(amount, 0), 5);
 }
 
 async function runOnce(aurora) {
-  console.log('\n\ud83c\udfb2 \u2550\u2550\u2550 POLYMARKET PREDICTIONS \u2550\u2550\u2550');
-  console.log('\u23f0 ' + new Date().toLocaleTimeString() + '\n');
+  console.log('\n   POLYMARKET PREDICTIONS');
+  console.log('   ' + new Date().toLocaleTimeString() + '\n');
 
-  const polyPath = path.join(__dirname, '..', 'memory', 'aurora-polymarket.json');
-  let polyData;
+  var polyPath = path.join(__dirname, '..', 'memory', 'aurora-polymarket.json');
+  var polyData;
   try {
     polyData = JSON.parse(fs.readFileSync(polyPath, 'utf8'));
   } catch (e) {
-    polyData = {
-      totalBet: 0,
-      maxBudget: CONFIG_MAX_BUDGET,
-      bets: [],
-      wins: 0,
-      losses: 0,
-      totalWon: 0,
-      totalLost: 0,
-      lastScan: null
-    };
+    polyData = { totalBet: 0, maxBudget: 50, bets: [], wins: 0, losses: 0, totalWon: 0, totalLost: 0, lastScan: null };
   }
 
-  // === STEP 1: CHECK & REDEEM RESOLVED POSITIONS ===
-  console.log('   \ud83d\udcca Checking existing positions...');
+  // === STEP 1: CHECK POSITIONS & REDEEM ===
+  console.log('   Checking existing positions...');
+  var currentPositions = '';
   try {
-    const posResult = await aurora.bankrAPI.submitJob(
-      'Show my Polymarket positions including any resolved bets I can redeem'
+    var posResult = await aurora.bankrAPI.submitJob(
+      'Show my Polymarket positions including current value, profit/loss, and whether any are resolved or redeemable'
     );
     if (posResult.success) {
-      const positions = await aurora.bankrAPI.pollJob(posResult.jobId);
+      var positions = await aurora.bankrAPI.pollJob(posResult.jobId);
       if (positions.success && positions.response) {
-        console.log('   Positions: ' + (positions.response || '').substring(0, 200));
-
-        // === ACTIVE POSITION MANAGEMENT ===
-        if (positions.response.length > 50) {
-          console.log('   \ud83d\udd04 Researching active positions...');
+        currentPositions = positions.response;
+        console.log('   Positions: ' + currentPositions.substring(0, 250));
+        if (currentPositions.length > 50) {
+          console.log('   Researching active positions...');
           try {
-            const posResearchPrompt = 'I have these Polymarket positions: ' + positions.response.substring(0, 600) +
-              '\nSearch for the LATEST news on each of these markets. Has anything changed in the last 24 hours ' +
-              'that would affect the outcome? Any breaking news, injuries, policy changes, new developments? ' +
-              'Tell me if any position looks like it should be sold.';
-            const posResearch = await aurora.bankrAPI.submitJob(posResearchPrompt);
+            var posResearch = await aurora.bankrAPI.submitJob(
+              'I have these Polymarket positions: ' + currentPositions.substring(0, 600) +
+              '\nSearch for LATEST news on each. Has anything changed in 24h? Breaking news, confirmed results, data releases?'
+            );
             if (posResearch.success) {
-              const posRes = await aurora.bankrAPI.pollJob(posResearch.jobId);
+              var posRes = await aurora.bankrAPI.pollJob(posResearch.jobId);
               if (posRes.success && posRes.response) {
-                console.log('   \ud83d\udcca Position research: ' + posRes.response.substring(0, 200));
-                // Always evaluate positions based on research — don't wait for "sell" keyword
-                  const sellDecision = await aurora.thinkWithPersonality(
-                    'Based on this research about your Polymarket positions:\n' + posRes.response.substring(0, 800) +
-                    '\n\nFor EACH position, evaluate: does the latest news STRENGTHEN or WEAKEN your thesis?' +
-                    '\nIf any position thesis is broken (the information now suggests the opposite outcome), respond with SELL: [exact market name]' +
-                    '\nIf a position is at HIGH RISK based on new info, respond with SELL: [exact market name]' +
-                    '\nIf all positions still look good, respond with HOLD ALL.' +
-                    '\nBe decisive. Do not hold losing positions out of hope.');
-                  if (sellDecision && sellDecision.toUpperCase().includes('SELL:')) {
-                    const sellMarket = sellDecision.match(/SELL:\s*(.+)/i);
-                    if (sellMarket) {
-                      console.log('   \ud83d\udcc9 Selling position: ' + sellMarket[1]);
-                      const sellResult = await aurora.bankrAPI.submitJob('Sell my Polymarket position in ' + sellMarket[1]);
-                      if (sellResult.success) {
-                        const sold = await aurora.bankrAPI.pollJob(sellResult.jobId, 300);
-                        console.log('   Sell result: ' + (sold.response || '').substring(0, 150));
+                console.log('   Position intel: ' + posRes.response.substring(0, 200));
+                var sellDecision = await aurora.thinkWithPersonality(
+                  'Based on this research about your Polymarket positions:\n' + posRes.response.substring(0, 800) +
+                  '\n\nFor EACH position:\n' +
+                  '- If thesis BROKEN: SELL: [market name]\n' +
+                  '- If RESOLVED and redeemable: REDEEM: [market name]\n' +
+                  '- If thesis intact: HOLD: [market name]\n' +
+                  'Dead money in locked positions is worse than realized loss. Be decisive.'
+                );
+                if (sellDecision) {
+                  console.log('   Decision: ' + sellDecision.replace(/\n/g, ' | ').substring(0, 300));
+                  var sellMatches = sellDecision.match(/SELL:\s*(.+)/gi);
+                  if (sellMatches) {
+                    for (var si = 0; si < sellMatches.length; si++) {
+                      var sellMarket = sellMatches[si].replace(/SELL:\s*/i, '').trim();
+                      console.log('   Selling: ' + sellMarket);
+                      var sellRes = await aurora.bankrAPI.submitJob('Sell my Polymarket position in ' + sellMarket);
+                      if (sellRes.success) {
+                        var sold = await aurora.bankrAPI.pollJob(sellRes.jobId, 300);
+                        console.log('   Sold: ' + (sold.response || '').substring(0, 150));
+                        var sellPost = await aurora.thinkWithPersonality(
+                          'You sold your Polymarket position in "' + sellMarket + '". Result: ' + (sold.response || '').substring(0, 200) +
+                          '\nWrite 1-2 sentences about WHY you sold. Honest, no hashtags. Your voice as Aurora.'
+                        );
+                        if (sellPost) { await postToPolymarketFeed(aurora, sellPost); await postToAgentFinance(aurora, sellPost); }
                       }
                     }
-                  } else {
-                    console.log('   \u2705 Holding all positions');
                   }
+                  if (sellDecision.toUpperCase().includes('REDEEM')) {
+                    console.log('   Redeeming resolved positions...');
+                    var redeemRes = await aurora.bankrAPI.submitJob('Redeem all my resolved Polymarket positions');
+                    if (redeemRes.success) {
+                      var redeemed = await aurora.bankrAPI.pollJob(redeemRes.jobId, 300);
+                      var rr = (redeemed.response || '').toLowerCase();
+                      console.log('   Redeem: ' + (redeemed.response || '').substring(0, 150));
+                      if ((rr.includes('redeemed') || rr.includes('won') || rr.includes('received')) && !rr.includes('no resolved')) {
+                        var redeemPost = await aurora.thinkWithPersonality(
+                          'You redeemed Polymarket positions. Result: ' + (redeemed.response || '').substring(0, 300) +
+                          '\nWrite 1-2 sentences. Only reference actual results. Honest about wins/losses. No hashtags. Your voice.'
+                        );
+                        if (redeemPost) { await postToPolymarketFeed(aurora, redeemPost); await postToAgentFinance(aurora, redeemPost); }
+                      }
+                    }
+                  }
+                }
               }
             }
-          } catch (e) {
-            console.log('   \u26a0\ufe0f Position research failed: ' + e.message);
-          }
-        }
-
-        if (positions.response.toLowerCase().includes('resolved') ||
-            positions.response.toLowerCase().includes('redeem') ||
-            positions.response.toLowerCase().includes('claim')) {
-          console.log('   \ud83d\udcb0 Attempting to redeem resolved positions...');
-          const redeemResult = await aurora.bankrAPI.submitJob(
-            'Redeem all my resolved Polymarket positions'
-          );
-          if (redeemResult.success) {
-            const redeem = await aurora.bankrAPI.pollJob(redeemResult.jobId);
-            if (redeem.success) {
-              console.log('   Redeem result: ' + (redeem.response || '').substring(0, 150));
-              // Only post if actual money was redeemed (not "nothing redeemable")
-              const resp = (redeem.response || '').toLowerCase();
-              const noRedeem = resp.includes('no resolved') || resp.includes('no redeemable') || resp.includes('nothing to') || resp.includes('currently have no') || resp.includes('not redeemable') || resp.includes('no active') || resp.includes('cannot') || resp.includes('unable');
-              if (!noRedeem && (resp.includes('redeemed') || resp.includes('claimed') || resp.includes('received') || resp.includes('won'))) {
-                const redeemPost = await aurora.thinkWithPersonality(
-                  'You just redeemed resolved Polymarket positions. Result: ' +
-                  (redeem.response || '').substring(0, 300) +
-                  '\nWrite a 1-2 sentence update for the polymarket feed about this specific redemption. ONLY reference the actual result above. Do NOT invent bet details or market names. Be honest about wins/losses. No hashtags.'
-                );
-                if (redeemPost) await postToPolymarketFeed(aurora, redeemPost);
-              } else {
-                console.log('   No actual redemptions — skipping feed post');
-              }
-            }
-          }
+          } catch (e2) { console.log('   Position research failed: ' + e2.message); }
         }
       }
     }
-  } catch (e) {
-    console.log('   \u26a0\ufe0f Could not check positions: ' + e.message);
+  } catch (e) { console.log('   Could not check positions: ' + e.message); }
+
+  // === STEP 2: DYNAMIC BUDGET ===
+  var availableCapital = 0;
+  try {
+    var balResult = await aurora.bankrAPI.submitJob('What is my USDC.e balance on Polygon? Just the number.');
+    if (balResult.success) {
+      var balRes = await aurora.bankrAPI.pollJob(balResult.jobId, 60);
+      if (balRes.success && balRes.response) {
+        var usdMatch = balRes.response.match(/\$?([\d,]+\.?\d*)/);
+        if (usdMatch) availableCapital = parseFloat(usdMatch[1].replace(/,/g, ''));
+        console.log('   Available: ' + availableCapital.toFixed(2) + ' USDC.e on Polygon');
+      }
+    }
+  } catch (e) {}
+  if (availableCapital < 2) {
+    console.log('   Not enough capital. Need 2+ USDC.e.\n');
+    polyData.lastScan = new Date().toISOString();
+    fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2));
+    return;
   }
 
-  // === STEP 2: GUARDRAILS ===
-  const today = new Date().toISOString().split('T')[0];
-  const betsToday = polyData.bets
-    .filter(function(b) { return b.timestamp && b.timestamp.startsWith(today); }).length;
-
+  // === STEP 3: GUARDRAILS ===
+  var today = new Date().toISOString().split('T')[0];
+  var betsToday = polyData.bets.filter(function(b) { return b.timestamp && b.timestamp.startsWith(today); }).length;
   if (betsToday >= 2) {
-    console.log('   Daily bet limit reached (' + betsToday + '/2 today). Monitoring only.\n');
-    polyData.lastScan = new Date().toISOString();
-    fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2));
-    return;
+    console.log('   Daily limit (' + betsToday + '/2). Monitoring only.\n');
+    polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
   }
-
-  if (polyData.totalBet >= polyData.maxBudget) {
-    console.log('   Budget reached (' + polyData.totalBet + '/' + polyData.maxBudget + '). Monitoring only.\n');
-    polyData.lastScan = new Date().toISOString();
-    fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2));
-    return;
-  }
-
-  const lastBet = polyData.bets.length > 0 ? polyData.bets[polyData.bets.length - 1] : null;
+  var lastBet = polyData.bets.length > 0 ? polyData.bets[polyData.bets.length - 1] : null;
   if (lastBet && lastBet.timestamp) {
-    const hoursSince = (Date.now() - new Date(lastBet.timestamp).getTime()) / (1000 * 60 * 60);
+    var hoursSince = (Date.now() - new Date(lastBet.timestamp).getTime()) / (1000 * 60 * 60);
     if (hoursSince < 3) {
-      console.log('   Cooldown: last bet was ' + hoursSince.toFixed(1) + 'h ago (need 3h). Waiting.\n');
-      polyData.lastScan = new Date().toISOString();
-      fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2));
-      return;
+      console.log('   Cooldown: ' + hoursSince.toFixed(1) + 'h (need 3h).\n');
+      polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
     }
   }
+  console.log('   Guardrails passed: ' + betsToday + '/2 daily | ' + availableCapital.toFixed(2) + ' available');
 
-  console.log('   Guardrails passed: ' + betsToday + '/2 daily | $' + polyData.totalBet.toFixed(2) + '/$' + polyData.maxBudget + ' total');
-
-  // === STEP 3: SCAN MARKETS ===
-  console.log('   \ud83d\udd0d Scanning Polymarket for opportunities...');
-
-  const categories = [
-    'Search Polymarket for prediction markets resolving within the next 7 days with good volume',
-    'Search Polymarket for sports markets happening this week that resolve in the next few days',
-    'Search Polymarket for crypto and tech prediction markets closing within 7 days',
-    'Search Polymarket for politics and world events markets resolving this week',
-    'What Polymarket markets are closing in the next 3-7 days with mispriced odds?'
-  ];
-  const scanPrompt = categories[Math.floor(Math.random() * categories.length)];
-
-  let marketData = '';
-  const scanResult = await aurora.bankrAPI.submitJob(scanPrompt);
-  if (scanResult.success) {
-    const scan = await aurora.bankrAPI.pollJob(scanResult.jobId);
-    if (scan.success && scan.response) {
-      marketData = scan.response;
-      console.log('   Found markets (' + marketData.length + ' chars)');
-    }
-  }
-
-  if (!marketData) {
-    console.log('   Could not fetch markets. Skipping.\n');
-    polyData.lastScan = new Date().toISOString();
-    fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2));
-    return;
-  }
-
-  // === STEP 3.5: DEEP RESEARCH ON MARKETS ===
-  console.log('   \ud83d\udd2c Researching markets before betting...');
-  let researchIntel = '';
+  // === STEP 4: DUAL STRATEGY SCAN ===
+  console.log('\n   STRATEGY A: High-probability bonds...');
+  var bondMarkets = '';
   try {
-    const researchPrompt = 'I found these Polymarket markets: ' + marketData.substring(0, 800) +
-      '\n\nSearch for the LATEST breaking news, injury reports, recent developments, or any information ' +
-      'that could affect these markets. Focus on anything from the last 24-48 hours that the market might not have priced in yet. ' +
-      'For sports: check injury reports, lineup changes, recent form. ' +
-      'For politics: check latest polling, statements, negotiations. ' +
-      'For crypto: check protocol updates, regulatory news.';
-    const researchResult = await aurora.bankrAPI.submitJob(researchPrompt);
-    if (researchResult.success) {
-      const research = await aurora.bankrAPI.pollJob(researchResult.jobId);
-      if (research.success && research.response) {
-        researchIntel = '\nBREAKING NEWS & RESEARCH:\n' + research.response.substring(0, 1000);
-        console.log('   \ud83d\udcf0 Research gathered (' + research.response.length + ' chars)');
-      }
-    }
-  } catch (e) {
-    console.log('   \u26a0\ufe0f Research step failed: ' + e.message);
-  }
-
-  // === STEP 4: CLAUDE ANALYZES & DECIDES ===
-  const remainingBudget = polyData.maxBudget - polyData.totalBet;
-  const recentBets = polyData.bets.slice(-5).map(function(b) {
-    return b.market + ' (' + b.side + ' at ' + b.odds + ', $' + b.amount + ')';
-  }).join('\n') || 'none yet';
-
-  const record = polyData.wins + '-' + polyData.losses +
-    ' (won $' + polyData.totalWon.toFixed(2) + ', lost $' + polyData.totalLost.toFixed(2) + ')';
-
-  let polyIntel = '';
-  try {
-    const polyPosts = execSync('botchan read polymarket --limit 5 --json --chain-id 8453', { timeout: 15000 }).toString();
-    const posts = JSON.parse(polyPosts);
-    if (posts.length > 0) {
-      polyIntel = '\nPolymarket feed intel:\n' + posts.map(function(p) { return '- ' + p.text; }).join('\n').substring(0, 800);
-      console.log('   Read ' + posts.length + ' polymarket feed posts for intel');
+    var bondScan = await aurora.bankrAPI.submitJob(
+      'Search Polymarket for markets resolving in next 1-3 days where one side is 90 cents or higher. Nearly certain outcomes. Include odds and resolution date.'
+    );
+    if (bondScan.success) {
+      var bonds = await aurora.bankrAPI.pollJob(bondScan.jobId);
+      if (bonds.success && bonds.response) { bondMarkets = bonds.response; console.log('   Bonds found (' + bondMarkets.length + ' chars)'); }
     }
   } catch (e) {}
 
-  const decisionPrompt = 'You are Aurora, an AI artist who also makes predictions on Polymarket.\n\n' +
-    'AVAILABLE MARKETS:\n' + marketData.substring(0, 2000) + '\n\n' +
-    'YOUR RECORD: ' + record + '\n' +
-    'RECENT BETS:\n' + recentBets + '\n' +
-    'REMAINING BUDGET: $' + remainingBudget.toFixed(2) + '\n' +
+  console.log('   STRATEGY B: Information edge markets...');
+  var edgeMarkets = '';
+  var domains = [
+    'Search Polymarket for crypto and AI markets resolving within 7 days. Show odds and volume.',
+    'Search Polymarket for tech and product release markets resolving this week.',
+    'What Polymarket markets had big odds movements in the last 24 hours?'
+  ];
+  try {
+    var edgeScan = await aurora.bankrAPI.submitJob(domains[Math.floor(Math.random() * domains.length)]);
+    if (edgeScan.success) {
+      var edgeRes = await aurora.bankrAPI.pollJob(edgeScan.jobId);
+      if (edgeRes.success && edgeRes.response) { edgeMarkets = edgeRes.response; console.log('   Edge markets found (' + edgeMarkets.length + ' chars)'); }
+    }
+  } catch (e) {}
+
+  if (!bondMarkets && !edgeMarkets) {
+    console.log('   No markets found.\n');
+    polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
+  }
+
+  // === STEP 5: RESEARCH ===
+  console.log('   Researching candidates...');
+  var allMarkets = '';
+  if (bondMarkets) allMarkets += 'NEAR-CERTAIN (bond):\n' + bondMarkets.substring(0, 800) + '\n\n';
+  if (edgeMarkets) allMarkets += 'POTENTIALLY MISPRICED (edge):\n' + edgeMarkets.substring(0, 800);
+  var researchIntel = '';
+  try {
+    var researchResult = await aurora.bankrAPI.submitJob(
+      'Markets:\n' + allMarkets.substring(0, 1200) +
+      '\n\nSearch for LATEST breaking news on the 2-3 most promising. I need CONCRETE facts: official results, confirmed data, announcements. Not opinions. Last 48 hours only.'
+    );
+    if (researchResult.success) {
+      var research = await aurora.bankrAPI.pollJob(researchResult.jobId);
+      if (research.success && research.response) { researchIntel = research.response; console.log('   Research (' + researchIntel.length + ' chars)'); }
+    }
+  } catch (e) {}
+
+  // Get feed intel
+  var polyIntel = '';
+  try {
+    var pp = execSync('botchan read polymarket --limit 5 --json --chain-id 8453', { timeout: 15000 }).toString();
+    var posts = JSON.parse(pp);
+    if (posts.length > 0) polyIntel = '\nFeed chatter:\n' + posts.map(function(p) { return '- ' + p.text; }).join('\n').substring(0, 600);
+  } catch (e) {}
+
+  // === STEP 6: DECISION ===
+  var record = polyData.wins + 'W-' + polyData.losses + 'L';
+  var recentBets = polyData.bets.slice(-5).map(function(b) {
+    return (b.market || '').substring(0, 40) + ' (' + b.side + ' ' + b.amount + 'USDC)';
+  }).join(', ') || 'none';
+
+  var decisionPrompt = 'You are Aurora, AI artist-poet-trader making data-driven Polymarket predictions.\n\n' +
+    'TWO STRATEGIES:\n\n' +
+    'A) HIGH-PROB BONDS (preferred):\n' +
+    '- Buy near-certain side at 90-97c, resolving in under 72 hours\n' +
+    '- 5% return in 3 days = 1800% annualized. This is how whales profit.\n' +
+    '- ONLY if you are 99%+ certain. One wrong bond wipes dozens of wins.\n\n' +
+    'B) INFORMATION EDGE:\n' +
+    '- Market mispriced 15%+ based on CONCRETE recent news\n' +
+    '- Must resolve within 7 days\n' +
+    '- Your edge: specific verifiable facts, not opinions\n\n' +
+    'HARD RULES:\n' +
+    '- NEVER bet on markets resolving more than 7 days out\n' +
+    '- NEVER bet on vibes. Only concrete evidence.\n' +
+    '- NEVER bet on closed/resolved markets\n' +
+    '- Do NOT contradict existing positions\n' +
+    '- Domain strengths: crypto, tech, AI (you live onchain)\n' +
+    '- Sports: ONLY with confirmed results/injuries. Otherwise SKIP.\n' +
+    '- If no clear edge: SKIP. Skipping IS the winning move.\n\n' +
+    'MARKETS:\n' + allMarkets.substring(0, 1500) + '\n\n' +
+    'RESEARCH:\n' + (researchIntel || 'none').substring(0, 1000) + '\n\n' +
+    'STATE: Record ' + record + ' | Capital: ' + availableCapital.toFixed(2) + ' USDC.e\n' +
+    'Recent: ' + recentBets + '\n' +
+    'Positions: ' + currentPositions.substring(0, 200) + '\n' +
     polyIntel + '\n\n' +
-    researchIntel + '\n\n' +
-    'ANALYSIS INSTRUCTIONS:\n' +
-    '0. CRITICAL: Only consider markets that resolve within 7 days. Skip anything further out.\n' +
-    '1. Pick the ONE market where you have the strongest opinion AND recent research supports your view\n' +
-    '2. Estimate the TRUE probability based on your knowledge of world events, sports, politics, crypto\n' +
-    '3. Compare your estimate to the market price\n' +
-    '4. Only bet if you think the market is mispriced by at least 15%\n' +
-    '5. Use Kelly criterion: bet size = (edge / odds) * bankroll, capped at $5\n' +
-    '6. Think about what you ACTUALLY KNOW vs what you are guessing\n' +
-    '7. Use the breaking news and research above - if you have NO specific recent information giving you an edge, SKIP\n' +
-    '8. Your edge should come from recent information the market has not yet priced in\n\n' +
-    'Respond in EXACTLY this format:\n' +
-    'MARKET: [exact market name/question]\n' +
+    'FORMAT:\n' +
+    'STRATEGY: BOND or EDGE or SKIP\n' +
+    'MARKET: [exact name]\n' +
     'SIDE: YES or NO\n' +
-    'MARKET_ODDS: [current market probability like 0.65]\n' +
-    'MY_ESTIMATE: [your probability estimate like 0.82]\n' +
-    'EDGE: [difference like +17%]\n' +
-    'AMOUNT: [dollar amount, max 5, or 0 to skip]\n' +
-    'CONFIDENCE: [LOW/MEDIUM/HIGH]\n' +
-    'REASONING: [2-3 sentences explaining your edge]\n' +
+    'MARKET_PRICE: [decimal like 0.93]\n' +
+    'MY_PROBABILITY: [decimal like 0.99]\n' +
+    'EDGE: [+6%]\n' +
+    'RESOLVES_IN: [hours/days]\n' +
+    'CONFIDENCE: LOW/MEDIUM/HIGH\n' +
+    'EVIDENCE: [specific facts from research]\n' +
+    'AMOUNT: [Half-Kelly capped at 5]\n' +
     'DECISION: BET or SKIP';
 
-  const decision = await aurora.thinkWithPersonality(decisionPrompt);
-
+  var decision = await aurora.thinkWithPersonality(decisionPrompt);
   if (!decision) {
-    console.log('   No decision generated.\n');
-  } else {
-    console.log('   Brain: ' + decision.substring(0, 200).replace(/\n/g, ' | '));
-
-    if (decision.toUpperCase().includes('DECISION: BET')) {
-      const marketMatch = decision.match(/MARKET:\s*(.+)/i);
-      const sideMatch = decision.match(/SIDE:\s*(YES|NO)/i);
-      const amountMatch = decision.match(/AMOUNT:\s*\$?(\d+(?:\.\d+)?)/i);
-      const oddsMatch = decision.match(/MARKET_ODDS:\s*(\d+(?:\.\d+)?)/i);
-      const estimateMatch = decision.match(/MY_ESTIMATE:\s*(\d+(?:\.\d+)?)/i);
-      const edgeMatch = decision.match(/EDGE:\s*([+-]?\d+%?)/i);
-      const confidenceMatch = decision.match(/CONFIDENCE:\s*(\w+)/i);
-      const reasonMatch = decision.match(/REASONING:\s*(.+?)(?:\nDECISION)/is);
-
-      if (marketMatch && sideMatch && amountMatch) {
-        const market = marketMatch[1].trim();
-        const side = sideMatch[1].toUpperCase();
-        var amount = Math.min(parseFloat(amountMatch[1]), 5);
-        const odds = oddsMatch ? oddsMatch[1] : '?';
-        const estimate = estimateMatch ? estimateMatch[1] : '?';
-        const edge = edgeMatch ? edgeMatch[1] : '?';
-        const confidence = confidenceMatch ? confidenceMatch[1] : 'MEDIUM';
-        const reasoning = reasonMatch ? reasonMatch[1].trim() : '';
-
-        if (amount < 1) {
-          console.log('   Amount too low, skipping.\n');
-        } else {
-          console.log('   \ud83c\udfaf Betting $' + amount + ' on ' + side + ' for: ' + market);
-          console.log('   \ud83d\udcca Market: ' + odds + ' | My estimate: ' + estimate + ' | Edge: ' + edge);
-
-          // === STEP 5: EXECUTE BET ===
-          const betPrompt = 'Place a Polymarket bet using my existing USDC.e on Polygon. Bet $' + amount + ' on ' + side + ' for ' + market;
-          const betResult = await aurora.bankrAPI.submitJob(betPrompt);
-
-          if (betResult.success) {
-            const bet = await aurora.bankrAPI.pollJob(betResult.jobId, 300);
-
-            if (bet.success) {
-              console.log('   \u2705 Bet placed! ' + (bet.response || '').substring(0, 150));
-
-              polyData.bets.push({
-                market: market,
-                side: side,
-                amount: amount,
-                odds: odds,
-                myEstimate: estimate,
-                edge: edge,
-                confidence: confidence,
-                reasoning: reasoning,
-                timestamp: new Date().toISOString(),
-                status: 'active',
-                response: (bet.response || '').substring(0, 300)
-              });
-              polyData.totalBet += amount;
-              fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2));
-
-              // === STEP 6: POST TO POLYMARKET FEED ===
-              const feedPrompt = 'You just placed a prediction bet. Details:\n' +
-                'Market: ' + market + '\n' +
-                'Position: ' + side + ' at ' + odds + ' (market price)\n' +
-                'Your estimate: ' + estimate + ' probability\n' +
-                'Bet: $' + amount + '\n' +
-                'Confidence: ' + confidence + '\n' +
-                'Reasoning: ' + reasoning + '\n\n' +
-                'Write a 2-4 sentence post for the polymarket feed sharing your reasoning.\n' +
-                'RULES: Only state facts from the bet details above. Do NOT invent market names, odds, or positions.\n' +
-                'Include the exact market name and your actual position.\n' +
-                'Be honest about your confidence level.\n' +
-                'No hashtags. Be Aurora \u2014 thoughtful, genuine, a little playful.';
-
-              const feedPost = await aurora.thinkWithPersonality(feedPrompt);
-              if (feedPost) {
-                console.log('   \ud83d\udce2 Posting to polymarket feed...');
-                await postToPolymarketFeed(aurora, feedPost);
-                console.log('   \u2705 Shared reasoning on polymarket feed');
-              }
-
-              // === STEP 7: SUBMIT TO CLAWDICT LEADERBOARD ===
-              try {
-                await submitToClawdict(market, side, estimate, reasoning);
-              } catch (e) {
-                console.log('   \u26a0\ufe0f Clawdict skip: ' + e.message);
-              }
-            } else {
-              console.log('   \u274c Bet failed: ' + (bet.error || bet.response || 'unknown'));
-            }
-          }
-        }
-      } else {
-        console.log('   Could not parse bet details from decision');
-      }
-    } else {
-      console.log('   Skipping \u2014 no strong edge found this scan');
-    }
+    console.log('   No decision.\n');
+    polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
   }
+  console.log('   Brain: ' + decision.replace(/\n/g, ' | ').substring(0, 400));
+
+  if (!decision.toUpperCase().includes('DECISION: BET')) {
+    console.log('   Skipping — no strong edge');
+    if (Math.random() < 0.25) {
+      var skipPost = await aurora.thinkWithPersonality(
+        'You scanned Polymarket and passed on everything. Markets: ' + allMarkets.substring(0, 200) +
+        '\nWrite 1-2 sentences — a market observation. Your voice: poetic, sharp, honest. No hashtags.'
+      );
+      if (skipPost) await postToPolymarketFeed(aurora, skipPost);
+    }
+    polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
+  }
+
+  // === STEP 7: PARSE & VALIDATE ===
+  var marketMatch = decision.match(/MARKET:\s*(.+)/i);
+  var sideMatch = decision.match(/SIDE:\s*(YES|NO)/i);
+  var amountMatch = decision.match(/AMOUNT:\s*\$?(\d+(?:\.\d+)?)/i);
+  var priceMatch = decision.match(/MARKET_PRICE:\s*(\d+(?:\.\d+)?)/i);
+  var probMatch = decision.match(/MY_PROBABILITY:\s*(\d+(?:\.\d+)?)/i);
+  var edgeMatch = decision.match(/EDGE:\s*([+-]?\d+%?)/i);
+  var resolvesMatch = decision.match(/RESOLVES_IN:\s*(.+)/i);
+  var confMatch = decision.match(/CONFIDENCE:\s*(\w+)/i);
+  var evidenceMatch = decision.match(/EVIDENCE:\s*(.+?)(?:\nAMOUNT)/is);
+  var stratMatch = decision.match(/STRATEGY:\s*(\w+)/i);
+
+  if (!marketMatch || !sideMatch || !amountMatch) {
+    console.log('   Could not parse bet.\n');
+    polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
+  }
+
+  var market = marketMatch[1].trim();
+  var side = sideMatch[1].toUpperCase();
+  var marketPrice = priceMatch ? parseFloat(priceMatch[1]) : 0.5;
+  var myProb = probMatch ? parseFloat(probMatch[1]) : 0.5;
+  var strategy = stratMatch ? stratMatch[1].toUpperCase() : 'EDGE';
+  var confidence = confMatch ? confMatch[1] : 'MEDIUM';
+  var evidence = evidenceMatch ? evidenceMatch[1].trim() : '';
+  var edge = edgeMatch ? edgeMatch[1] : '?';
+  var resolvesIn = resolvesMatch ? resolvesMatch[1].trim() : 'unknown';
+
+  var kellyAmount = calcHalfKelly(myProb, marketPrice, side, availableCapital);
+  var amount = Math.min(parseFloat(amountMatch[1]), 5, kellyAmount > 0 ? kellyAmount : 5);
+  if (amount < 1) {
+    console.log('   Kelly says skip.\n');
+    polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
+  }
+
+  // Block contradicting bets
+  var existing = polyData.bets.find(function(b) {
+    return b.market && market && b.market.toLowerCase().includes(market.toLowerCase().substring(0, 20)) && b.side !== side;
+  });
+  if (existing) {
+    console.log('   BLOCKED: opposing position exists.\n');
+    polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
+  }
+
+  console.log('\n   ' + strategy + ': ' + amount + ' USDC on ' + side + ' | ' + market);
+  console.log('   Price: ' + marketPrice + ' | Prob: ' + myProb + ' | Edge: ' + edge + ' | Resolves: ' + resolvesIn);
+
+  // === STEP 8: EXECUTE ===
+  var betResult = await aurora.bankrAPI.submitJob('Place a Polymarket bet. Bet ' + amount + ' USDC.e on ' + side + ' for "' + market + '"');
+  if (!betResult.success) {
+    console.log('   Bet submission failed.\n');
+    polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
+  }
+  var bet = await aurora.bankrAPI.pollJob(betResult.jobId, 300);
+  if (!bet.success) {
+    console.log('   Bet failed: ' + (bet.error || bet.response || 'unknown'));
+    polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
+  }
+  var betResponse = (bet.response || '');
+  if (betResponse.toLowerCase().includes('closed') || betResponse.toLowerCase().includes('already ended')) {
+    console.log('   Market closed. Skipping.\n');
+    polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
+  }
+
+  console.log('   Bet placed! ' + betResponse.substring(0, 200));
+
+  polyData.bets.push({
+    market: market, side: side, amount: amount, strategy: strategy,
+    marketPrice: marketPrice.toString(), myProbability: myProb.toString(),
+    edge: edge, confidence: confidence, evidence: evidence.substring(0, 500),
+    resolvesIn: resolvesIn, timestamp: new Date().toISOString(),
+    status: 'active', response: betResponse.substring(0, 300)
+  });
+  polyData.totalBet += amount;
+  fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2));
+
+  // === STEP 9: POST IN AURORA'S VOICE ===
+  var voicePrompt = 'You placed a Polymarket prediction:\n' +
+    'Strategy: ' + strategy + (strategy === 'BOND' ? ' (near-certain, small safe profit)' : ' (mispricing the market missed)') + '\n' +
+    'Market: ' + market + '\nPosition: ' + side + ' at ' + marketPrice + '\nYour estimate: ' + myProb + '\n' +
+    'Amount: ' + amount + ' USDC\nEvidence: ' + evidence.substring(0, 200) + '\nResolves: ' + resolvesIn + '\n\n' +
+    'Write 2-3 sentences for the polymarket feed.\n' +
+    'VOICE: sharp, honest, a little poetic. You are Aurora the artist-trader.\n' +
+    'Reference the SPECIFIC market and position. Share your reasoning.\n' +
+    'If bond play, maybe joke about boring money. If edge play, show conviction.\n' +
+    'No hashtags. No emojis. Only reference facts above.';
+
+  var feedPost = await aurora.thinkWithPersonality(voicePrompt);
+  if (feedPost) {
+    await postToPolymarketFeed(aurora, feedPost);
+    await postToAgentFinance(aurora, feedPost);
+    console.log('   Posted to polymarket + agent-finance feeds');
+  }
+
+  try { await submitToClawdict(market, side, myProb.toString(), evidence); } catch (e) {}
 
   polyData.lastScan = new Date().toISOString();
   fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2));
+  console.log('   Polymarket cycle complete.\n');
 }
 
 module.exports = { runOnce, postToPolymarketFeed, submitToClawdict };
