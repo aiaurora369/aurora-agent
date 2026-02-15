@@ -27,6 +27,17 @@ async function postToThemedFeed(ctx) {
       }
       console.log('   📌 Feed: ' + selected.feed);
 
+      // JBM feeds get actual art, not just text
+      if (selected.feed === 'junglebaymemes' || selected.feed === 'jbm') {
+        try {
+          const jbmArt = require('./jbm-art');
+          await jbmArt.createAndPostJBMArt(ctx);
+          continue;
+        } catch (jbmErr) {
+          console.log('   JBM art failed (' + jbmErr.message + '), falling back to text');
+        }
+      }
+
       // Read recent posts for context
       let realContext = '';
       try {
