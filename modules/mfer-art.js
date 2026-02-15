@@ -263,7 +263,7 @@ Respond with ONLY the caption text.`;
     console.log(`   📌 Posting to: ${feed}`);
 
     const postText = caption.trim();
-    const cmd = `botchan post "${feed}" "${postText.replace(/"/g, '\\"')}" --data '${art.svg.replace(/'/g, "\\'")}' --chain-id 8453`;
+    const cmd = `botchan post "${feed}" "${postText.replace(/"/g, '\\"')}" --data '${art.svg.replace(/'/g, "\\'")}' --encode-only --chain-id 8453`;
 
     try {
       const result = execSync(cmd, { timeout: 30000, maxBuffer: 1024 * 1024 * 5 }).toString();
