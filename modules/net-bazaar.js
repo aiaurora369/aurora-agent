@@ -9,7 +9,7 @@ class NetBazaar {
   constructor(bankrApiKey) {
     this.apiKey = bankrApiKey;
     this.baseURL = 'api.bankr.bot';
-    this.auroraAddress = 'REDACTED_AURORA_ADDRESS';
+    this.auroraAddress = '0xYOUR_AGENT_ADDRESS';
   }
 
   // ═══════════════════════════════════════════

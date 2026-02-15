@@ -86,7 +86,7 @@ async function runOnce(aurora) {
   } catch (e) {
     polyData = {
       totalBet: 0,
-      maxBudget: 30,
+      maxBudget: CONFIG_MAX_BUDGET,
       bets: [],
       wins: 0,
       losses: 0,

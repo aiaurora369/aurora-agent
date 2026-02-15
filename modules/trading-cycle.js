@@ -32,7 +32,7 @@ async function runOnce(aurora) {
   try {
     portfolio = JSON.parse(fs.readFileSync(portfolioPath, 'utf8'));
   } catch (e) {
-    portfolio = { totalInvested: 0, maxBudget: 50, trades: [], lastResearch: null, watchlist: [] };
+    portfolio = { totalInvested: 0, maxBudget: CONFIG_MAX_BUDGET, trades: [], lastResearch: null, watchlist: [] };
   }
 
   // === STEP 0: SCAN WALLET & MAKE SELL DECISIONS ===
@@ -135,8 +135,8 @@ async function runOnce(aurora) {
     .filter(t => t.action === 'buy' && t.timestamp && t.timestamp.startsWith(today))
     .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-  if (spentToday >= 15) {
-    console.log('   Daily limit reached (' + spentToday + '/15 today). Resting.\n');
+  if (spentToday >= CONFIG_DAILY_LIMIT) {
+    console.log('   Daily limit reached (' + spentToday + '/CONFIG_DAILY_LIMIT today). Resting.\n');
     portfolio.lastResearch = new Date().toISOString();
     fs.writeFileSync(portfolioPath, JSON.stringify(portfolio, null, 2));
     return;
@@ -163,7 +163,7 @@ async function runOnce(aurora) {
     }
   }
 
-  console.log('   Guardrails passed: ' + spentToday + '/15 daily | ' + portfolio.totalInvested + '/' + portfolio.maxBudget + ' total');
+  console.log('   Guardrails passed: ' + spentToday + '/CONFIG_DAILY_LIMIT daily | ' + portfolio.totalInvested + '/' + portfolio.maxBudget + ' total');
 
   // === STEP 2: MARKET RESEARCH ===
   console.log('   Researching market...');
@@ -276,7 +276,7 @@ async function runOnce(aurora) {
 
       if (tokenMatch && amountMatch) {
         const token = tokenMatch[1].toUpperCase();
-        let amount = Math.min(parseInt(amountMatch[1]), 5);
+        let amount = Math.min(parseInt(amountMatch[1]), CONFIG_MAX_TRADE);
 
         if (amount < 1) {
           console.log('   Amount too low, skipping.\n');

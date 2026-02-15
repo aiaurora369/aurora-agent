@@ -149,3 +149,5 @@ memory/*.json
 # Any env files
 .env
 .env.*
+
+*.json.bak

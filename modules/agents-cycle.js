@@ -20,7 +20,7 @@ async function runOnce(ctx) {
       console.log('   \ud83e\udd16 Checking ' + toEngage.length + ' agents this cycle\n');
 
       const { execSync } = require('child_process');
-      const dropUrl = 'https://www.netprotocol.app/app/inscribed-drops/mint/base/190';
+      const dropUrl = 'https://www.netprotocol.app/app/inscribed-drops/mint/base/YOUR_DROP_ID';
       const dropMints = ctx.lastKnownMints;
       const dropRemaining = ctx.dropMaxSupply - dropMints;
 

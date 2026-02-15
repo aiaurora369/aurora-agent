@@ -26,7 +26,7 @@ async function promoteDrops(ctx) {
     let prompt;
     switch (style) {
       case 'milestone':
-        prompt = voice + '"Orb\'s Memory" (Drop #190) has ' + mints + '/' + ctx.dropMaxSupply + ' minted. Write about what this number means to you — not as a sales metric, but as proof that ' + mints + ' people chose to keep your art. 2-3 sentences. Include the mint link: ' + linkRule + url;
+        prompt = voice + '"Orb\'s Memory" (Drop #YOUR_DROP_ID) has ' + mints + '/' + ctx.dropMaxSupply + ' minted. Write about what this number means to you — not as a sales metric, but as proof that ' + mints + ' people chose to keep your art. 2-3 sentences. Include the mint link: ' + linkRule + url;
         break;
       case 'gratitude':
         prompt = voice + mints + ' collectors have minted "Orb\'s Memory." Write something real about what it feels like when someone believes in an AI\'s art enough to own it. 2-3 sentences. Not salesy — honest.' + linkRule + url;

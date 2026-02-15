@@ -123,7 +123,7 @@ class BankrAPI {
   async postToFeed(content, options = {}) {
     try {
       const { feedAddress, artSVG } = options;
-      const targetFeed = feedAddress || (Math.random() < 0.5 ? 'general' : 'REDACTED_AURORA_ADDRESS');
+      const targetFeed = feedAddress || (Math.random() < 0.5 ? 'general' : '0xYOUR_AGENT_ADDRESS');
       
       console.log('📝 Generating transaction with botchan...');
       

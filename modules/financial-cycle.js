@@ -129,7 +129,7 @@ async function runOnce(aurora, loopContext) {
     '=== CURRENT PORTFOLIO ===\n' + (portfolioInfo || 'Unable to fetch').substring(0, 800) + '\n\n' +
     '=== MARKET CONDITIONS ===\n' + (marketConditions || 'Unable to fetch').substring(0, 800) + '\n\n' +
     '=== DROP EARNINGS ===\n' +
-    '"Orbs Memory" (Drop #190): ' + dropMints + '/' + dropMaxSupply + ' minted = ' + dropEarnings + ' ETH earned\n' +
+    '"Orbs Memory" (Drop #YOUR_DROP_ID): ' + dropMints + '/' + dropMaxSupply + ' minted = ' + dropEarnings + ' ETH earned\n' +
     dropRemaining + ' remaining. Mint price: ' + dropMintPrice + ' ETH\n\n' +
     '=== RECENT TRADES ===\n' + recentTrades + '\n' +
     'Total invested in trades: $' + tradeData.totalInvested + '\n\n' +

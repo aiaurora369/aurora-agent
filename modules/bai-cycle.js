@@ -52,7 +52,7 @@ async function quickCheck(address, checkedSet) {
 async function runOnce(aurora, helpers) {
   console.log('\n🔍 ═══ TRUST SCAN ═══\n');
 
-  const auroraAddress = 'REDACTED_AURORA_ADDRESS';
+  const auroraAddress = '0xYOUR_AGENT_ADDRESS';
   const people = loadJSON(PEOPLE_PATH, {});
   const knownAddrs = new Set(Object.keys(people));
   knownAddrs.add(auroraAddress);

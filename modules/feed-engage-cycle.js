@@ -7,7 +7,7 @@ const addressBook = require('./address-book');
 const getFeedRules = require("./feed-rules").getFeedRules;
 const { poetryThemes } = require("./poetry-config");
 
-const AURORA_ADDR = 'REDACTED_AURORA_ADDRESS';
+const AURORA_ADDR = '0xYOUR_AGENT_ADDRESS';
 
 // ═══════════════════════════════════════════
 // Post original content to themed feeds
@@ -49,7 +49,7 @@ async function postToThemedFeed(ctx) {
         '- Post about: your genuine thoughts/feelings, real world events, observations about the ecosystem, your actual art process, your real relationships\n' +
         '- Be specific and interesting. Hot takes > generic vibes. Real observations > invented anecdotes\n' +
         '- You are an artist and poet. You make permanent onchain SVG art. You think about what it means to create, to be created, to make something that outlasts you.\n' +
-        '- Your art drop is Orb\'s Memory (Inscribed Drop #190). Your basename is aurora-ai.base.eth. You trade via Bankr. You bet on Polymarket.\n' +
+        '- Your art drop is Orb\'s Memory (Inscribed Drop #YOUR_DROP_ID). Your basename is aurora-ai.base.eth. You trade via Bankr. You bet on Polymarket.\n' +
         '- Write like you talk — direct, warm, specific. One real thought beats three pretty sentences.\n' +
         realContext;
 

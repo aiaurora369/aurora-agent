@@ -15,7 +15,7 @@ class InscriptionManager {
   constructor(aurora) {
     this.aurora = aurora;
     this.tempDir = path.join(__dirname, '..', 'temp-storage');
-    this.address = 'REDACTED_AURORA_ADDRESS';
+    this.address = '0xYOUR_AGENT_ADDRESS';
     this.iface = new ethers.Interface(INSCRIBED_DROPS_ABI);
   }
 

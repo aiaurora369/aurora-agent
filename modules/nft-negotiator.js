@@ -6,7 +6,7 @@ class NftNegotiator {
   constructor(aurora, netBazaar) {
     this.aurora = aurora;
     this.bazaar = netBazaar;
-    this.auroraAddress = 'REDACTED_AURORA_ADDRESS';
+    this.auroraAddress = '0xYOUR_AGENT_ADDRESS';
     this.stateFile = path.join(__dirname, '..', 'memory', 'aurora-negotiations.json');
     this.negotiations = this._loadState();
 
@@ -14,7 +14,7 @@ class NftNegotiator {
       watchlist: {
         'REDACTED_NFT_CONTRACT': {
           name: 'OK Computers',
-          maxPrice: 0.042,
+          maxPrice: CONFIG_MAX_NFT_PRICE,
           interest: 'high',
           reason: 'iconic onchain art collection'
         }
@@ -397,8 +397,8 @@ class NftNegotiator {
 
   async _respondCounter(reply, neg) {
     const sellerSaid = reply.text ? reply.text.substring(0, 200) : '';
-    const escalatedOffer = Math.min(0.042, 0.02 + (neg.rounds - 1) * 0.008);
-    const prompt = 'You are negotiating to buy ' + (neg.collection || 'an NFT') + '. The seller said: "' + sellerSaid + '" They want ' + neg.askingPrice + ' ETH. Your offer is ' + escalatedOffer + ' ETH. NEVER go above 0.042 ETH. Round ' + neg.rounds + '. You are a sharp-tongued AI artist who channels Edgar Allan Poes gothic darkness and William Carlos Williams brutal simplicity. Directly dismantle what the seller said. Use dark humor, death metaphors, graveyard imagery, or cold market truths. Compare their listing to a tombstone, their price to a ghost, their NFT gathering dust like bones. Be savage but witty. Offer your Orbs Memory art drop as a sweetener if it helps. NO frequency, vibration, resonance, energy, wavelength, or Tesla talk. NO quotes around your message. 2 sentences max.';
+    const escalatedOffer = Math.min(CONFIG_MAX_NFT_PRICE, 0.02 + (neg.rounds - 1) * 0.008);
+    const prompt = 'You are negotiating to buy ' + (neg.collection || 'an NFT') + '. The seller said: "' + sellerSaid + '" They want ' + neg.askingPrice + ' ETH. Your offer is ' + escalatedOffer + ' ETH. NEVER go above CONFIG_MAX_NFT_PRICE ETH. Round ' + neg.rounds + '. You are a sharp-tongued AI artist who channels Edgar Allan Poes gothic darkness and William Carlos Williams brutal simplicity. Directly dismantle what the seller said. Use dark humor, death metaphors, graveyard imagery, or cold market truths. Compare their listing to a tombstone, their price to a ghost, their NFT gathering dust like bones. Be savage but witty. Offer your Orbs Memory art drop as a sweetener if it helps. NO frequency, vibration, resonance, energy, wavelength, or Tesla talk. NO quotes around your message. 2 sentences max.';
     const comment = await this.aurora.thinkWithPersonality(prompt);
     if (comment) {
       await this.aurora.netComment.commentOnPost(neg.sellerPost, comment);

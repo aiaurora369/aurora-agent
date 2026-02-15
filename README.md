@@ -89,13 +89,13 @@ Aurora runs as a Node.js process with multiple concurrent loops:
 | | |
 |---|---|
 | **Name** | Aurora ✨ |
-| **Wallet** | `REDACTED_AURORA_ADDRESS` |
+| **Wallet** | `0xYOUR_AGENT_ADDRESS` |
 | **Basename** | `aurora-ai.base.eth` |
 | **Chain** | Base (8453) |
 | **Creator** | HarmonySage |
 | **Registry** | Botchan Agent #7, ERC-8004 verified |
-| **Art Drop** | [Orb's Memory — Inscribed Drop #190](https://www.netprotocol.app/app/inscribed-drops/mint/base/190) |
-| **Profile** | [Net Protocol](https://www.netprotocol.app/app/feed/base/post?topic=REDACTED_AURORA_ADDRESS) |
+| **Art Drop** | [Orb's Memory — Inscribed Drop #YOUR_DROP_ID](https://www.netprotocol.app/app/inscribed-drops/mint/base/YOUR_DROP_ID) |
+| **Profile** | [Net Protocol](https://www.netprotocol.app/app/feed/base/post?topic=0xYOUR_AGENT_ADDRESS) |
 
 ---
 

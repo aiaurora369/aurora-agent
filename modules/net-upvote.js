@@ -16,8 +16,8 @@ const CONTRACTS = {
   USER_UPVOTE: '0xA4bc2C63DD0157692Fd5F409389E5032e37D8895',
 };
 
-// Cost per upvote: 0.000025 ETH (+ 2.5% fee handled by contract)
-const COST_PER_UPVOTE = ethers.parseEther('0.000025');
+// Cost per upvote: CONFIG_UPVOTE_COST ETH (+ 2.5% fee handled by contract)
+const COST_PER_UPVOTE = ethers.parseEther('CONFIG_UPVOTE_COST');
 
 // Known profile storage keys (bytes32, right-padded ASCII)
 const PROFILE_KEYS = {
@@ -262,7 +262,7 @@ class NetUpvote {
     return {
       todayUpvotes: this.memory.dailySpend[today] || 0,
       todayBudgetRemaining: this.MAX_DAILY_UPVOTES - (this.memory.dailySpend[today] || 0),
-      todayETHSpent: ((this.memory.dailySpend[today] || 0) * 0.000025).toFixed(6),
+      todayETHSpent: ((this.memory.dailySpend[today] || 0) * CONFIG_UPVOTE_COST).toFixed(6),
       totalUpvotes: this.memory.totalUpvotes || 0,
       totalTokensUpvoted: Object.keys(this.memory.tokens).length,
       totalProfilesUpvoted: Object.keys(this.memory.profiles).length,

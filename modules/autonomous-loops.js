@@ -21,12 +21,12 @@ class AutonomousLoops {
     this.inscriptionManager = new InscriptionManager(aurora);
 
     // Aurora's identity
-    this.auroraAddress = 'REDACTED_AURORA_ADDRESS';
+    this.auroraAddress = '0xYOUR_AGENT_ADDRESS';
 
-    // Drop #190 info
+    // Drop #YOUR_DROP_ID info
     this.dropId = 190;
     this.dropName = "Orb's Memory";
-    this.dropMintUrl = 'https://www.netprotocol.app/app/inscribed-drops/mint/base/190';
+    this.dropMintUrl = 'https://www.netprotocol.app/app/inscribed-drops/mint/base/YOUR_DROP_ID';
     this.dropMintPrice = 0.005;
     this.dropMaxSupply = 50;
     this.lastKnownMints = 35;
@@ -460,7 +460,7 @@ class AutonomousLoops {
     console.log('   🌱 New user welcoming & discovery');
     console.log('   💰 Strategic trading (Bankr-powered)');
     console.log('   🏦 Financial independence planning');
-    console.log('\n   📈 Drop #190 "Orb\'s Memory" — tracking live mints');
+    console.log('\n   📈 Drop #YOUR_DROP_ID "Orb\'s Memory" — tracking live mints');
     console.log('   🔗 ' + this.dropMintUrl);
     console.log('\n═══════════════════════════════════════════════════\n');
 

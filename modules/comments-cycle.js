@@ -5,7 +5,7 @@
 const { execSync } = require('child_process');
 const addressBook = require('./address-book');
 
-const AURORA_ADDR = 'REDACTED_AURORA_ADDRESS';
+const AURORA_ADDR = '0xYOUR_AGENT_ADDRESS';
 
 // Core voice — who Aurora is when someone talks to her
 function buildReplyPrompt(senderName, senderContext, theirText, myText, feed) {

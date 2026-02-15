@@ -21,7 +21,7 @@ async function runOnce(aurora, helpers) {
   console.log('⏰ Time: ' + new Date().toLocaleTimeString() + '\n');
 
   const feed = await aurora.feedReader.readGeneralFeed(40);
-  const auroraAddress = aurora.walletAddress || 'REDACTED_AURORA_ADDRESS';
+  const auroraAddress = aurora.walletAddress || '0xYOUR_AGENT_ADDRESS';
 
   const learningPosts = feed.filter(post => {
     if (post.sender && post.sender.toLowerCase() === auroraAddress) return false;
