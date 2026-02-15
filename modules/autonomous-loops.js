@@ -21,7 +21,7 @@ class AutonomousLoops {
     this.inscriptionManager = new InscriptionManager(aurora);
 
     // Aurora's identity
-    this.auroraAddress = 'REDACTED_AURORA_ADDRESS';
+    this.auroraAddress = 'process.env.AURORA_ADDRESS || require('./config/agent-config.json').auroraAddress';
 
     // Drop #190 info
     this.dropId = 190;

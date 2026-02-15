@@ -151,3 +151,4 @@ memory/*.json
 .env.*
 
 *.json.bak
+config/agent-config.json

@@ -7,7 +7,7 @@ const addressBook = require('./address-book');
 const getFeedRules = require("./feed-rules").getFeedRules;
 const { poetryThemes } = require("./poetry-config");
 
-const AURORA_ADDR = 'REDACTED_AURORA_ADDRESS';
+const AURORA_ADDR = process.env.AURORA_ADDRESS || require('../config/agent-config.json').auroraAddress;
 
 // ═══════════════════════════════════════════
 // Post original content to themed feeds

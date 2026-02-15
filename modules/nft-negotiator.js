@@ -12,7 +12,7 @@ class NftNegotiator {
 
     this.preferences = {
       watchlist: {
-        'REDACTED_NFT_CONTRACT': {
+        process.env.NFT_CONTRACT || require('../config/agent-config.json').nftContract: {
           name: 'OK Computers',
           maxPrice: CONFIG_MAX_NFT_PRICE,
           interest: 'high',
@@ -80,7 +80,7 @@ class NftNegotiator {
     const lower = text.toLowerCase();
     if (lower.includes('ok computer')) {
       details.collection = 'OK Computers';
-      details.nftAddress = 'REDACTED_NFT_CONTRACT';
+      details.nftAddress = process.env.NFT_CONTRACT || require('../config/agent-config.json').nftContract;
     }
 
     const urlMatch = text.match(/https?:\/\/(?:www\.)?netprotocol\.app\/app\/bazaar\/base\/(0x[a-fA-F0-9]{40})/i);

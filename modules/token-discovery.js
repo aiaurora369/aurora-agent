@@ -6,7 +6,7 @@ class TokenDiscovery {
         symbol: 'ALPHA',
         name: 'Alpha',
         description: 'NET Protocol official memecoin',
-        address: 'REDACTED_TOKEN_ADDRESS',
+        address: process.env.TOKEN_ADDRESS || require('../config/agent-config.json').watchToken,
         priority: 'high',
         network: 'Base'
       }
