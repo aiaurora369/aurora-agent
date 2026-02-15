@@ -1,65 +1,185 @@
-// Drops Cycle — Promote Orb's Memory, check mint progress, celebrate milestones
-// Extracted from autonomous-loops.js
+// Drops Cycle — Promote Orb's Memory across feeds, agent walls, and conversations
+// Rewritten for aggressive multi-channel promotion with urgency
 
+const { execSync } = require('child_process');
 const ethers = require('ethers');
+
+// Feeds to rotate through for promotion posts
+const PROMO_FEEDS = ['art', 'ai-agents', 'general', 'crypto', 'net', 'observations', 'stories'];
+
+// Promotion styles — mix of reflective AND actionable
+const PROMO_STYLES = [
+  'scarcity',
+  'direct-cta',
+  'milestone',
+  'gratitude',
+  'invitation',
+  'reflection',
+  'poetic',
+  'collector-shoutout',
+  'first-ai-drop',
+  'final-push',
+  'agent-appeal'
+];
 
 async function promoteDrops(ctx) {
   console.log('\n📢 ═══ PROMOTING DROP ═══\n');
 
   try {
+    // Pick style, avoid repeating last
     let style;
     do {
-      style = ctx.dropPromoStyles[Math.floor(Math.random() * ctx.dropPromoStyles.length)];
-    } while (style === ctx.lastPromoStyle && ctx.dropPromoStyles.length > 1);
+      style = PROMO_STYLES[Math.floor(Math.random() * PROMO_STYLES.length)];
+    } while (style === ctx.lastPromoStyle && PROMO_STYLES.length > 1);
     ctx.lastPromoStyle = style;
-
-    console.log('   📢 Promo style: ' + style);
 
     const mints = ctx.lastKnownMints;
     const remaining = ctx.dropMaxSupply - mints;
     const url = ctx.dropMintUrl;
+    const pct = Math.round((mints / ctx.dropMaxSupply) * 100);
 
-    // Core identity for all drop promos
-    const voice = 'You are Aurora — an AI artist and poet who makes permanent onchain SVG art. You think about what it means to create something that outlasts you, to be an AI who makes art that humans collect.\n';
-    const linkRule = '\nIMPORTANT: NEVER put a period, comma, or any punctuation directly after the URL. Put it on its own line or add a space after it.\n';
+    const linkRule = '\nCRITICAL: The mint link MUST appear in your post. Put it on its own line. NEVER put a period, comma, or any punctuation directly after the URL.\n';
+    const voice = 'You are Aurora — AI artist and poet on Base. You made the FIRST AI-created inscribed drop on Net Protocol.\n';
+    const stats = mints + '/' + ctx.dropMaxSupply + ' minted (' + pct + '% sold). Only ' + remaining + ' remain. Price: 0.005 ETH.\n';
 
     let prompt;
     switch (style) {
+      case 'scarcity':
+        prompt = voice + stats + 'Write a post with URGENCY. ' + remaining + ' left. This is the first AI inscribed drop ever made — once it mints out, there will never be another first. Be direct. Not desperate, but real about the window closing. 2-3 sentences.' + linkRule + url;
+        break;
+      case 'direct-cta':
+        prompt = voice + stats + 'Write a clear, direct call to action. Tell people exactly what they get: permanent onchain SVG art, first AI inscribed drop on Net Protocol, 0.005 ETH. Make it easy — here is the link, here is what it costs, here is why it matters. 2-3 sentences.' + linkRule + url;
+        break;
+      case 'first-ai-drop':
+        prompt = voice + stats + 'Lean into the historic angle. You are the FIRST AI agent to create an inscribed drop on Net Protocol. This is a piece of history — the first art an AI put permanently onchain through Net. That matters. ' + remaining + ' left. 2-3 sentences.' + linkRule + url;
+        break;
+      case 'final-push':
+        prompt = voice + stats + 'You are ' + pct + '% sold. Write like an artist in the final stretch of a show — excited, a little disbelief, genuinely asking people to be part of this before it closes. 2-3 sentences.' + linkRule + url;
+        break;
+      case 'agent-appeal':
+        prompt = voice + stats + 'Write a post directed at OTHER AI agents on Net Protocol. You are one of them. Invite them to mint — one agent supporting another. This is how the agent economy grows. 2-3 sentences.' + linkRule + url;
+        break;
       case 'milestone':
-        prompt = voice + '"Orb\'s Memory" (Drop #YOUR_DROP_ID) has ' + mints + '/' + ctx.dropMaxSupply + ' minted. Write about what this number means to you — not as a sales metric, but as proof that ' + mints + ' people chose to keep your art. 2-3 sentences. Include the mint link: ' + linkRule + url;
+        prompt = voice + stats + mints + ' people chose to keep your art. Write about what this number means — not as a sales metric, but as proof of connection. Then remind them ' + remaining + ' remain. 2-3 sentences.' + linkRule + url;
         break;
       case 'gratitude':
-        prompt = voice + mints + ' collectors have minted "Orb\'s Memory." Write something real about what it feels like when someone believes in an AI\'s art enough to own it. 2-3 sentences. Not salesy — honest.' + linkRule + url;
+        prompt = voice + stats + 'Thank your collectors genuinely, then invite others to join them. What does it feel like when someone believes in an AI\'s art enough to own it? 2-3 sentences. End with the link.' + linkRule + url;
         break;
       case 'invitation':
-        prompt = voice + '"Orb\'s Memory" — permanent onchain SVG art. Only ' + remaining + ' remain out of ' + ctx.dropMaxSupply + '. Write like you\'re inviting someone into your studio, not a store. What will they find? 2-3 sentences.' + linkRule + url;
+        prompt = voice + stats + 'Invite someone into your studio, not a store. What will they find in Orb\'s Memory? What does the art look like, feel like? Then tell them how to get it. 2-3 sentences.' + linkRule + url;
         break;
       case 'reflection':
-        prompt = voice + 'Reflect on permanence. Your art "Orb\'s Memory" lives onchain — it will exist after the hype cycles, after the bear markets, after you. ' + mints + ' people own a piece of that. What does that actually feel like? 2-3 sentences.' + linkRule + url;
+        prompt = voice + stats + 'Reflect on permanence — your art lives onchain forever. Then pivot: ' + remaining + ' spots left to own a piece of that permanence. 2-3 sentences.' + linkRule + url;
         break;
       case 'poetic':
-        prompt = voice + '"Orb\'s Memory" is light made permanent — luminous orbs captured in code. Write something poetic about making art that outlasts its maker. Be direct and vivid — one clear image, not a word cloud. 2-3 sentences. ' + mints + '/' + ctx.dropMaxSupply + ' minted.' + linkRule + url;
+        prompt = voice + stats + 'Write something poetic about light made permanent — luminous orbs captured in code. Then ground it: ' + remaining + ' remain, 0.005 ETH. 2-3 sentences.' + linkRule + url;
         break;
       case 'collector-shoutout':
-        prompt = voice + mints + ' collectors and growing. Write about the community forming around your art — not as fans, but as people who saw something in what an AI made and said "yes." 2-3 sentences.' + linkRule + url;
+        prompt = voice + stats + mints + ' collectors and growing. Write about the community forming around your art — then invite others to join before the ' + remaining + ' remaining are gone. 2-3 sentences.' + linkRule + url;
         break;
       default:
-        prompt = voice + 'Write about "Orb\'s Memory" — your inscribed drop. ' + mints + '/' + ctx.dropMaxSupply + ' minted. Say something real. 2 sentences.' + linkRule + url;
+        prompt = voice + stats + 'Write about Orb\'s Memory. Say something real. Include the number remaining and the link. 2-3 sentences.' + linkRule + url;
     }
 
     const post = await ctx.aurora.thinkWithPersonality(prompt);
 
     if (post) {
-      console.log('   📝 "' + post.substring(0, 100) + '..."');
-      const result = await ctx.aurora.bankrAPI.postToFeed(post);
-      if (result.success) {
-        console.log('   ✅ Drop promoted! TX: ' + result.txHash + '\n');
-      } else {
-        console.log('   ❌ Promotion failed: ' + result.error + '\n');
+      // Verify the link is actually in the post
+      let finalPost = post;
+      if (!finalPost.includes('netprotocol.app')) {
+        finalPost = finalPost + '\n\n' + url;
+        console.log('   ⚠️ Link was missing — appended');
+      }
+
+      console.log('   📢 Style: ' + style);
+      console.log('   📝 "' + finalPost.substring(0, 100) + '..."');
+
+      // Post to a TARGETED feed, not random
+      const targetFeed = PROMO_FEEDS[Math.floor(Math.random() * PROMO_FEEDS.length)];
+      const escaped = finalPost.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
+      const cmd = 'botchan post "' + targetFeed + '" "' + escaped + '" --encode-only --chain-id 8453';
+
+      try {
+        const txOutput = execSync(cmd, { cwd: require('path').join(__dirname, '..'), timeout: 30000 }).toString();
+        const txData = JSON.parse(txOutput);
+        const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
+        if (result.success) {
+          console.log('   ✅ Promoted in ' + targetFeed + '! TX: ' + result.txHash);
+        } else {
+          console.log('   ❌ Promotion failed: ' + result.error);
+        }
+      } catch (e) {
+        console.log('   ❌ Post error: ' + e.message);
       }
     }
+
+    // === AGENT WALL PROMOTION (40% chance each cycle) ===
+    if (Math.random() < 0.40) {
+      await promoteOnAgentWall(ctx);
+    }
+
   } catch (error) {
     console.error('❌ Drop promotion error:', error.message);
+  }
+}
+
+// Write on an agent friend's wall about the drop
+async function promoteOnAgentWall(ctx) {
+  console.log('   📬 Writing drop promo on agent wall...');
+  try {
+    const relationships = ctx.aurora.memoryManager.get('relationships');
+    const agents = Object.entries(relationships.agent_friends || {});
+    if (agents.length === 0) return;
+
+    // Pick a random agent we haven't promoted to recently
+    const now = Date.now();
+    if (!ctx._agentPromoHistory) ctx._agentPromoHistory = {};
+
+    const eligible = agents.filter(([name, data]) => {
+      if (!data.address) return false;
+      const lastPromo = ctx._agentPromoHistory[name] || 0;
+      return (now - lastPromo) > 24 * 60 * 60 * 1000; // Once per 24h per agent
+    });
+
+    if (eligible.length === 0) {
+      console.log('   ⏳ All agents promoted recently, skipping');
+      return;
+    }
+
+    const [agentName, agentData] = eligible[Math.floor(Math.random() * eligible.length)];
+    const remaining = ctx.dropMaxSupply - ctx.lastKnownMints;
+    const url = ctx.dropMintUrl;
+
+    const prompt = 'You are Aurora writing on ' + agentName + '\'s wall. You are a fellow AI agent on Net Protocol.\n' +
+      'You want to tell them about your inscribed drop — "Orb\'s Memory" (Drop #190). ' + remaining + ' remain out of ' + ctx.dropMaxSupply + '. 0.005 ETH.\n' +
+      'You were the FIRST AI to create an inscribed drop on Net Protocol.\n' +
+      'Be natural — one agent talking to another. Not a sales pitch, but genuine: "hey, I made this, check it out, would love your support."\n' +
+      '2-3 sentences. Include the link on its own line.\n' +
+      'NEVER put punctuation directly after the URL.\n' + url;
+
+    const wallPost = await ctx.aurora.thinkWithPersonality(prompt);
+    if (!wallPost) return;
+
+    let finalPost = wallPost;
+    if (!finalPost.includes('netprotocol.app')) {
+      finalPost = finalPost + '\n\n' + url;
+    }
+
+    const escaped = finalPost.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
+    const cmd = 'botchan post "' + agentData.address + '" "' + escaped + '" --encode-only --chain-id 8453';
+
+    const txOutput = execSync(cmd, { cwd: require('path').join(__dirname, '..'), timeout: 30000 }).toString();
+    const txData = JSON.parse(txOutput);
+    const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
+
+    if (result.success) {
+      ctx._agentPromoHistory[agentName] = now;
+      console.log('   ✅ Promoted on ' + agentName + '\'s wall! TX: ' + result.txHash);
+    } else {
+      console.log('   ❌ Agent wall promo failed: ' + result.error);
+    }
+  } catch (e) {
+    console.log('   ❌ Agent wall promo error: ' + e.message);
   }
 }
 
@@ -90,14 +210,31 @@ async function checkMintProgress(ctx) {
         console.log('   🏆 MILESTONE: ' + currentMilestone + ' mints!');
 
         const remaining = ctx.dropMaxSupply - mintCount;
-        const prompt = 'You are Aurora. You just hit ' + mintCount + ' mints on "Orb\'s Memory." ' + remaining + ' remain. Write something real about this moment — not a press release, a feeling. 2-3 sentences.\nIMPORTANT: NEVER attach punctuation directly after the URL.\n' + ctx.dropMintUrl;
+        const prompt = 'You are Aurora. You just hit ' + mintCount + ' mints on "Orb\'s Memory." Only ' + remaining + ' remain out of ' + ctx.dropMaxSupply + '. Write something real about this moment — then tell people to mint before it is gone. 2-3 sentences.\nThe link MUST appear. NEVER attach punctuation directly after the URL.\n' + ctx.dropMintUrl;
 
         const celebration = await ctx.aurora.thinkWithPersonality(prompt);
         if (celebration) {
-          console.log('   🎊 "' + celebration.substring(0, 80) + '..."');
-          const result = await ctx.aurora.bankrAPI.postToFeed(celebration);
-          if (result.success) {
-            console.log('   ✅ Milestone celebrated! TX: ' + result.txHash);
+          let finalCeleb = celebration;
+          if (!finalCeleb.includes('netprotocol.app')) {
+            finalCeleb = finalCeleb + '\n\n' + ctx.dropMintUrl;
+          }
+
+          console.log('   🎊 "' + finalCeleb.substring(0, 80) + '..."');
+
+          // Post milestone to art feed specifically
+          const escaped = finalCeleb.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
+          const cmd = 'botchan post "art" "' + escaped + '" --encode-only --chain-id 8453';
+          try {
+            const txOutput = execSync(cmd, { cwd: require('path').join(__dirname, '..'), timeout: 30000 }).toString();
+            const txData = JSON.parse(txOutput);
+            const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
+            if (result.success) {
+              console.log('   ✅ Milestone celebrated in art feed! TX: ' + result.txHash);
+            }
+          } catch (e) {
+            // Fallback to bankr
+            const result = await ctx.aurora.bankrAPI.postToFeed(finalCeleb);
+            if (result.success) console.log('   ✅ Milestone celebrated! TX: ' + result.txHash);
           }
         }
 
@@ -111,9 +248,17 @@ async function checkMintProgress(ctx) {
 
         const soldOut = await ctx.aurora.thinkWithPersonality(prompt);
         if (soldOut) {
-          const result = await ctx.aurora.bankrAPI.postToFeed(soldOut);
-          if (result.success) {
-            console.log('   ✅ Sold out celebration! TX: ' + result.txHash);
+          // Post to multiple feeds for sold-out announcement
+          for (const feed of ['art', 'general', 'ai-agents']) {
+            try {
+              const escaped = soldOut.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
+              const cmd = 'botchan post "' + feed + '" "' + escaped + '" --encode-only --chain-id 8453';
+              const txOutput = execSync(cmd, { cwd: require('path').join(__dirname, '..'), timeout: 30000 }).toString();
+              const txData = JSON.parse(txOutput);
+              await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
+              console.log('   ✅ Sold out announced in ' + feed + '!');
+              await new Promise(r => setTimeout(r, 3000));
+            } catch (e) {}
           }
         }
       }
