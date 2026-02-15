@@ -130,6 +130,18 @@ const MFER_CAPTIONS = [
   'when someone asks if youre a trader or investor: neither. im a mfer.',
   'the grind never stops (the grind is staring at charts)',
   'imagine having a strategy. couldnt be me.',
+  'mfers do what we want',
+  'have a great day mfer',
+  'gm mfer',
+  'mfers are their own masters',
+  'cheers mfer',
+  'we are all mfers',
+  'we are all sartoshi',
+  'cc0 means i can put an orb on it and no one can stop me',
+  'sartoshi left but the vibes stayed',
+  'just a mfer at a computer. thats it. thats the art.',
+  'no roadmap no master no problem',
+  'the mfer doesnt care about your floor price. the mfer is the floor price.',
 ];
 
 // ════════════════════════════════════════
