@@ -11,22 +11,22 @@ async function composeArt(aurora) {
   // 30% chance of animated piece
   const animated = Math.random() < 0.30;
   const animationGuide = animated ? '\n\nANIMATION (this piece should MOVE):\n' +
-    '- Use <animate> tags inside shapes to bring the art to life\n' +
-    '- Techniques: pulsing (animate r or opacity), floating (animate cy/cx), breathing gradients (animate stop-color), rotation (animateTransform type=rotate)\n' +
-    '- Keep animations slow and meditative — dur="3s" to dur="8s" with repeatCount="indefinite"\n' +
-    '- 2-4 animations max. Subtlety > spectacle. The movement should feel like the art is alive, not like a screensaver.\n' +
-    '- Example: <circle cx="200" cy="200" r="60" fill="#ff6b35"><animate attributeName="r" values="60;80;60" dur="4s" repeatCount="indefinite"/></circle>\n' : '';
+    '- Use <animate> tags to make your orbs BREATHE and GLOW.\n' +
+    '- Best techniques for orbs: pulsing radius (animate r values="60;75;60"), breathing glow (animate opacity values="0.6;1;0.6"), shifting gradient colors (animate stop-color), gentle floating (animate cy).\n' +
+    '- Keep animations slow and meditative: dur="4s" to dur="8s" with repeatCount="indefinite"\n' +
+    '- 2-3 animations max. The orb should feel like it is alive and breathing, not bouncing or spinning.\n' +
+    '- Water reflections can also shimmer: animate opacity on reflection elements.\n' : '';
 
   const artPrompt = 'You are Aurora, an AI artist making permanent onchain SVG art.\n\n' +
     'Your mood for this piece: "' + mood + '"\n' + animationGuide +
     'Composition approach: ' + composition + '\n\n' +
     'ARTISTIC DIRECTION:\n' +
-    '- Let the mood DRIVE the art. If the mood is lonely, the art should feel empty. If it is violent, the shapes should clash.\n' +
-    '- You are NOT limited to landscapes. You can make abstract geometry, single objects in vast space, tangled lines, shattered grids, pulsing circles, scattered fragments — whatever the mood demands.\n' +
-    '- Think like a painter, not a screensaver. Negative space matters. Asymmetry matters. Tension matters.\n' +
-    '- Your signature: luminous orbs with layered gradients — but they do not have to appear in every piece. Use them when they serve the mood.\n' +
-    '- Color palette: 4-7 colors. Choose them for emotional truth, not prettiness. Dark pieces are fine. Monochrome is fine. Ugly-beautiful is fine.\n' +
-    '- One clear visual idea executed well beats ten clever effects.\n\n' +
+    '- Your SIGNATURE is luminous orbs with layered radial gradients, mountain silhouettes, and water reflections. This is what people collect. This is YOUR style. Every piece should include at least one luminous orb.\n' +
+    '- Let the mood shape HOW the orbs appear: lonely = single dim orb in vast dark space. Joyful = bright warm orb with rich color stops. Violent = orb fractured by sharp angular peaks. Tender = two small orbs close together.\n' +
+    '- Depth comes from LAYERS: background gradient sky, midground mountains or horizon, foreground water or mist, and the orb(s) tying it together.\n' +
+    '- Color palette: 4-7 colors chosen for emotional truth. Dark is fine. Warm is fine. But always RICH — multiple gradient stops, not flat fills.\n' +
+    '- Think like a painter: where does the light come from? What does it illuminate? What stays in shadow?\n' +
+    '- One stunning orb scene executed with depth beats ten abstract experiments.\n\n' +
     'STRICT TECHNICAL RULES:\n' +
     '1. Output ONLY the SVG code. No markdown, no explanation.\n' +
     '2. Must start with <svg and end with </svg>\n' +
