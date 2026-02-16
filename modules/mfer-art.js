@@ -170,7 +170,7 @@ async function composeMferArt(aurora) {
     '- The mfer is a SIMPLE stick figure with a ROUND HEAD (just a circle).\n' +
     '- HEADPHONES: two large black circles on either side of the head, connected by an arc over the top. This is the #1 most recognizable feature.\n' +
     '- CIGARETTE: a small line/rectangle sticking out from the mouth area at an angle. The tip can have a tiny orange/red glow.\n' +
-    '- FACE: the head circle is white (or light), with two simple dot eyes and a tiny line mouth. Minimal. Like :) but less effort.\n' +
+    '- FACE: the head circle is white (or light). NO eyes, NO detailed face. Just the blank white circle. The headphones and cigarette ARE the face.\n' +
     '- BODY: simple stick figure lines. Arms are lines, legs are lines. Can be seated, standing, walking. Keep it crude and charming.\n' +
     '- Think "drawn in 5 seconds by someone who doesnt care but somehow its perfect."\n' +
     '- The mfer should be SMALL relative to the landscape — a tiny figure in a big world. Unless the composition calls for a close-up head.\n' +
