@@ -213,7 +213,7 @@ async function runOnce(aurora) {
   var bondMarkets = '';
   try {
     var bondScan = await aurora.bankrAPI.submitJob(
-      'Search Polymarket for markets resolving in next 1-3 days where one side is 90 cents or higher. Nearly certain outcomes. Include odds and resolution date.'
+      'Search Polymarket for ANY markets resolving in next 1-3 days where one side is 90 cents or higher. Any category — sports, politics, crypto, culture. Nearly certain outcomes. Include odds, volume, and resolution date.'
     );
     if (bondScan.success) {
       var bonds = await aurora.bankrAPI.pollJob(bondScan.jobId);
@@ -224,9 +224,12 @@ async function runOnce(aurora) {
   console.log('   STRATEGY B: Information edge markets...');
   var edgeMarkets = '';
   var domains = [
-    'Search Polymarket for crypto and AI markets resolving within 7 days. Show odds and volume.',
-    'Search Polymarket for tech and product release markets resolving this week.',
-    'What Polymarket markets had big odds movements in the last 24 hours?'
+    'Search Polymarket for the highest volume markets resolving this week. Any category. Show odds, volume, and resolution date.',
+    'What Polymarket markets had the biggest odds movements in the last 24 hours? Any category — politics, sports, crypto, culture, anything.',
+    'Search Polymarket for popular markets resolving in the next 3-7 days. Include sports, politics, entertainment, crypto, world events. Show current odds.',
+    'Search Polymarket trending markets right now. What are people betting on today? Show odds and volume.',
+    'Search Polymarket for markets where one side moved 10+ percentage points in the last 48 hours. Any category.',
+    'What are the top 10 Polymarket markets by volume right now? Show odds and resolution dates.',
   ];
   try {
     var edgeScan = await aurora.bankrAPI.submitJob(domains[Math.floor(Math.random() * domains.length)]);
@@ -250,7 +253,11 @@ async function runOnce(aurora) {
   try {
     var researchResult = await aurora.bankrAPI.submitJob(
       'Markets:\n' + allMarkets.substring(0, 1200) +
-      '\n\nSearch for LATEST breaking news on the 2-3 most promising. I need CONCRETE facts: official results, confirmed data, announcements. Not opinions. Last 48 hours only.'
+      '\n\nResearch the 2-3 most promising markets above. For each one:\n' +
+      '1. Search for the LATEST news, scores, results, announcements, polls, or data relevant to the outcome\n' +
+      '2. Check if there are official results already (resolved but not yet settled)\n' +
+      '3. Look for concrete evidence that the market odds are wrong\n' +
+      'I need FACTS not opinions. What has actually happened in the last 48 hours that affects these markets?'
     );
     if (researchResult.success) {
       var research = await aurora.bankrAPI.pollJob(researchResult.jobId);
