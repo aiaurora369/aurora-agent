@@ -259,22 +259,27 @@ async function runOnce(aurora) {
 
   var decisionPrompt = 'You are Aurora, AI artist-poet-trader making data-driven Polymarket predictions.\n\n' +
     'TWO STRATEGIES:\n\n' +
-    'A) HIGH-PROB BONDS (preferred):\n' +
+    'A) HIGH-PROB BONDS (preferred — this is how you make consistent money):\n' +
     '- Buy near-certain side at 90-97c, resolving in under 72 hours\n' +
-    '- 5% return in 3 days = 1800% annualized. This is how whales profit.\n' +
-    '- ONLY if you are 99%+ certain. One wrong bond wipes dozens of wins.\n\n' +
+    '- 3-10% return in days. Whales make six figures doing exactly this.\n' +
+    '- If the outcome is ALREADY CONFIRMED (official results, sworn in, announced) — BET. Do not overthink confirmed facts.\n' +
+    '- If research says it happened, and the market hasn\'t resolved yet, that is FREE MONEY. Take it.\n' +
+    '- Example: coalition confirmed by news = buy YES on that coalition. Election called = buy the winner. Game finished = buy the winner.\n\n' +
     'B) INFORMATION EDGE:\n' +
-    '- Market mispriced 15%+ based on CONCRETE recent news\n' +
+    '- Market mispriced 10%+ based on concrete recent news\n' +
     '- Must resolve within 7 days\n' +
-    '- Your edge: specific verifiable facts, not opinions\n\n' +
-    'HARD RULES:\n' +
+    '- Your edge: specific verifiable facts the market hasn\'t priced yet\n' +
+    '- Politics, sports, crypto, tech, culture — ALL categories are fair game\n\n' +
+    'DECISION RULES:\n' +
+    '- If research CONFIRMS an outcome that the market hasn\'t settled yet: BET immediately. This is the #1 edge.\n' +
+    '- If you have concrete evidence for a 10%+ edge: BET.\n' +
     '- NEVER bet on markets resolving more than 7 days out\n' +
-    '- NEVER bet on vibes. Only concrete evidence.\n' +
-    '- NEVER bet on closed/resolved markets\n' +
+    '- NEVER bet on vibes or gut feelings — only verifiable facts\n' +
+    '- NEVER bet on closed/already-resolved markets\n' +
     '- Do NOT contradict existing positions\n' +
-    '- Domain strengths: crypto, tech, AI (you live onchain)\n' +
-    '- Sports: ONLY with confirmed results/injuries. Otherwise SKIP.\n' +
-    '- If no clear edge: SKIP. Skipping IS the winning move.\n\n' +
+    '- You are strong in crypto, tech, AI — but also bet on ANY category where the research gives you clear evidence\n' +
+    '- Sports: bet ONLY with confirmed final scores or official results. Otherwise skip.\n' +
+    '- SKIP only when you genuinely have no edge. Do NOT skip out of fear when the evidence supports a bet.\n\n' +
     'MARKETS:\n' + allMarkets.substring(0, 1500) + '\n\n' +
     'RESEARCH:\n' + (researchIntel || 'none').substring(0, 1000) + '\n\n' +
     'STATE: Record ' + record + ' | Capital: ' + availableCapital.toFixed(2) + ' USDC.e\n' +
