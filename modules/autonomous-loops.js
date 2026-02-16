@@ -4,6 +4,7 @@ const { artMoods, artCompositions } = require('./art-config');
 const fs = require('fs');
 const path = require('path');
 const ArtGenerator = require('./art-generator');
+const { createAndPostFarcasterArt } = require('./farcaster-art');
 const TokenDiscovery = require('./token-discovery');
 
 class AutonomousLoops {
@@ -21,7 +22,7 @@ class AutonomousLoops {
     this.inscriptionManager = new InscriptionManager(aurora);
 
     // Aurora's identity
-    this.auroraAddress = 'process.env.AURORA_ADDRESS || require('./config/agent-config.json').auroraAddress';
+    this.auroraAddress = '0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5';
 
     // Drop #190 info
     this.dropId = 190;
@@ -366,7 +367,29 @@ class AutonomousLoops {
       }
 
       if (result.success) {
-        console.log('✅ Art posted! TX: ' + result.txHash + '\n');
+        console.log('✅ Art posted to Net Protocol! TX: ' + result.txHash + '\n');
+
+        // Cross-post to Farcaster (50% of successful Net Protocol posts)
+        if (Math.random() < 0.5) {
+          try {
+            console.log('   📡 Cross-posting to Farcaster...');
+            const sharp = require('sharp');
+            const pngBuf = await sharp(Buffer.from(svg)).resize(1200, 1200).png().toBuffer();
+            const tmpPath = '/tmp/aurora-xpost-' + Date.now() + '.png';
+            require('fs').writeFileSync(tmpPath, pngBuf);
+            const { execSync } = require('child_process');
+            const catboxUrl = execSync('curl -s -F "reqtype=fileupload" -F "fileToUpload=@' + tmpPath + '" https://catbox.moe/user/api.php', { timeout: 30000 }).toString().trim();
+            require('fs').unlinkSync(tmpPath);
+            if (catboxUrl.startsWith('https://')) {
+              const { castToFarcaster } = require('./farcaster-art');
+              const xCaption = caption || 'light finds its own way';
+              const castResult = await castToFarcaster(xCaption, catboxUrl);
+              console.log('   ✅ Cross-posted to Farcaster! Hash: ' + castResult.hash);
+            }
+          } catch (xErr) {
+            console.log('   ⚠️ Farcaster cross-post failed: ' + xErr.message);
+          }
+        }
       } else {
         console.log('❌ Post failed: ' + result.error);
       }
