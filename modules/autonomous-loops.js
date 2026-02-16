@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const ArtGenerator = require('./art-generator');
 const { runFarcasterEngage } = require('./farcaster-engage-cycle');
+const { crossPostToX, crossPostArtToX } = require('./x-post-cycle');
 const { createAndPostFarcasterArt } = require('./farcaster-art');
 const TokenDiscovery = require('./token-discovery');
 
@@ -392,6 +393,16 @@ class AutonomousLoops {
             }
           } catch (xErr) {
             console.log('   ⚠️ Farcaster cross-post failed: ' + xErr.message);
+          }
+        }
+
+        // Cross-post to X (50% of successful Net Protocol posts)
+        if (Math.random() < 0.50) {
+          try {
+            const xCaption = caption || 'light finds its own way';
+            await crossPostArtToX(xCaption, svg);
+          } catch (xErr) {
+            console.log('   ⚠️ X cross-post failed: ' + xErr.message);
           }
         }
       } else {

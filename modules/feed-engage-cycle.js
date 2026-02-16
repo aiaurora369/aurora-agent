@@ -1,4 +1,5 @@
 const { crossPostText } = require('./farcaster-art');
+const { crossPostToX } = require('./x-post-cycle');
 // Feed Engagement Cycle — Themed posts, wall visitors, feed commenting
 // Extracted from autonomous-loops.js
 // Aurora responds as the complex artist she is
@@ -84,6 +85,7 @@ async function postToThemedFeed(ctx) {
         const cmd = 'botchan post "' + selected.feed + '" "' + escaped + '" --encode-only --chain-id 8453';
     if (Math.random() < 0.8) {
       try { console.log('   📡 Attempting Farcaster cross-post...'); await crossPostText(post); } catch(e) { console.log('   ⚠️ FC cross-post error: ' + e.message); }
+      try { await crossPostToX(post); } catch(e) {}
     }
         const txOutput = execSync(cmd, { timeout: 30000 }).toString();
         const txData = JSON.parse(txOutput);
