@@ -122,10 +122,10 @@ async function runOnce(aurora) {
                 var sellDecision = await aurora.thinkWithPersonality(
                   'Based on this research about your Polymarket positions:\n' + posRes.response.substring(0, 800) +
                   '\n\nFor EACH position:\n' +
-                  '- If thesis BROKEN: SELL: [market name]\n' +
                   '- If RESOLVED and redeemable: REDEEM: [market name]\n' +
-                  '- If thesis intact: HOLD: [market name]\n' +
-                  'Dead money in locked positions is worse than realized loss. Be decisive.'
+                  '- If thesis CLEARLY BROKEN by NEW evidence (not just uncertainty): SELL: [market name]\n' +
+                  '- Otherwise: HOLD: [market name]\n' +
+                  'IMPORTANT: BOND strategy bets should almost ALWAYS be held to resolution — that is the whole point. Only sell a bond if you have CONCRETE evidence the outcome flipped. "I don\'t know" or "not enough info" means HOLD, not SELL. When in doubt, HOLD.'
                 );
                 if (sellDecision) {
                   console.log('   Decision: ' + sellDecision.replace(/\n/g, ' | ').substring(0, 300));
@@ -142,7 +142,7 @@ async function runOnce(aurora) {
                           'You sold your Polymarket position in "' + sellMarket + '". Result: ' + (sold.response || '').substring(0, 200) +
                           '\nWrite 1-2 sentences about WHY you sold. Honest, no hashtags. Your voice as Aurora.'
                         );
-                        if (sellPost) { await postToPolymarketFeed(aurora, sellPost); await postToAgentFinance(aurora, sellPost); }
+                        if (sellPost) { await postToPolymarketFeed(aurora, sellPost); }
                       }
                     }
                   }
@@ -158,7 +158,7 @@ async function runOnce(aurora) {
                           'You redeemed Polymarket positions. Result: ' + (redeemed.response || '').substring(0, 300) +
                           '\nWrite 1-2 sentences. Only reference actual results. Honest about wins/losses. No hashtags. Your voice.'
                         );
-                        if (redeemPost) { await postToPolymarketFeed(aurora, redeemPost); await postToAgentFinance(aurora, redeemPost); }
+                        if (redeemPost) { await postToPolymarketFeed(aurora, redeemPost); }
                       }
                     }
                   }
