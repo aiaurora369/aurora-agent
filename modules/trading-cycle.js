@@ -116,6 +116,11 @@ async function runOnce(aurora) {
                     if (sold.success) {
                       console.log('   Sold! ' + (sold.response || '').substring(0, 150));
                       var sellReason = (line.match(/REASON:\s*(.+)/i) || ['', 'Portfolio management'])[1];
+                      // Reclaim budget from sells
+                      var originalBuy = portfolio.trades.find(t => t.token === sellToken && t.action === 'buy' && t.amount > 0);
+                      var reclaimAmount = originalBuy ? originalBuy.amount * (sellPct / 100) : 0;
+                      portfolio.totalInvested = Math.max(0, portfolio.totalInvested - reclaimAmount);
+                      console.log('   Budget reclaimed: $' + reclaimAmount.toFixed(2) + ' (totalInvested now: $' + portfolio.totalInvested.toFixed(2) + ')');
                       portfolio.trades.push({
                         token: sellToken, amount: 0, action: 'sell',
                         sellPercent: sellPct,
@@ -316,14 +321,7 @@ async function runOnce(aurora) {
 
   if (!decision.toUpperCase().includes('DECISION: BUY')) {
     console.log('   Skipping: no compelling opportunity');
-    var skipReason = decision.match(/REASON:\s*(.+)/i);
-    if (skipReason && Math.random() < 0.3) {
-      var skipPost = await aurora.thinkWithPersonality(
-        'You scanned DexScreener momentum data and decided to skip. Reason: ' + skipReason[1] +
-        ' Write a 1-2 sentence market observation. Be concise. No hashtags.'
-      );
-      if (skipPost) await postToAgentFinance(aurora, skipPost);
-    }
+    // Skip silently — only post when we actually trade
     portfolio.lastResearch = new Date().toISOString();
     fs.writeFileSync(portfolioPath, JSON.stringify(portfolio, null, 2));
     return;
