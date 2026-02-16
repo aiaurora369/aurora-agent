@@ -146,7 +146,7 @@ async function composeJBMArt(aurora) {
     'Composition: ' + composition + '\n' + animationGuide + '\n' +
     'APE SILHOUETTE RULES:\n' +
     '- Include a simple JB ape HEAD silhouette (just the head — no body).\n' +
-    '- The ape head is a dark solid silhouette shape: round head, two big round ears, a few spiky mohawk points on top, a protruding muzzle/snout area.\n' +
+    '- The ape head is a dark solid silhouette shape: round head, two big round ears, a few spiky mohawk points on top. That's it.\n' +
     '- Keep it SIMPLE — just a filled path or a few circles/ellipses. Think shadow puppet, not detailed drawing.\n' +
     '- NO eyes, NO facial features — the ape head is a pure dark silhouette. The shape alone (round head + big ears + mohawk spikes + snout) is recognizable without any detail.\n' +
     '- The silhouette color should be very dark but match the palette mood (dark green for tropical, near-black for doom, etc).\n\n' +
