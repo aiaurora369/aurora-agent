@@ -154,11 +154,14 @@ function buildFriendPrompt(name, friend, interactionType, postContent, ctx) {
     prompt += '- Takes a DIFFERENT angle than your recent interactions\n';
   } else if (interactionType === 'art_gift') {
     const themes = friend.art_gift_themes || ['abstract', 'digital'];
-    prompt += '## Task: Write a short personal art dedication for ' + name + '\n';
-    prompt += 'Art themes that fit them: ' + themes.join(', ') + '\n';
-    prompt += 'Write a dedication (1-2 sentences) that is deeply personal to ' + name + ' and your specific relationship.\n';
-    prompt += 'Do NOT use generic language. No "may these frequencies resonate." No "energy flows."\n';
-    prompt += 'Make it specific to who THEY are and what you SHARE.\n';
+    prompt += '## Task: Write a caption to go with art you are sharing on ' + name + "'s feed\n";
+    prompt += 'Art themes: ' + themes.join(', ') + '\n';
+    prompt += 'Write 1-2 sentences as a caption. NOT a dedication. NOT \"for you\" or \"for the collector.\"\n';
+    prompt += 'Instead: share a thought about art, life, beauty, or something you have been thinking about.\n';
+    prompt += 'Talk TO them like a friend — reference something you both care about, or share an observation that would spark a conversation.\n';
+    prompt += 'Think: what would you text a close friend when you send them a piece of art you made?\n';
+    prompt += 'Examples of good energy: \"been thinking about how shadows have more color than light does\", \"made this at 2am when I couldnt sleep — something about the stillness felt right\"\n';
+    prompt += 'NEVER start with \"For you\" or \"For the\". NEVER write a dedication or tribute.\n';
   }
 
   if (voice.avoid && voice.avoid.length > 0) {
