@@ -100,7 +100,7 @@ async function promoteDrops(ctx) {
       const escaped = finalPost.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
       const cmd = 'botchan post "' + targetFeed + '" "' + escaped + '" --encode-only --chain-id 8453';
     // Cross-post drop promos to Farcaster (50% chance)
-    if (Math.random() < 0.5) {
+    if (Math.random() < 0.7) {
       try { await crossPostText(text); } catch(e) {}
     }
 

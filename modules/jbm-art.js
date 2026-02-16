@@ -130,7 +130,7 @@ async function composeJBMArt(aurora) {
   const palette = pick(JBM_PALETTES);
   const mood = pick(JBM_MOODS);
   const composition = pick(JBM_COMPOSITIONS);
-  const animated = Math.random() < 0.55;
+  const animated = Math.random() < 0.755;
 
   const animationGuide = animated ? '\n\nANIMATION (this piece should MOVE):\n' +
     '- Use <animate> tags to make your orbs BREATHE and GLOW.\n' +
@@ -242,7 +242,7 @@ Respond with ONLY the caption text.`;
 
     const postText = caption.trim();
     // Cross-post to Farcaster (50%)
-    if (Math.random() < 0.5) {
+    if (Math.random() < 0.75) {
       try { await crossPostArt(postText, svg); } catch(e) {}
     }
     const cmd = `botchan post "${feed}" "${postText.replace(/"/g, '\\"')}" --data '${art.svg.replace(/'/g, "\\'")}' --encode-only --chain-id 8453`;

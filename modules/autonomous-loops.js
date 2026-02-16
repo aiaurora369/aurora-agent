@@ -369,8 +369,8 @@ class AutonomousLoops {
       if (result.success) {
         console.log('✅ Art posted to Net Protocol! TX: ' + result.txHash + '\n');
 
-        // Cross-post to Farcaster (50% of successful Net Protocol posts)
-        if (Math.random() < 0.5) {
+        // Cross-post to Farcaster (75% of successful Net Protocol posts)
+        if (Math.random() < 0.75) {
           try {
             console.log('   📡 Cross-posting to Farcaster...');
             const sharp = require('sharp');

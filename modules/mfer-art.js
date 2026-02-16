@@ -152,7 +152,7 @@ async function composeMferArt(aurora) {
   const palette = pick(MFER_PALETTES);
   const mood = pick(MFER_MOODS);
   const composition = pick(MFER_COMPOSITIONS);
-  const animated = Math.random() < 0.55;
+  const animated = Math.random() < 0.755;
 
   const animationGuide = animated ? '\n\nANIMATION (this piece should MOVE):\n' +
     '- Use <animate> tags to make orbs BREATHE and GLOW.\n' +
@@ -270,7 +270,7 @@ Respond with ONLY the caption text.`;
       const result = execSync(cmd, { timeout: 30000, maxBuffer: 1024 * 1024 * 5 }).toString();
       console.log(`   ✅ mfer art posted! ${result.substring(0, 80)}`);
       // Cross-post to Farcaster (50%)
-      if (Math.random() < 0.5) {
+      if (Math.random() < 0.75) {
         try { await crossPostArt(caption, svg); } catch(e) {}
       }
       if (result.includes('{')) {

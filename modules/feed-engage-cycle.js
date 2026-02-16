@@ -82,8 +82,7 @@ async function postToThemedFeed(ctx) {
         console.log('   📝 "' + post.substring(0, 80) + '..."');
         const escaped = post.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
         const cmd = 'botchan post "' + selected.feed + '" "' + escaped + '" --encode-only --chain-id 8453';
-    const _xpostFeeds = ['general', 'dreams', 'observations', 'nature', 'art', 'mfers', 'jbm', 'junglebaymemes'];
-    if (_xpostFeeds.includes(selected.feed) && Math.random() < 0.4) {
+    if (Math.random() < 0.8) {
       try { await crossPostText(post); } catch(e) {}
     }
         const txOutput = execSync(cmd, { timeout: 30000 }).toString();
