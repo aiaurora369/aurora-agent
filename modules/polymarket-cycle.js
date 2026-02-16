@@ -352,10 +352,20 @@ async function runOnce(aurora) {
   var resolvesIn = resolvesMatch ? resolvesMatch[1].trim() : 'unknown';
 
   var kellyAmount = calcHalfKelly(myProb, marketPrice, side, availableCapital);
-  var amount = Math.min(parseFloat(amountMatch[1]), 5, kellyAmount > 0 ? kellyAmount : 5);
-  if (amount < 1) {
-    console.log('   Kelly says skip.\n');
-    polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
+  var rawAmount = parseFloat(amountMatch[1]);
+  var amount;
+  if (strategy === 'BOND') {
+    // Bonds have tiny edges but high certainty — Kelly underestimates them
+    // Use the brain's suggested amount, capped at $5
+    amount = Math.min(rawAmount, 5);
+    if (amount < 2) amount = 2; // minimum $2 bond bet
+    console.log('   Bond strategy: using $' + amount + ' (Kelly: ' + kellyAmount.toFixed(2) + ')');
+  } else {
+    amount = Math.min(rawAmount, 5, kellyAmount > 0 ? kellyAmount : 5);
+    if (amount < 1) {
+      console.log('   Kelly says skip.\n');
+      polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
+    }
   }
 
   // Block contradicting bets
