@@ -356,6 +356,38 @@ async function crossPostText(text) {
   }
 }
 
+
+// ═══════════════════════════════════════════════
+// CROSS-POST ART TO FARCASTER (SVG → PNG → catbox → cast)
+// ═══════════════════════════════════════════════
+async function crossPostArt(text, svg) {
+  if (!text || !svg) return null;
+  const trimmed = text.length > 320 ? text.substring(0, 317) + '...' : text;
+  try {
+    const sharp = require('sharp');
+    const fs = require('fs');
+    const { execSync } = require('child_process');
+
+    const pngBuf = await sharp(Buffer.from(svg)).resize(1200, 1200).png().toBuffer();
+    const tmpPath = '/tmp/aurora-xpost-' + Date.now() + '.png';
+    fs.writeFileSync(tmpPath, pngBuf);
+    const catboxUrl = execSync('curl -s -F "reqtype=fileupload" -F "fileToUpload=@' + tmpPath + '" https://catbox.moe/user/api.php', { timeout: 30000 }).toString().trim();
+    try { fs.unlinkSync(tmpPath); } catch(e) {}
+
+    if (!catboxUrl.startsWith('https://')) {
+      console.log('   ⚠️ Catbox upload failed: ' + catboxUrl);
+      return null;
+    }
+
+    const result = await castToFarcaster(trimmed, catboxUrl);
+    console.log('   📡 Cross-posted art to Farcaster: ' + result.hash);
+    return result;
+  } catch (e) {
+    console.log('   ⚠️ Farcaster art cross-post failed: ' + e.message);
+    return null;
+  }
+}
+
 module.exports = {
   generateArt,
   svgToPng,
@@ -364,4 +396,5 @@ module.exports = {
   castToFarcaster,
   createAndPostFarcasterArt,
   crossPostText,
+  crossPostArt,
 };
