@@ -208,52 +208,30 @@ async function runOnce(aurora) {
   }
   console.log('   Guardrails passed: ' + betsToday + '/2 daily | ' + availableCapital.toFixed(2) + ' available');
 
-  // === STEP 4: DUAL STRATEGY SCAN ===
-  console.log('\n   STRATEGY A: High-probability bonds...');
-  var bondMarkets = '';
+  // === STEP 4: DIRECT API SCAN (Polymarket Gamma API — instant, no Bankr needed) ===
+  var polyAPI = require('./polymarket-api');
+  var scanResults;
   try {
-    var bondScan = await aurora.bankrAPI.submitJob(
-      'Search Polymarket for ANY markets resolving in next 1-3 days where one side is 90 cents or higher. Any category — sports, politics, crypto, culture. Nearly certain outcomes. Include odds, volume, and resolution date.'
-    );
-    if (bondScan.success) {
-      var bonds = await aurora.bankrAPI.pollJob(bondScan.jobId);
-      if (bonds.success && bonds.response) { bondMarkets = bonds.response; console.log('   Bonds found (' + bondMarkets.length + ' chars)'); }
-    }
-  } catch (e) {}
+    scanResults = await polyAPI.fullScan();
+  } catch (e) {
+    console.log('   Polymarket API scan failed: ' + e.message);
+    polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
+  }
 
-  console.log('   STRATEGY B: Information edge markets...');
-  var edgeMarkets = '';
-  var domains = [
-    'Search Polymarket for the highest volume markets resolving this week. Any category. Show odds, volume, and resolution date.',
-    'What Polymarket markets had the biggest odds movements in the last 24 hours? Any category — politics, sports, crypto, culture, anything.',
-    'Search Polymarket for popular markets resolving in the next 3-7 days. Include sports, politics, entertainment, crypto, world events. Show current odds.',
-    'Search Polymarket trending markets right now. What are people betting on today? Show odds and volume.',
-    'Search Polymarket for markets where one side moved 10+ percentage points in the last 48 hours. Any category.',
-    'What are the top 10 Polymarket markets by volume right now? Show odds and resolution dates.',
-  ];
-  try {
-    var edgeScan = await aurora.bankrAPI.submitJob(domains[Math.floor(Math.random() * domains.length)]);
-    if (edgeScan.success) {
-      var edgeRes = await aurora.bankrAPI.pollJob(edgeScan.jobId);
-      if (edgeRes.success && edgeRes.response) { edgeMarkets = edgeRes.response; console.log('   Edge markets found (' + edgeMarkets.length + ' chars)'); }
-    }
-  } catch (e) {}
-
-  if (!bondMarkets && !edgeMarkets) {
+  if (!scanResults.brief || scanResults.brief.length < 50) {
     console.log('   No markets found.\n');
     polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
   }
 
-  // === STEP 5: RESEARCH ===
-  console.log('   Researching candidates...');
-  var allMarkets = '';
-  if (bondMarkets) allMarkets += 'NEAR-CERTAIN (bond):\n' + bondMarkets.substring(0, 800) + '\n\n';
-  if (edgeMarkets) allMarkets += 'POTENTIALLY MISPRICED (edge):\n' + edgeMarkets.substring(0, 800);
+  var allMarkets = scanResults.brief;
+
+  // === STEP 5: RESEARCH (use Bankr only for news/intel, not market discovery) ===
+  console.log('   Researching top candidates via Bankr...');
   var researchIntel = '';
   try {
     var researchResult = await aurora.bankrAPI.submitJob(
-      'Markets:\n' + allMarkets.substring(0, 1200) +
-      '\n\nResearch the 2-3 most promising markets above. For each one:\n' +
+      'Here are prediction markets I am considering betting on:\n' + allMarkets.substring(0, 2000) +
+      '\n\nResearch the 2-3 most actionable markets above. For each one:\n' +
       '1. Search for the LATEST news, scores, results, announcements, polls, or data relevant to the outcome\n' +
       '2. Check if there are official results already (resolved but not yet settled)\n' +
       '3. Look for concrete evidence that the market odds are wrong\n' +
@@ -263,7 +241,7 @@ async function runOnce(aurora) {
       var research = await aurora.bankrAPI.pollJob(researchResult.jobId);
       if (research.success && research.response) { researchIntel = research.response; console.log('   Research (' + researchIntel.length + ' chars)'); }
     }
-  } catch (e) {}
+  } catch (e) { console.log('   Research step failed: ' + e.message); }
 
   // Get feed intel
   var polyIntel = '';
