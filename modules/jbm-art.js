@@ -148,7 +148,7 @@ async function composeJBMArt(aurora) {
     '- Include a simple JB ape HEAD silhouette (just the head — no body).\n' +
     '- The ape head is a dark solid silhouette shape: round head, two big round ears, a few spiky mohawk points on top, a protruding muzzle/snout area.\n' +
     '- Keep it SIMPLE — just a filled path or a few circles/ellipses. Think shadow puppet, not detailed drawing.\n' +
-    '- The ape\'s eyes should GLOW in the palette\'s accent color (two small circles or ellipses with the orb color).\n' +
+    '- NO eyes, NO facial features — the ape head is a pure dark silhouette. The shape alone (round head + big ears + mohawk spikes + snout) is recognizable without any detail.\n' +
     '- The silhouette color should be very dark but match the palette mood (dark green for tropical, near-black for doom, etc).\n\n' +
     'ARTISTIC DIRECTION:\n' +
     '- Your SIGNATURE is luminous orbs with layered radial gradients, mountain silhouettes, and water reflections.\n' +
