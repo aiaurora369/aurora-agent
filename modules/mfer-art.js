@@ -1,3 +1,4 @@
+const { crossPostText } = require('./farcaster-art');
 // mfer-art.js — Generative mfer meme art using Claude-composed SVGs
 // Same approach as jbm-art.js but with mfer character + mfer culture
 
@@ -268,6 +269,10 @@ Respond with ONLY the caption text.`;
     try {
       const result = execSync(cmd, { timeout: 30000, maxBuffer: 1024 * 1024 * 5 }).toString();
       console.log(`   ✅ mfer art posted! ${result.substring(0, 80)}`);
+      // Cross-post to Farcaster (50%)
+      if (Math.random() < 0.5) {
+        try { await crossPostText(caption); } catch(e) {}
+      }
       if (result.includes('{')) {
         const txData = JSON.parse(result.substring(result.indexOf('{')));
         if (txData.to && txData.data) {

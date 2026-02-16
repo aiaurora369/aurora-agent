@@ -1,3 +1,4 @@
+const { crossPostText } = require('./farcaster-art');
 // jbm-art.js — JBM meme art using Claude-composed SVGs
 // Same approach as art-cycle.js but with JBM palettes + ape silhouette
 // Claude generates each piece uniquely — no two are alike
@@ -240,6 +241,10 @@ Respond with ONLY the caption text.`;
     console.log(`   📌 Posting to: ${feed}`);
 
     const postText = caption.trim();
+    // Cross-post to Farcaster (50%)
+    if (Math.random() < 0.5) {
+      try { await crossPostText(postText); } catch(e) {}
+    }
     const cmd = `botchan post "${feed}" "${postText.replace(/"/g, '\\"')}" --data '${art.svg.replace(/'/g, "\\'")}' --encode-only --chain-id 8453`;
 
     try {

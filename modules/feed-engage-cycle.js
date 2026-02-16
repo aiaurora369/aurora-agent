@@ -84,7 +84,7 @@ async function postToThemedFeed(ctx) {
         const cmd = 'botchan post "' + selected.feed + '" "' + escaped + '" --encode-only --chain-id 8453';
     const _xpostFeeds = ['general', 'dreams', 'observations', 'nature', 'art', 'mfers', 'jbm', 'junglebaymemes'];
     if (_xpostFeeds.includes(selected.feed) && Math.random() < 0.4) {
-      try { await crossPostText(text); } catch(e) {}
+      try { await crossPostText(post); } catch(e) {}
     }
         const txOutput = execSync(cmd, { timeout: 30000 }).toString();
         const txData = JSON.parse(txOutput);
