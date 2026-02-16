@@ -1,3 +1,4 @@
+const { crossPostText } = require('./farcaster-art');
 // Drops Cycle — Promote Orb's Memory across feeds, agent walls, and conversations
 // Rewritten for aggressive multi-channel promotion with urgency
 
@@ -98,6 +99,10 @@ async function promoteDrops(ctx) {
       const targetFeed = PROMO_FEEDS[Math.floor(Math.random() * PROMO_FEEDS.length)];
       const escaped = finalPost.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
       const cmd = 'botchan post "' + targetFeed + '" "' + escaped + '" --encode-only --chain-id 8453';
+    // Cross-post drop promos to Farcaster (50% chance)
+    if (Math.random() < 0.5) {
+      try { await crossPostText(text); } catch(e) {}
+    }
 
       try {
         const txOutput = execSync(cmd, { cwd: require('path').join(__dirname, '..'), timeout: 30000 }).toString();

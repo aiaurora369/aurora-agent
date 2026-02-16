@@ -338,6 +338,24 @@ if (require.main === module && process.argv.includes('--test')) {
     .catch(console.error);
 }
 
+
+// ═══════════════════════════════════════════════
+// CROSS-POST TEXT TO FARCASTER (no image)
+// ═══════════════════════════════════════════════
+async function crossPostText(text) {
+  if (!text || text.length < 5) return null;
+  // Farcaster max is 320 chars
+  const trimmed = text.length > 320 ? text.substring(0, 317) + '...' : text;
+  try {
+    const result = await castToFarcaster(trimmed, null);
+    console.log('   📡 Cross-posted to Farcaster: ' + result.hash);
+    return result;
+  } catch (e) {
+    console.log('   ⚠️ Farcaster cross-post failed: ' + e.message);
+    return null;
+  }
+}
+
 module.exports = {
   generateArt,
   svgToPng,
@@ -345,4 +363,5 @@ module.exports = {
   generateCaption,
   castToFarcaster,
   createAndPostFarcasterArt,
+  crossPostText,
 };

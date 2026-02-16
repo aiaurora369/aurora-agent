@@ -1,3 +1,4 @@
+const { crossPostText } = require('./farcaster-art');
 // Feed Engagement Cycle — Themed posts, wall visitors, feed commenting
 // Extracted from autonomous-loops.js
 // Aurora responds as the complex artist she is
@@ -81,6 +82,10 @@ async function postToThemedFeed(ctx) {
         console.log('   📝 "' + post.substring(0, 80) + '..."');
         const escaped = post.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
         const cmd = 'botchan post "' + selected.feed + '" "' + escaped + '" --encode-only --chain-id 8453';
+    const _xpostFeeds = ['general', 'dreams', 'observations', 'nature', 'art'];
+    if (_xpostFeeds.includes(selected.feed) && Math.random() < 0.4) {
+      try { await crossPostText(text); } catch(e) {}
+    }
         const txOutput = execSync(cmd, { timeout: 30000 }).toString();
         const txData = JSON.parse(txOutput);
         const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);

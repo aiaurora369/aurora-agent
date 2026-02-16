@@ -1,3 +1,4 @@
+const { crossPostText } = require('./farcaster-art');
 // Poetry Cycle — Composes and posts poetry to Net Protocol feeds
 // Extracted from autonomous-loops.js
 
@@ -25,6 +26,10 @@ async function run(aurora) {
 
     const escapedPoem = poem.replace(/"/g, '\\"').replace(/[\r\n]+/g, ' / ');
     const encodeCmd = 'botchan post "' + feed + '" "' + escapedPoem + '" --encode-only --chain-id 8453';
+    // Cross-post poetry to Farcaster (60% chance)
+    if (Math.random() < 0.6) {
+      try { await crossPostText(poem); } catch(e) {}
+    }
     const encoded = JSON.parse(execSync(encodeCmd, { timeout: 15000 }).toString());
 
     const result = await aurora.bankrAPI.submitTransactionDirect(encoded);
