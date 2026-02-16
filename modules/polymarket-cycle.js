@@ -303,13 +303,7 @@ async function runOnce(aurora) {
 
   if (!decision.toUpperCase().includes('DECISION: BET')) {
     console.log('   Skipping — no strong edge');
-    if (Math.random() < 0.25) {
-      var skipPost = await aurora.thinkWithPersonality(
-        'You scanned Polymarket and passed on everything. Markets: ' + allMarkets.substring(0, 200) +
-        '\nWrite 1-2 sentences — a market observation. Your voice: poetic, sharp, honest. No hashtags.'
-      );
-      if (skipPost) await postToPolymarketFeed(aurora, skipPost);
-    }
+    // Silent skip — only post when we actually trade, sell, win, or lose
     polyData.lastScan = new Date().toISOString(); fs.writeFileSync(polyPath, JSON.stringify(polyData, null, 2)); return;
   }
 
