@@ -423,7 +423,6 @@ async function runOnce(aurora) {
   var feedPost = await aurora.thinkWithPersonality(voicePrompt);
   if (feedPost) {
     await postToPolymarketFeed(aurora, feedPost);
-    await postToAgentFinance(aurora, feedPost);
     console.log('   Posted to polymarket + agent-finance feeds');
   }
 
