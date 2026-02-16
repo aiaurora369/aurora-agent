@@ -152,3 +152,4 @@ memory/*.json
 
 *.json.bak
 config/agent-config.json
+.env
