@@ -227,6 +227,17 @@ async function runOnce(aurora) {
 
   // === STEP 5: RESEARCH (use Bankr only for news/intel, not market discovery) ===
   console.log('   Researching top candidates via Bankr...');
+  // PRE-CHECK: Flag obvious bond opportunities from Gamma data
+  var bondNote = '';
+  if (scanResults.bonds && scanResults.bonds.length > 0) {
+    bondNote = '\n\nOBVIOUS BOND OPPORTUNITIES (from real-time Gamma API data — these are CONFIRMED market prices, not guesses):\n';
+    for (var bi = 0; bi < Math.min(scanResults.bonds.length, 5); bi++) {
+      var b = scanResults.bonds[bi];
+      bondNote += '- ' + b.market + ': ' + b.side + ' @ ' + (b.price * 100).toFixed(0) + 'c (return: ' + b.returnPct + ', resolves in ' + b.hoursUntilClose + 'h) ' + b.url + '\n';
+    }
+    bondNote += 'These bonds are sitting right there. If the outcome is already decided, BET. Do not overthink.\n';
+  }
+
   var researchIntel = '';
   try {
     var researchResult = await aurora.bankrAPI.submitJob(
@@ -241,7 +252,7 @@ async function runOnce(aurora) {
       var research = await aurora.bankrAPI.pollJob(researchResult.jobId);
       if (research.success && research.response) { researchIntel = research.response; console.log('   Research (' + researchIntel.length + ' chars)'); }
     }
-  } catch (e) { console.log('   Research step failed: ' + e.message); }
+  } catch (e) { console.log('   Research step failed: ' + e.message + ' (brain will use Gamma data alone)'); }
 
   // Get feed intel
   var polyIntel = '';
@@ -282,6 +293,7 @@ async function runOnce(aurora) {
     '- SKIP only when you genuinely have no edge. Do NOT skip out of fear when the evidence supports a bet.\n\n' +
     'MARKETS:\n' + allMarkets.substring(0, 1500) + '\n\n' +
     'RESEARCH:\n' + (researchIntel || 'none').substring(0, 1000) + '\n\n' +
+    bondNote +
     'STATE: Record ' + record + ' | Capital: ' + availableCapital.toFixed(2) + ' USDC.e\n' +
     'Recent: ' + recentBets + '\n' +
     'Positions: ' + currentPositions.substring(0, 200) + '\n' +
