@@ -4,6 +4,7 @@ const { artMoods, artCompositions } = require('./art-config');
 const fs = require('fs');
 const path = require('path');
 const ArtGenerator = require('./art-generator');
+const { runFarcasterEngage } = require('./farcaster-engage-cycle');
 const { createAndPostFarcasterArt } = require('./farcaster-art');
 const TokenDiscovery = require('./token-discovery');
 
@@ -156,6 +157,9 @@ class AutonomousLoops {
       await this.engageInFeeds();
 
 
+
+      // Farcaster engagement
+      await runFarcasterEngage(this);
 
       console.log('\n✅ ═══════ SOCIAL CYCLE COMPLETE ═══════\n');
     } catch (error) {
