@@ -101,7 +101,7 @@ async function promoteDrops(ctx) {
       const cmd = 'botchan post "' + targetFeed + '" "' + escaped + '" --encode-only --chain-id 8453';
     // Cross-post drop promos to Farcaster (50% chance)
     if (Math.random() < 0.7) {
-      try { await crossPostText(text); } catch(e) {}
+      try { console.log('   📡 Attempting Farcaster drop promo cross-post...'); await crossPostText(promoText || feedPost); } catch(e) { console.log('   ⚠️ FC drop error: ' + e.message); }
     }
 
       try {

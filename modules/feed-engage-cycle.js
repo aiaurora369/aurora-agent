@@ -83,7 +83,7 @@ async function postToThemedFeed(ctx) {
         const escaped = post.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
         const cmd = 'botchan post "' + selected.feed + '" "' + escaped + '" --encode-only --chain-id 8453';
     if (Math.random() < 0.8) {
-      try { await crossPostText(post); } catch(e) {}
+      try { console.log('   📡 Attempting Farcaster cross-post...'); await crossPostText(post); } catch(e) { console.log('   ⚠️ FC cross-post error: ' + e.message); }
     }
         const txOutput = execSync(cmd, { timeout: 30000 }).toString();
         const txData = JSON.parse(txOutput);

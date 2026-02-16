@@ -271,7 +271,7 @@ Respond with ONLY the caption text.`;
       console.log(`   ✅ mfer art posted! ${result.substring(0, 80)}`);
       // Cross-post to Farcaster (50%)
       if (Math.random() < 0.75) {
-        try { await crossPostArt(caption, svg); } catch(e) {}
+        try { console.log('   📡 Attempting Farcaster mfer art cross-post...'); await crossPostArt(caption, art.svg); } catch(e) { console.log('   ⚠️ FC mfer error: ' + e.message); }
       }
       if (result.includes('{')) {
         const txData = JSON.parse(result.substring(result.indexOf('{')));

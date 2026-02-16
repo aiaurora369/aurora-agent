@@ -28,7 +28,7 @@ async function run(aurora) {
     const encodeCmd = 'botchan post "' + feed + '" "' + escapedPoem + '" --encode-only --chain-id 8453';
     // Cross-post poetry to Farcaster (60% chance)
     if (Math.random() < 0.85) {
-      try { await crossPostText(poem); } catch(e) {}
+      try { console.log('   📡 Attempting Farcaster poetry cross-post...'); await crossPostText(poem); } catch(e) { console.log('   ⚠️ FC poetry error: ' + e.message); }
     }
     const encoded = JSON.parse(execSync(encodeCmd, { timeout: 15000 }).toString());
 

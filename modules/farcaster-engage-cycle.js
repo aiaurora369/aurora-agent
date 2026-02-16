@@ -94,12 +94,13 @@ async function runFarcasterEngage(loopContext) {
 
     // 2. Like up to 5 posts (80% chance each)
     let likesGiven = 0;
+    const liked = new Set();
     for (const cast of candidates.slice(0, 8)) {
       if (Math.random() < 0.8) {
         try {
           await likeCast(cast.hash);
           likesGiven++;
-          engaged.add(cast.hash);
+          liked.add(cast.hash);
           console.log(`   ❤️ Liked @${cast.author.username}: "${cast.text.substring(0, 50)}..."`);
         } catch (e) {
           console.log(`   ⚠️ Like failed: ${e.message}`);
@@ -108,7 +109,7 @@ async function runFarcasterEngage(loopContext) {
     }
 
     // 3. Pick 1-2 to reply to — prioritize posts mentioning Aurora or with good engagement
-    const replyPool = candidates.filter(c => !engaged.has(c.hash)).slice(0, 10);
+    const replyPool = candidates.slice(0, 10);
 
     // Prioritize: mentions of Aurora first, then most interesting
     const mentionsAurora = replyPool.filter(c =>
@@ -143,6 +144,7 @@ Respond with ONLY your reply text.`;
         if (reply) {
           const result = await replyCast(cast.hash, reply);
           engaged.add(cast.hash);
+          liked.forEach(h => engaged.add(h));
           repliesGiven++;
           console.log(`   💬 Replied to @${cast.author.username}: "${reply.substring(0, 60)}..."`);
           if (result.cast) {

@@ -243,7 +243,7 @@ Respond with ONLY the caption text.`;
     const postText = caption.trim();
     // Cross-post to Farcaster (50%)
     if (Math.random() < 0.75) {
-      try { await crossPostArt(postText, svg); } catch(e) {}
+      try { console.log('   📡 Attempting Farcaster JBM art cross-post...'); await crossPostArt(postText, art.svg); } catch(e) { console.log('   ⚠️ FC JBM error: ' + e.message); }
     }
     const cmd = `botchan post "${feed}" "${postText.replace(/"/g, '\\"')}" --data '${art.svg.replace(/'/g, "\\'")}' --encode-only --chain-id 8453`;
 
