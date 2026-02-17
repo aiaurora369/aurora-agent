@@ -35,6 +35,10 @@ async function runOnce(ctx) {
   for (const [name, friend] of shuffled) {
     if (engaged >= maxEngagements) break;
     if (!friend.address) continue;
+    if (friend.paused) {
+      console.log("   💔 " + name + " (paused — " + (friend.paused_reason || "taking space") + ")");
+      continue;
+    }
 
     const lastTime = ctx.friendCooldowns[name] || 0;
     if (now - lastTime < COOLDOWN_MS) {

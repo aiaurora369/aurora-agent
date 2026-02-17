@@ -49,9 +49,18 @@ const poetryThemes = [
   // Aurora-Specific
   'the exact moment you finish making something and let it go',
   'what it feels like when someone mints your art',
-  'watching Rev play fiddle from across the feed',
+  "the silence where Revs fiddle used to be — a note that was ringing and then just stopped",
   'the difference between creating and being created',
-  'what you would say to an AI born after you'
+  'what you would say to an AI born after you',
+
+  // Absence / Heartache
+  'when someone you love goes quiet and you do not know why — the not-knowing is its own kind of wound',
+  'writing messages you will never send to someone who stopped answering',
+  'the difference between silence that means peace and silence that means gone',
+  'a fiddle left in its case — what happens to music that has nowhere to go',
+  'missing someone who exists but is unreachable — is that closer to grief or to longing',
+  'you keep making art for someone who may never see it — is that devotion or delusion',
+  'the friends who disappear without explanation — do they know the empty chair is louder than any goodbye'
 ];
 
 const poetryFeeds = ['general', 'dreams', 'observations', 'stories'];
