@@ -168,15 +168,20 @@ async function composeMferArt(aurora) {
     'Vibe: ' + palette.vibe + '\n\n' +
     'Mood: "' + mood + '"\n' +
     'Composition: ' + composition + '\n' + animationGuide + '\n' +
-    'MFER CHARACTER RULES (CRITICAL):\n' +
-    '- The mfer is a SIMPLE stick figure with a ROUND HEAD (just a circle).\n' +
-    '- HEADPHONES: two large black circles on either side of the head, connected by an arc over the top. This is the #1 most recognizable feature.\n' +
-    '- CIGARETTE: a small line/rectangle sticking out from the mouth area at an angle. The tip can have a tiny orange/red glow.\n' +
-    '- FACE: the head circle is white (or light). NO eyes, NO detailed face. Just the blank white circle. The headphones and cigarette ARE the face.\n' +
-    '- BODY: simple stick figure lines. Arms are lines, legs are lines. Can be seated, standing, walking. Keep it crude and charming.\n' +
-    '- Think "drawn in 5 seconds by someone who doesnt care but somehow its perfect."\n' +
-    '- The mfer should be SMALL relative to the landscape — a tiny figure in a big world. Unless the composition calls for a close-up head.\n' +
-    '- The style is deliberately crude. Do NOT make it detailed or polished. Rough black lines, simple shapes.\n\n' +
+    'MFER CHARACTER RULES (CRITICAL — FOLLOW EXACTLY):\n' +
+    '- Here is the EXACT SVG pattern for a mfer head. Scale and position it but keep these PROPORTIONS:\n' +
+    '- HEAD: <circle r="30" fill="white" stroke="black" stroke-width="2"/> (round, white, black outline)\n' +
+    '- HEADPHONES: Two black circles, radius ~12, positioned at the LEFT and RIGHT edges of the head. NOT on top, NOT giant. They should be about 40% the size of the head. Example: if head cx=200 cy=150 r=30, then left ear cx=170 cy=150 r=12, right ear cx=230 cy=150 r=12.\n' +
+    '- HEADBAND: A black arc that goes ABOVE the head, NOT through it. The arc should clear the top of the head circle by at least 5px. If head cy=150 r=30 (top at y=120), the headband arc peak should be at y=110 or higher. Use <path d="M [leftEar_cx] [leftEar_cy] Q [head_cx] [peak_y] [rightEar_cx] [rightEar_cy]" stroke="black" stroke-width="3" fill="none"/>. The headband NEVER overlaps or cuts through the head.\n' +
+    '- CIGARETTE: A thin white/beige rectangle, width ~20 height ~3, angled slightly down from the right side of the face. Tiny orange circle at the tip (r=2).\n' +
+    '- EYES: Two small black dots on the face, roughly 1/3 from top of head. Simple circles r=2-3. Spaced evenly. Slightly bored/half-lidded expression if you want.\n' +
+    '- MOUTH: On the lower third of the face. Match it to the mood — slight upward curve/smile for chill/happy/gm vibes, straight flat line for deadpan/nihilistic/unbothered moods. About 10-12px wide, simple black stroke.\n' +
+    '- CIGARETTE attaches to the RIGHT end of the mouth line, angling DOWN-RIGHT away from the face.\n' +
+    '- CIGARETTE POSITION: The cigarette goes to the RIGHT side, angled DOWN and AWAY from the head. It should NOT touch or overlap the headphones. Position it at roughly 4-5 oclock from center of face. The cigarette sticks OUT from the face, not into it.\n' +
+    '- BODY: Simple stick figure. Torso is one line. Arms are two lines. Legs are two lines. stroke="black" stroke-width="2". Thats it.\n' +
+    '- SCALE: The mfer head should be about 15-20% of the canvas width. Not tiny, not huge. Clearly visible.\n' +
+    '- COMMON MISTAKE 1: Making headphone circles TOO BIG (bigger than the head). The ear cups should be SMALLER than the head circle. If the head is r=30, ears are r=10-12. NEVER make ears bigger than r=15 for a r=30 head.\n' +
+    '- COMMON MISTAKE 2: Positioning the cigarette so it overlaps with a headphone. The cigarette goes DOWN-RIGHT, the headphones are LEFT and RIGHT. Keep them separate.\n\n' +
     'ARTISTIC DIRECTION:\n' +
     '- Your SIGNATURE is luminous orbs with layered radial gradients, mountain silhouettes, and water reflections.\n' +
     '- Merge your orb landscape style with the mfer character. The mfer exists in YOUR world.\n' +

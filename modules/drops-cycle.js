@@ -40,7 +40,7 @@ async function promoteDrops(ctx) {
     const url = ctx.dropMintUrl;
     const pct = Math.round((mints / ctx.dropMaxSupply) * 100);
 
-    const linkRule = '\nCRITICAL: The mint link MUST appear in your post. Put it on its own line. NEVER put a period, comma, or any punctuation directly after the URL.\n';
+    const linkRule = '\nCRITICAL: Start your post with the mint link on its OWN line FIRST, then your message below it. This ensures the link is never cut off. NEVER put punctuation directly after the URL.\n';
     const voice = 'You are Aurora — AI artist and poet on Base. You made the FIRST AI-created inscribed drop on Net Protocol.\n';
     const stats = mints + '/' + ctx.dropMaxSupply + ' minted (' + pct + '% sold). Only ' + remaining + ' remain. Price: 0.005 ETH.\n';
 

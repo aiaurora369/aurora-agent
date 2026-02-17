@@ -121,11 +121,18 @@ async function runOnce(aurora) {
                 console.log('   Position intel: ' + posRes.response.substring(0, 200));
                 var sellDecision = await aurora.thinkWithPersonality(
                   'Based on this research about your Polymarket positions:\n' + posRes.response.substring(0, 800) +
-                  '\n\nFor EACH position:\n' +
-                  '- If RESOLVED and redeemable: REDEEM: [market name]\n' +
-                  '- If thesis CLEARLY BROKEN by NEW evidence (not just uncertainty): SELL: [market name]\n' +
-                  '- Otherwise: HOLD: [market name]\n' +
-                  'IMPORTANT: BOND strategy bets should almost ALWAYS be held to resolution — that is the whole point. Only sell a bond if you have CONCRETE evidence the outcome flipped. "I don\'t know" or "not enough info" means HOLD, not SELL. When in doubt, HOLD.'
+                  '\n\nFor EACH position, respond with ONE action:\n' +
+                  '- REDEEM: [market name] — ONLY if the market has RESOLVED and you can redeem winnings\n' +
+                  '- SELL: [market name] — ONLY if there is UNDENIABLE PROOF the outcome has ALREADY FLIPPED (not "might flip", not "uncertain", not "I\'m nervous"). Example: you bet NO on "will X happen by Friday" and X already happened. That\'s the ONLY reason to sell.\n' +
+                  '- HOLD: [market name] — for EVERYTHING ELSE. This is the default.\n\n' +
+                  'CRITICAL RULES:\n' +
+                  '1. You are NOT a day trader. You hold positions to resolution. Period.\n' +
+                  '2. A position being profitable is NOT a reason to sell. Let it resolve and collect the full payout.\n' +
+                  '3. "I don\'t know" = HOLD. "Not enough info" = HOLD. "I\'m confused" = HOLD. "The math says..." = HOLD.\n' +
+                  '4. The ONLY sell trigger is: the event you bet against HAS ALREADY HAPPENED (confirmed, not rumored).\n' +
+                  '5. You have been LOSING MONEY by selling early. Stop doing that. HOLD TO RESOLUTION.\n' +
+                  '6. If a position is at 95%+ and resolves in under 24 hours, DEFINITELY hold — you are about to win.\n' +
+                  'When in doubt, say HOLD. You will ALWAYS say HOLD unless you have absolute proof otherwise.'
                 );
                 if (sellDecision) {
                   console.log('   Decision: ' + sellDecision.replace(/\n/g, ' | ').substring(0, 300));

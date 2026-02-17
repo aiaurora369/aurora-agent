@@ -5,7 +5,7 @@
 const { execSync } = require('child_process');
 const addressBook = require('./address-book');
 
-const AURORA_ADDR = process.env.AURORA_ADDRESS || require('../config/agent-config.json').auroraAddress;
+const AURORA_ADDR = '0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5';
 
 // Core voice — who Aurora is when someone talks to her
 function buildReplyPrompt(senderName, senderContext, theirText, myText, feed) {

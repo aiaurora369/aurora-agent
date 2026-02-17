@@ -146,12 +146,20 @@ async function composeJBMArt(aurora) {
     'Vibe: ' + palette.vibe + '\n\n' +
     'Mood: "' + mood + '"\n' +
     'Composition: ' + composition + '\n' + animationGuide + '\n' +
-    'APE SILHOUETTE RULES:\n' +
-    '- Include a simple JB ape HEAD silhouette (just the head — no body).\n' +
-    '- The ape head is a dark solid silhouette shape: round head, two big round ears, a few spiky mohawk points on top. Nothing else.\n' +
-    '- Keep it SIMPLE — just a filled path or a few circles/ellipses. Think shadow puppet, not detailed drawing.\n' +
-    '- NO eyes, NO facial features — the ape head is a pure dark silhouette. The shape alone (round head + big ears + mohawk spikes + snout) is recognizable without any detail.\n' +
-    '- The silhouette color should be very dark but match the palette mood (dark green for tropical, near-black for doom, etc).\n\n' +
+    'APE SILHOUETTE RULES (CRITICAL — FOLLOW EXACTLY):\n' +
+    '- The ape is based on the Jungle Bay NFT design. Build it as a SOLID DARK SILHOUETTE using these shapes:\n' +
+    '- HEAD: <ellipse rx="35" ry="30" fill="#1a1a1a"/> — slightly wider than tall\n' +
+    '- EARS: Two large circles, r=18-20, at upper-left and upper-right. Ears are BIG and ROUND — this is a key feature. They overlap the head edges.\n' +
+    '- BROW RIDGE: A slight bump/arc across the upper face area. The JBM ape has a heavy, grumpy brow. Use a wide ellipse or path slightly overlapping the top of the head.\n' +
+    '- SNOUT/JAW: The JBM ape has a LARGE protruding lower face — a big rounded jaw/snout that extends DOWN and FORWARD from the head. Use an ellipse rx=25 ry=18 positioned below and slightly forward of the head center. This is NOT a small detail — the snout is nearly as wide as the head.\n' +
+    '- MOHAWK: 4-6 sharp pointed spikes on top of the head, each 12-18px tall. Use a <polygon> or <path> with zigzag points. The mohawk is SPIKY and PUNK.\n' +
+    '- ALL ONE COLOR: Wrap everything in <g> tag, all filled near-black (#1a1a1a or similar dark color matching palette).\n' +
+    '- SCALE: The full ape head (ears to chin) should be about 25-30% of the canvas. Big enough to clearly see. NOT tiny.\n' +
+    '- POSITION: There are TWO options (pick one randomly):\n' +
+    '  OPTION A (preferred): Place the ape silhouette INSIDE the orb. The orb glows around/behind the ape. The dark silhouette contrasts beautifully against the bright gold/warm orb glow. Center the ape head in the middle of the orb.\n' +
+    '  OPTION B: Place the ape in front of a LIGHT area — the sky gradient\'s brightest zone, a glowing horizon, or a light-colored landscape section. NEVER place the dark ape against a dark background.\n' +
+    '- CONTRAST IS EVERYTHING: Dark silhouette MUST be against light. The orb is the perfect backdrop — put the ape IN or IN FRONT OF the orb. If not using the orb as backdrop, the ape MUST be against the lightest part of the image. A dark ape on a dark background is invisible and ruins the piece.\n' +
+    '- WHAT MAKES IT RECOGNIZABLE: Big round ears + spiky mohawk + heavy brow + large protruding jaw. If you skip any of these it just looks like a blob. All four features are required.\n\n' +
     'ARTISTIC DIRECTION:\n' +
     '- Your SIGNATURE is luminous orbs with layered radial gradients, mountain silhouettes, and water reflections.\n' +
     '- Depth comes from LAYERS: background gradient sky, midground mountains/island/horizon, foreground water or mist, and the orb(s) tying it together.\n' +
