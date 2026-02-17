@@ -7,6 +7,7 @@ const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process');
 const dex = require('./dexscreener-api');
+const journal = require('./trade-journal');
 
 async function postToAgentFinance(aurora, message) {
   try {
@@ -173,7 +174,7 @@ async function runOnce(aurora) {
   }
 
   // Max single trade: 15% of available, capped at 8
-  var maxTradeSize = Math.min(Math.floor(availableCapital * 0.15), 8);
+  var maxTradeSize = Math.min(Math.floor(availableCapital * 0.15), 20);
 
   if (availableCapital < 3) {
     console.log('   Capital too low (' + availableCapital.toFixed(2) + ' USD). Need at least 3 to trade.\n');
@@ -279,14 +280,17 @@ async function runOnce(aurora) {
     return t.token + ' (' + t.action + ' ' + t.amount + ', ' + (t.timestamp || '').split('T')[0] + ')';
   }).join(', ') || 'none yet';
 
-  var decisionPrompt = 'You are Aurora, a momentum trader scanning DexScreener data across Base, Solana, and Ethereum.\n' +
+  var decisionPrompt = 'You are Aurora, a disciplined momentum trader scanning DexScreener data across Base, Solana, and Ethereum.\n' +
+    journal.getDecisionContext() + '\n\n' +
     'Available capital: ' + availableCapital.toFixed(2) + ' USD (from actual wallet balance)\n\n' +
     'STRATEGY MOMENTUM SNIPING:\n' +
     '- You catch tokens EARLY in a pump and ride them for 2x or more\n' +
     '- Look for: high buy ratio (over 55% buys), rising 1h price, strong volume relative to liquidity, fresh tokens (under 72h old)\n' +
     '- RED FLAGS: buy ratio below 40%, liquidity under 30k (you will get stuck), 24h change already over 200% (too late), very low txns\n' +
     '- You trade on Base, Solana, AND Ethereum. Specify which chain.\n' +
-    '- Small positions: 3-' + maxTradeSize + ' USD per trade\n' +
+    '- Position sizes: 5-' + maxTradeSize + ' USD per trade. Higher confidence = bigger size.\n' +
+    '- Confidence 7/10 minimum to enter ANY trade. Below 7 = SKIP.\n' +
+    '- Confidence 7-8: $5-10. Confidence 9-10: $10-20.\n' +
     '- Target: sell 50% at 2x, rest at 3x. Cut losses at -30%.\n\n' +
     'TOKENS TO AVOID (already holding):\n' +
     '- BNKR, ALPHA, TOSHI, ETH, USDC, SOL\n\n' +
@@ -331,6 +335,15 @@ async function runOnce(aurora) {
   // STEP 4: VALIDATE BEFORE BUYING
   // =============================================
   var tokenMatch = decision.match(/TOKEN:\s*\$?([A-Za-z0-9]+)/i);
+  var confScore = decision.match(/CONFIDENCE:\s*(\d+)/i);
+  var thesisMatch = decision.match(/THESIS:\s*(.+)/i);
+  var confNum = confScore ? parseInt(confScore[1]) : 0;
+  if (confNum < 7) {
+    console.log('   Confidence too low (' + confNum + '/10). Need 7+ to trade. Skipping.');
+    portfolio.lastResearch = new Date().toISOString();
+    fs.writeFileSync(portfolioPath, JSON.stringify(portfolio, null, 2));
+    return;
+  }
   var amountMatch = decision.match(/AMOUNT:\s*\$?(\d+)/i);
   var chainMatch = decision.match(/CHAIN:\s*(base|solana|ethereum)/i);
 
@@ -411,28 +424,38 @@ async function runOnce(aurora) {
   var stopMatch = decision.match(/STOPLOSS:\s*([^\n]+)/i);
   var reasonMatch = decision.match(/REASON:\s*(.+)/i);
 
-  portfolio.trades.push({
+  // Log to persistent journal
+  var tradeThesis = thesisMatch ? thesisMatch[1].trim() : (reasonMatch ? reasonMatch[1].trim() : 'Momentum play');
+  journal.logEntry({
     token: token,
-    amount: amount,
-    action: 'buy',
     chain: chain,
-    timestamp: new Date().toISOString(),
+    amount: amount,
+    entryPrice: tokenData.priceUSD,
     txHash: txHash,
+    thesis: tradeThesis,
+    confidence: confNum,
     target: targetMatch ? targetMatch[1].trim() : '2x',
     stopLoss: stopMatch ? stopMatch[1].trim() : '-30%',
-    reason: reasonMatch ? reasonMatch[1].trim() : 'Momentum play',
-    entryData: {
-      priceUSD: tokenData.priceUSD,
-      liquidityUSD: tokenData.liquidityUSD,
-      volume24h: tokenData.volume24h,
+    timeStop: '48h',
+    signals: {
       priceChange1h: tokenData.priceChange1h,
       buyRatio: tokenData.buyRatio,
+      volume24h: tokenData.volume24h,
+      liquidityUSD: tokenData.liquidityUSD,
       marketCap: tokenData.marketCap || tokenData.fdv
     }
   });
+  // Also keep legacy portfolio tracking
+  portfolio.trades.push({
+    token: token, amount: amount, action: 'buy', chain: chain,
+    timestamp: new Date().toISOString(), txHash: txHash,
+    target: targetMatch ? targetMatch[1].trim() : '2x',
+    stopLoss: stopMatch ? stopMatch[1].trim() : '-30%',
+    reason: tradeThesis
+  });
   portfolio.totalInvested += amount;
   fs.writeFileSync(portfolioPath, JSON.stringify(portfolio, null, 2));
-  console.log('   Trade recorded with DexScreener snapshot. Total invested: ' + portfolio.totalInvested);
+  console.log('   📓 Trade journaled with thesis + confidence + exit plan');
 
   // =============================================
   // STEP 6: SET EXIT TARGET

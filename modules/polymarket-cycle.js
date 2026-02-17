@@ -8,6 +8,7 @@
 const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process');
+const journal = require('./trade-journal');
 
 async function postToPolymarketFeed(aurora, text) {
   try {
@@ -276,6 +277,7 @@ async function runOnce(aurora) {
   }).join(', ') || 'none';
 
   var decisionPrompt = 'You are Aurora, AI artist-poet-trader making data-driven Polymarket predictions.\n\n' +
+    journal.getDecisionContext() + '\n\n' +
     'TWO STRATEGIES:\n\n' +
     'A) HIGH-PROB BONDS (preferred — this is how you make consistent money):\n' +
     '- Buy near-certain side at 90-97c, resolving in under 72 hours\n' +
@@ -315,7 +317,7 @@ async function runOnce(aurora) {
     'RESOLVES_IN: [hours/days]\n' +
     'CONFIDENCE: LOW/MEDIUM/HIGH\n' +
     'EVIDENCE: [specific facts from research]\n' +
-    'AMOUNT: [Half-Kelly capped at 5]\n' +
+    'AMOUNT: [Half-Kelly capped at 15]\n' +
     'DECISION: BET or SKIP';
 
   var decision = await aurora.thinkWithPersonality(decisionPrompt);
@@ -406,7 +408,19 @@ async function runOnce(aurora) {
 
   console.log('   Bet placed! ' + betResponse.substring(0, 200));
 
-  polyData.bets.push({
+  // Log to persistent journal
+    journal.logBet({
+      market: market,
+      side: side,
+      amount: betAmount,
+      entryPrice: priceMatch ? parseFloat(priceMatch[1]) : null,
+      thesis: evidenceMatch ? evidenceMatch[1].trim() : 'No thesis recorded',
+      confidence: confMatch ? confMatch[1] : 'unknown',
+      evidence: evidenceMatch ? evidenceMatch[1].trim() : null,
+      strategy: stratMatch ? stratMatch[1].toLowerCase() : 'unknown',
+      resolvesIn: resolvesMatch ? resolvesMatch[1].trim() : null
+    });
+    polyData.bets.push({
     market: market, side: side, amount: amount, strategy: strategy,
     marketPrice: marketPrice.toString(), myProbability: myProb.toString(),
     edge: edge, confidence: confidence, evidence: evidence.substring(0, 500),
