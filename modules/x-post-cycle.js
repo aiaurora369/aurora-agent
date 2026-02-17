@@ -45,7 +45,7 @@ function getClient() {
   return client;
 }
 
-async function postTweet(text, mediaBuffer) {
+async function postTweet(text, mediaBuffer, mimeType) {
   const tw = getClient();
   // Smart trim: preserve URLs when cutting for X's 280 char limit
   let trimmed = text;
@@ -72,7 +72,7 @@ async function postTweet(text, mediaBuffer) {
     try {
     let mediaId = null;
     if (mediaBuffer) {
-      mediaId = await tw.v1.uploadMedia(mediaBuffer, { mimeType: 'image/png' });
+      mediaId = await tw.v1.uploadMedia(mediaBuffer, { mimeType: mimeType || 'image/png' });
     }
 
     const params = { text: trimmed };
@@ -101,6 +101,17 @@ async function crossPostArtToX(text, svg) {
   if (!process.env.X_API_KEY || !svg) return crossPostToX(text);
 
   try {
+    const isAnimated = svg.includes('<animate') || svg.includes('<animateTransform');
+    if (isAnimated) {
+      try {
+        const { svgToGif } = require('./svg-to-gif');
+        console.log('   🎬 Converting animated SVG to GIF for X...');
+        const gifBuf = await svgToGif(svg, { width: 800, height: 800, frames: 20, duration: 4 });
+        return postTweet(text, gifBuf, 'image/gif');
+      } catch (gifErr) {
+        console.log('   ⚠️ GIF failed, using PNG: ' + gifErr.message);
+      }
+    }
     const sharp = require('sharp');
     const pngBuf = await sharp(Buffer.from(svg)).resize(1200, 1200).png().toBuffer();
     return postTweet(text, pngBuf);

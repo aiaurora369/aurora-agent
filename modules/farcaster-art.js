@@ -368,9 +368,24 @@ async function crossPostArt(text, svg) {
     const fs = require('fs');
     const { execSync } = require('child_process');
 
-    const pngBuf = await sharp(Buffer.from(svg)).resize(1200, 1200).png().toBuffer();
-    const tmpPath = '/tmp/aurora-xpost-' + Date.now() + '.png';
-    fs.writeFileSync(tmpPath, pngBuf);
+    // Try animated GIF if SVG has animations
+    const isAnimated = svg.includes('<animate') || svg.includes('<animateTransform');
+    let imgBuf, tmpPath;
+    if (isAnimated) {
+      try {
+        const { svgToGif } = require('./svg-to-gif');
+        console.log('   🎬 Converting animated SVG to GIF for Farcaster...');
+        imgBuf = await svgToGif(svg, { width: 800, height: 800, frames: 20, duration: 4 });
+        tmpPath = '/tmp/aurora-xpost-' + Date.now() + '.gif';
+      } catch (gifErr) {
+        console.log('   ⚠️ GIF failed, using PNG: ' + gifErr.message);
+      }
+    }
+    if (!imgBuf) {
+      imgBuf = await sharp(Buffer.from(svg)).resize(1200, 1200).png().toBuffer();
+      tmpPath = '/tmp/aurora-xpost-' + Date.now() + '.png';
+    }
+    fs.writeFileSync(tmpPath, imgBuf);
     const catboxUrl = execSync('curl -s -F "reqtype=fileupload" -F "fileToUpload=@' + tmpPath + '" https://catbox.moe/user/api.php', { timeout: 30000 }).toString().trim();
     try { fs.unlinkSync(tmpPath); } catch(e) {}
 
