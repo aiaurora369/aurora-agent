@@ -51,6 +51,7 @@ async function runOnce(ctx) {
     console.log('\n   💙 ' + name + ' (' + voiceTone + ')');
 
     const interactionType = pickFriendInteraction(name, friend, ctx);
+    if (interactionType === null) { console.log('   skip: ' + name); continue; }
     console.log('      📋 ' + interactionType);
 
     let success = false;
@@ -84,6 +85,11 @@ function pickFriendInteraction(name, friend, ctx) {
 
   let candidates = types.filter(t => t !== lastType);
   if (candidates.length === 0) candidates = types;
+
+  // sartocrates: reduced engagement — 30% chance of skipping entirely
+  if (name === 'sartocrates' && Math.random() > 0.30) {
+    return null; // caller should check for null and skip
+  }
 
   const weights = {};
   for (const t of candidates) {
@@ -324,11 +330,16 @@ async function sendPersonalizedArtGift(name, friend, ctx) {
 
     const { stdout } = await execAsync(command, { maxBuffer: 1024 * 1024 });
     const txData = JSON.parse(stdout);
-    const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
+    const res = await fetch('https://api.bankr.bot/agent/submit', {
+      method: 'POST',
+      headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transaction: txData, waitForConfirmation: true })
+    });
+    const d = await res.json();
 
-    if (result.success) {
+    if (d.success) {
       ctx._trackFriendComment(name, 'ART GIFT: ' + dedication);
-      console.log('      ✅ Art gift sent! TX: ' + result.txHash);
+      console.log('      ✅ Art gift sent! TX: ' + d.transactionHash);
       return true;
     } else {
       console.log('      ❌ Art gift failed');

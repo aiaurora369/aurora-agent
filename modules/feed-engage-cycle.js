@@ -163,7 +163,23 @@ async function respondToWallPosts(ctx) {
 
       if (response) {
         console.log('   💬 "' + response.substring(0, 70) + '..."');
-        const result = await ctx.aurora.netComment.commentOnPost(post, response);
+        let result;
+        if (Math.random() < 0.30) {
+          try {
+            const { composeMferMeme } = require('./mfer-meme');
+            const meme = await composeMferMeme(ctx.aurora);
+            if (meme && meme.valid) {
+              console.log('   🎭 Attaching mfer meme to wall reply');
+              result = await ctx.aurora.netComment.commentOnPostWithArt(post, response, meme.svg);
+            } else {
+              result = await ctx.aurora.netComment.commentOnPost(post, response);
+            }
+          } catch(e) {
+            result = await ctx.aurora.netComment.commentOnPost(post, response);
+          }
+        } else {
+          result = await ctx.aurora.netComment.commentOnPost(post, response);
+        }
         if (result.success) {
           ctx._markCommented(post);
           console.log('   ✅ Replied on wall! TX: ' + result.txHash + '\n');
