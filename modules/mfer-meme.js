@@ -330,17 +330,14 @@ async function postMemeToFeed(aurora, svg, caption) {
     .replace(/'/g, ' ')
     .replace(/"/g, ' ')
     .substring(0, 280);
+  const escapedSvg = svg.replace(/'/g, "'\\'''");
 
   try {
     const txOutput = execSync(
-      `botchan post "mfers" "${safeCaption}" --encode-only --chain-id ${CHAIN_ID}`,
+      `botchan post "mfers" "${safeCaption}" --data '${escapedSvg}' --encode-only --chain-id ${CHAIN_ID}`,
       { timeout: 30000 }
     ).toString();
     const txData = JSON.parse(txOutput);
-
-    // Add SVG as data field
-    txData.data = Buffer.from(JSON.stringify({ svg, caption: safeCaption })).toString('hex');
-
     const result = await aurora.bankrAPI.submitTransactionDirect(txData);
     return result.success
       ? { success: true, txHash: result.txHash || result.response }
