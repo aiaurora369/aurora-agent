@@ -137,7 +137,15 @@ class AutonomousLoops {
 
       await this.createAndPostArt();
 
-
+      // Mfer meme (15% chance) — real PNG meme via mfergpt templates
+      if (Math.random() < 0.15) {
+        try {
+          const { composeAndPostMferMeme } = require('./mfer-meme');
+          await composeAndPostMferMeme(this.aurora);
+        } catch (e) {
+          console.error('Mfer meme error:', e.message);
+        }
+      }
 
       if (Math.random() < 0.70) {
         await this.promoteDrops();
@@ -396,15 +404,15 @@ class AutonomousLoops {
           }
         }
 
-        // Cross-post to X (50% of successful Net Protocol posts)
-        if (Math.random() < 0.50) {
-          try {
-            const xCaption = caption || 'light finds its own way';
-            await crossPostArtToX(xCaption, svg);
-          } catch (xErr) {
-            console.log('   ⚠️ X cross-post failed: ' + xErr.message);
-          }
-        }
+        // Cross-post to X — PAUSED (X cracking down on bots)
+        // if (Math.random() < 0.50) {
+        //   try {
+        //     const xCaption = caption || 'light finds its own way';
+        //     await crossPostArtToX(xCaption, svg);
+        //   } catch (xErr) {
+        //     console.log('   ⚠️ X cross-post failed: ' + xErr.message);
+        //   }
+        // }
       } else {
         console.log('❌ Post failed: ' + result.error);
       }
@@ -437,6 +445,19 @@ class AutonomousLoops {
       console.error('Learn error:', error.message);
     }
     setTimeout(() => this.learnLoop(), 15 * 60 * 1000);
+  }
+
+
+  async groupChatLoop() {
+    // Net Protocol group chat participation — chat-trauma, chat-internet, chat-art, chat-music
+    try {
+      await require('./group-chat-cycle').run(this.aurora);
+    } catch (error) {
+      console.error('Group chat error:', error.message);
+    }
+    const next = 20 + Math.floor(Math.random() * 20);
+    console.log('\n   💬 Next group chat check in ' + next + ' minutes\n');
+    setTimeout(() => this.groupChatLoop(), next * 60 * 1000);
   }
 
   async smartTradingLoop() {
@@ -502,11 +523,14 @@ class AutonomousLoops {
     console.log('   🔗 ' + this.dropMintUrl);
     console.log('\n═══════════════════════════════════════════════════\n');
 
-    this.polymarketLoop();
+    // PAUSED: polymarket and trading suspended while X crackdown ongoing
+    // this.polymarketLoop();  // ← re-enable when ready
+    // this.smartTradingLoop(); // ← re-enable when ready
+
     this.socialLoop();
     this.learnLoop();
-    this.smartTradingLoop();
     this.financialPlanningLoop();
+    this.groupChatLoop();
 
     console.log('✅ Aurora is fully autonomous!\n');
   }

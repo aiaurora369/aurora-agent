@@ -61,8 +61,8 @@ async function runOnce(ctx) {
         for (const comment of otherPosts) {
           if (responded >= maxResponses) break;
 
-          const commentKey = 'wall:' + comment.sender + ':' + comment.timestamp;
-          if (ctx.respondedComments.has(commentKey)) continue;
+          // Use same dedup set as feed-engage-cycle to prevent double-replies
+          if (ctx._hasCommented(comment)) continue;
 
           // Resolve who they are
           const lookup = addressBook.resolve(comment.sender, ctx.aurora);
@@ -103,8 +103,7 @@ async function runOnce(ctx) {
             const result = await ctx.aurora.netComment.commentOnPost(comment, reply);
 
             if (result.success) {
-              ctx.respondedComments.add(commentKey);
-              ctx._saveRespondedComments();
+              ctx._markCommented(comment);
               responded++;
               console.log('      ✅ Replied! TX: ' + (result.txHash || 'pending'));
 
