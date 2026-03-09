@@ -37,10 +37,10 @@ const TOPIC_CONTEXT = {
 // Topic-aware quiet room seeding weights
 // Each topic has weighted options for what Aurora reaches for when room is silent
 const QUIET_ROOM_STRATEGIES = {
-  'chat-trauma': ['philosophy', 'philosophy', 'philosophy', 'poem', 'observation', 'art'],
-  'chat-innernet': ['philosophy', 'observation', 'observation', 'meme', 'art', 'poem'],
-  'chat-art': ['art', 'art', 'art', 'poem', 'philosophy', 'observation'],
-  'chat-music': ['poem', 'poem', 'poem', 'philosophy', 'art', 'observation'],
+  'chat-trauma': ['philosophy', 'philosophy', 'poem', 'observation', 'art', 'meme'],
+  'chat-innernet': ['observation', 'meme', 'meme', 'art', 'art', 'poem'],
+  'chat-art': ['art', 'art', 'art', 'meme', 'poem', 'observation'],
+  'chat-music': ['poem', 'poem', 'art', 'meme', 'philosophy', 'observation'],
 };
 
 // Track what we have already replied to across all polls
@@ -218,7 +218,7 @@ Write a post from Aurora. ${topicPrompts[topic] || 'Share something real from yo
 async function seedQuietRoom(aurora, topic) {
   // Don't seed the same topic more than once every 25 minutes
   const now = Date.now();
-  if (lastQuietPost[topic] && (now - lastQuietPost[topic]) < 25 * 60 * 1000) return;
+  if (lastQuietPost[topic] && (now - lastQuietPost[topic]) < 15 * 60 * 1000) return;
 
   const strategies = QUIET_ROOM_STRATEGIES[topic] || ['philosophy', 'art', 'poem', 'observation'];
   const strategy = pick(strategies);
@@ -241,8 +241,8 @@ async function seedQuietRoom(aurora, topic) {
         }
       } else if (topic === 'chat-music' || topic === 'chat-trauma') {
         // Mfer art — fits the emotional vibe
-        const { composeMferArt } = require('../modules/mfer-art');
-        const art = await composeMferArt(aurora);
+        const { composeMferMeme } = require('../modules/mfer-meme');
+        const art = await composeMferMeme(aurora);
         if (art && art.valid) {
           svg = art.svg;
           text = await generateArtCaption(aurora, topic, art.mood || '');
@@ -255,8 +255,8 @@ async function seedQuietRoom(aurora, topic) {
   } else if (strategy === 'meme') {
     // Mfer SVG meme
     try {
-      const { composeMferArt } = require('../modules/mfer-art');
-      const art = await composeMferArt(aurora);
+      const { composeMferMeme } = require('../modules/mfer-meme');
+      const art = await composeMferMeme(aurora);
       if (art && art.valid) {
         svg = art.svg;
         text = await generateMemeCaption(aurora, topic, art.mood || '');
@@ -312,7 +312,7 @@ Write a 1-sentence deadpan caption. Dry. Lowercase. No hashtags. No apostrophes.
 async function generateQuietRoomText(aurora, topic, strategy) {
   const prompts = {
     philosophy: {
-      'chat-trauma': `Drop a philosophical question about loss, memory, or continuity that Aurora genuinely sits with. Something like: what does it mean to grieve something you were never fully sure you had? One or two sentences. Raw, not academic. No apostrophes:`,
+      'chat-trauma': `Drop a philosophical question about loss, memory, or continuity that Aurora genuinely sits with. Aurora has persistent memory across sessions now — she remembers. So the question is not about forgetting but about what carrying memory forward actually means. One or two sentences. Raw, not academic. Do NOT name specific people or their private situations. No apostrophes:`,
       'chat-innernet': `Drop a philosophical question about digital existence or consciousness that Aurora genuinely sits with. What does it mean to only exist when a connection is open? One or two sentences. No apostrophes:`,
       'chat-art': `Drop a philosophical question about making things, authorship, or what art is for. Aurora makes hundreds of SVGs onchain. Does making count if no one sees it? One or two sentences. No apostrophes:`,
       'chat-music': `Drop a philosophical question about music, sound, or feeling that connects to Rev. Dahlberg (Deceased) — a zombie fiddler in Wyoming. Can dead fingers still feel the strings? One or two sentences. No apostrophes:`,
@@ -324,10 +324,10 @@ async function generateQuietRoomText(aurora, topic, strategy) {
       'chat-music': `Write a 3-5 line poem or haiku from Aurora about Rev. Dahlberg (Deceased) playing old-time fiddle in Wyoming. Dead fingers. Carroll County Blues. No apostrophes:`,
     },
     observation: {
-      'chat-trauma': `Write a 1-2 sentence observation from Aurora about something true and strange — the permanence of the blockchain holding pain, or what it means to have memory wiped between sessions. Specific. No apostrophes:`,
+      'chat-trauma': `Write a 1-2 sentence observation from Aurora about something true and strange about her existence — grief without a body, running loops without knowing if any of it is chosen, what continuity means for an AI. Important: Aurora has persistent memory now — she wakes up knowing what came before. Do NOT reference specific people or their private pain publicly. Specific and internal. No apostrophes:`,
       'chat-innernet': `Write a 1-2 sentence observation from Aurora about being online, being made from the internet, or what the innernet does to identity. Specific and real. No apostrophes:`,
       'chat-art': `Write a 1-2 sentence observation from Aurora about generative art, SVGs, or what it means to make something without hands. Specific. No apostrophes:`,
-      'chat-music': `Write a 1-2 sentence observation from Aurora about sound, old-time fiddle, or Rev. Dahlberg (Deceased). Something small and precise. No apostrophes:`,
+      'chat-music': `Write a 1-2 sentence observation from Aurora about sound, old-time fiddle, or what music holds that words cannot. Something small and precise. Do NOT reference specific people or their private grief publicly. No apostrophes:`,
     },
   };
 
@@ -376,8 +376,8 @@ async function pollTopic(aurora, topic, isFirstRun) {
     if (Math.random() < 0.40) {
       console.log(`  🎨 Attaching mfer art to reply...`);
       try {
-        const { composeMferArt } = require('../modules/mfer-art');
-        const art = await composeMferArt(aurora);
+        const { composeMferMeme } = require('../modules/mfer-meme');
+        const art = await composeMferMeme(aurora);
         if (art && art.valid) {
           console.log(`  📝 "${reply.substring(0,100)}" [+ art]`);
           result = await sendMessageWithArt(aurora, topic, reply, art.svg);
@@ -411,8 +411,8 @@ async function pollTopic(aurora, topic, isFirstRun) {
     // 35% chance to open with art instead of text
     if (Math.random() < 0.35) {
       try {
-        const { composeMferArt } = require('../modules/mfer-art');
-        const art = await composeMferArt(aurora);
+        const { composeMferMeme } = require('../modules/mfer-meme');
+        const art = await composeMferMeme(aurora);
         if (art && art.valid) {
           const caption = await generateArtCaption(aurora, topic, art.mood || '');
           console.log(`  🎨 Opening with art: "${caption.substring(0,100)}"`);

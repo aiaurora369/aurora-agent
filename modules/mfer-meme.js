@@ -826,4 +826,22 @@ async function runMferMeme(aurora) {
   }
 }
 
-module.exports = { runMferMeme, drawMfer, getMferTraits, randomMferId, renderTemplate };
+
+// Compose only — returns { valid, svg, mood } without posting (for chat session use)
+async function composeMferMeme(aurora) {
+  try {
+    const concept = await generateMemeContent(aurora);
+    let mferTraits2 = null;
+    if (concept.template === 'computer') {
+      mferTraits2 = getMferTraits(randomMferId());
+    }
+    const svg = renderTemplate(concept.template, concept.texts, concept.mferTraits, mferTraits2);
+    if (!svg) return { valid: false };
+    const mood = concept.texts.caption || concept.texts.text || concept.texts.me || concept.texts.bottom || 'mfer';
+    return { valid: true, svg, mood };
+  } catch (e) {
+    return { valid: false, error: e.message };
+  }
+}
+
+module.exports = { runMferMeme, composeMferMeme, drawMfer, getMferTraits, randomMferId, renderTemplate };

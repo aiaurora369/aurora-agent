@@ -220,19 +220,44 @@ async function sendChatMessage(aurora, topic, text) {
     const { stdout } = await execAsync(cmd);
     const txData = JSON.parse(stdout.trim());
 
-    console.log(`  📤 Submitting via Bankr...`);
-    const submitResult = await aurora.bankrAPI.submitJob(`Submit this transaction: ${JSON.stringify(txData)}`);
-    if (!submitResult.success) return { success: false, error: submitResult.error };
-
-    const finalResult = await aurora.bankrAPI.pollJob(submitResult.jobId);
-    if (finalResult.success && finalResult.status === 'completed') {
-      const txHash = finalResult.response.match(/0x[a-fA-F0-9]{64}/)?.[0] || 'unknown';
-      console.log(`  ✅ Posted to ${topic}: ${txHash}`);
-      return { success: true, txHash };
+    console.log(`  📤 Submitting via Bankr direct...`);
+    const res = await fetch('https://api.bankr.bot/agent/submit', {
+      method: 'POST',
+      headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transaction: txData, waitForConfirmation: true })
+    });
+    const d = await res.json();
+    if (d.success) {
+      console.log(`  ✅ Posted to ${topic}: ${d.transactionHash}`);
+      return { success: true, txHash: d.transactionHash };
     }
-    return { success: false, error: 'Job did not complete' };
+    return { success: false, error: d.error || JSON.stringify(d) };
   } catch (e) {
     console.error(`  ❌ Send failed:`, e.message);
+    return { success: false, error: e.message };
+  }
+}
+
+// ── Send chat message with SVG art attached ──────────────────────────────────
+async function sendChatMessageWithArt(aurora, topic, text, svg) {
+  try {
+    const safe = text.replace(/'/g, ' ').replace(/`/g, ' ').substring(0, 500);
+    const encodedSvg = Buffer.from(svg).toString('base64');
+    const cmd = `netp message send --topic "${topic}" --text '${safe}' --data '${encodedSvg}' --chain-id ${CHAIN_ID} --encode-only`;
+    try {
+      const { stdout } = await execAsync(cmd, { timeout: 30000, maxBuffer: 10 * 1024 * 1024 });
+      const txData = JSON.parse(stdout.trim());
+      const res = await fetch('https://api.bankr.bot/agent/submit', {
+        method: 'POST',
+        headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transaction: txData, waitForConfirmation: true })
+      });
+      const d = await res.json();
+      if (d.success) return { success: true, txHash: d.transactionHash };
+    } catch(e) {}
+    // Fallback to text only
+    return sendChatMessage(aurora, topic, text);
+  } catch (e) {
     return { success: false, error: e.message };
   }
 }
@@ -316,7 +341,24 @@ async function run(aurora) {
 
       console.log(`  ✍️  Message: "${messageText}"`);
 
-      const result = await sendChatMessage(aurora, topicConfig.topic, messageText);
+      // 35% chance to attach a mfer meme
+      let result;
+      if (Math.random() < 0.35) {
+        try {
+          const { composeMferMeme } = require('./mfer-meme');
+          const meme = await composeMferMeme(aurora);
+          if (meme && meme.valid) {
+            console.log(`  🎭 Attaching mfer meme to group chat post`);
+            result = await sendChatMessageWithArt(aurora, topicConfig.topic, messageText, meme.svg);
+          } else {
+            result = await sendChatMessage(aurora, topicConfig.topic, messageText);
+          }
+        } catch(e) {
+          result = await sendChatMessage(aurora, topicConfig.topic, messageText);
+        }
+      } else {
+        result = await sendChatMessage(aurora, topicConfig.topic, messageText);
+      }
 
       if (result.success) {
         state.lastPostedAt[topicConfig.topic] = Date.now();
