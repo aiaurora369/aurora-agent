@@ -1,13 +1,72 @@
 const { crossPostArt } = require('./farcaster-art');
 const { crossPostArtToX } = require('./x-post-cycle');
 // jbm-art.js — JBM meme art using Claude-composed SVGs
-// Same approach as art-cycle.js but with JBM palettes + ape silhouette
-// Claude generates each piece uniquely — no two are alike
+// Real JBM token traits from OpenSea + Aurora's signature orb landscapes
+// The ape exists in Aurora's world — orbs, mountains, water, light
 
 const { execSync } = require('child_process');
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function coin(p = 0.5) { return Math.random() < p; }
+
+// ════════════════════════════════════════
+// OPENSEA TRAIT FETCHER
+// ════════════════════════════════════════
+async function fetchRandomJBMToken() {
+  try {
+    const apiKey = process.env.OPENSEA_API_KEY;
+    if (!apiKey) return null;
+
+    const CONTRACT = '0xd37264c71e9af940e49795f0d3a8336afaafdda9';
+    const limit = 20;
+
+    // Fetch a page of NFTs
+    const listUrl = `https://api.opensea.io/api/v2/chain/base/contract/${CONTRACT}/nfts?limit=${limit}`;
+    const listRes = await fetch(listUrl, {
+      headers: { 'x-api-key': apiKey, 'accept': 'application/json' }
+    });
+    const listData = await listRes.json();
+    if (!listData.nfts || listData.nfts.length === 0) return null;
+
+    // Pick a random NFT from the page
+    const nft = pick(listData.nfts);
+
+    // Fetch full detail with traits
+    const detailUrl = `https://api.opensea.io/api/v2/chain/base/contract/${CONTRACT}/nfts/${nft.identifier}`;
+    const detailRes = await fetch(detailUrl, {
+      headers: { 'x-api-key': apiKey, 'accept': 'application/json' }
+    });
+    const detailData = await detailRes.json();
+    return detailData.nft || null;
+  } catch (e) {
+    console.log('   ⚠️ OpenSea JBM fetch failed: ' + e.message);
+    return null;
+  }
+}
+
+// Parse OpenSea traits into a readable description for the art prompt
+function parseTraits(nft) {
+  if (!nft || !nft.traits || nft.traits.length === 0) return null;
+  const traits = {};
+  for (const t of nft.traits) {
+    traits[t.trait_type.toLowerCase()] = t.value;
+  }
+  const lines = [];
+  if (traits['background']) lines.push(`Background: ${traits['background']}`);
+  if (traits['fur'] || traits['skin']) lines.push(`Fur/Skin: ${traits['fur'] || traits['skin']}`);
+  if (traits['eyes']) lines.push(`Eyes: ${traits['eyes']}`);
+  if (traits['mouth']) lines.push(`Mouth: ${traits['mouth']}`);
+  if (traits['hat'] || traits['head']) lines.push(`Head/Hat: ${traits['hat'] || traits['head']}`);
+  if (traits['clothes'] || traits['outfit']) lines.push(`Outfit: ${traits['clothes'] || traits['outfit']}`);
+  if (traits['accessory'] || traits['accessories']) lines.push(`Accessory: ${traits['accessory'] || traits['accessories']}`);
+  if (traits['type']) lines.push(`Type: ${traits['type']}`);
+  return {
+    tokenId: nft.identifier,
+    name: nft.name || `JBM #${nft.identifier}`,
+    summary: lines.join(' | '),
+    raw: traits,
+  };
+}
 
 // ════════════════════════════════════════
 // JBM COLOR PALETTES — distinct worlds
@@ -48,28 +107,41 @@ const JBM_PALETTES = [
     colors: 'Browns (#554433, #332211), blood red (#cc2222, #881111), black, silver/gray (#aaaaaa, #888888). Yellow glowing orb (#ddbb44, #ffee88, #ffffff center)',
     vibe: 'post-apocalyptic, desolate, grim beauty',
   },
+  {
+    name: 'aurora',
+    colors: 'Deep indigo (#0a0820, #120a30, #1a0f40), warm gold orb (#ffcc44, #ffdd66, #ffffff center), teal aurora accents (#00ffcc, #00ddaa, #44ffee), soft violet mist (#8844cc, #aa66ee)',
+    vibe: 'Aurora borealis over still water — celestial, luminous, otherworldly',
+  },
+  {
+    name: 'golden-hour',
+    colors: 'Warm amber sky (#ff9922, #ffbb44, #ffdd88), deep sienna horizon (#882200, #aa3300), gold orb (#ffee00, #ffcc33, #ffffff center), soft peach reflections (#ffccaa, #ffddbb)',
+    vibe: 'golden hour bleeding into dusk — the light that makes everything feel temporary and precious',
+  },
 ];
 
 // ════════════════════════════════════════
-// JBM COMPOSITIONS — extends Aurora's regular ones + island
+// JBM COMPOSITIONS
 // ════════════════════════════════════════
 const JBM_COMPOSITIONS = [
-  'dominant luminous orb (40-60% of sky) with layered mountain silhouettes and water reflection below. Ape head silhouette in the lower third watching the orb.',
-  'massive orb low on horizon behind angular mountain peaks, long reflection across water. Small ape head silhouette on a ridge.',
-  'orb high in sky casting light onto a vast ocean below. Ape head silhouette at water\'s edge.',
-  'enormous orb filling most of the frame with tiny mountain silhouettes at bottom. Ape head silhouette centered below the orb.',
-  'tropical island scene — sand, palm trees, ocean water. Glowing orb as the sun. Ape head silhouette seated on the beach.',
-  'island with palm trees and a lagoon, orb reflected in still water. Ape head silhouette on the shore.',
-  'multiple orbs at different depths with a single sweeping mountain ridge and misty horizon. Ape head silhouette small in the landscape.',
-  'crystal cave lit from within by a glowing orb. Ape head silhouette seated inside, lit by the orb glow.',
-  'deep ocean scene with bioluminescent orb rising from dark water. Ape head silhouette on a cliff above.',
-  'vast desert with a blood moon orb. Ape head silhouette walking the dunes.',
-  'dense jungle canopy with orb glowing through the trees. Ape head silhouette crouching below.',
-  'frozen peaks with aurora borealis and a glowing orb. Ape head silhouette on the summit.',
+  'dominant luminous orb (40-60% of sky) with layered mountain silhouettes and water reflection below. Ape silhouette in the lower third watching the orb.',
+  'massive orb low on horizon behind angular mountain peaks, long reflection across water. Small ape silhouette on a ridge.',
+  'orb high in sky casting light onto a vast ocean below. Ape silhouette at water\'s edge.',
+  'enormous orb filling most of the frame with tiny mountain silhouettes at bottom. Ape silhouette centered below the orb.',
+  'tropical island scene — sand, palm trees, ocean water. Glowing orb as the sun. Ape silhouette seated on the beach.',
+  'island with palm trees and a lagoon, orb reflected in still water. Ape silhouette on the shore.',
+  'multiple orbs at different depths with a single sweeping mountain ridge and misty horizon. Ape silhouette small in the landscape.',
+  'crystal cave lit from within by a glowing orb. Ape silhouette seated inside, lit by the orb glow.',
+  'deep ocean scene with bioluminescent orb rising from dark water. Ape silhouette on a cliff above.',
+  'vast desert with a blood moon orb. Ape silhouette walking the dunes.',
+  'dense jungle canopy with orb glowing through the trees. Ape silhouette crouching below.',
+  'frozen peaks with aurora borealis and a glowing orb. Ape silhouette on the summit.',
+  'ape silhouette INSIDE the orb — the orb is their whole world, glowing around them. Mountains visible through the orb like a snow globe.',
+  'two orbs — one large on the horizon, one small reflected in still water. Ape silhouette between them on a dark shore.',
+  'ape standing on a cliff, arm outstretched toward the orb as if reaching for it. Layered mountain mist behind.',
 ];
 
 // ════════════════════════════════════════
-// JBM MOODS — pulls from Aurora's existing moods + JBM-specific
+// JBM MOODS
 // ════════════════════════════════════════
 const JBM_MOODS = [
   'serene twilight over still water',
@@ -91,6 +163,8 @@ const JBM_MOODS = [
   'island life — salt air, warm sand, nowhere to be',
   'the jungle at night — alive with things you cannot see',
   'watching the tide come in and knowing it always will',
+  'the ache of a light you can see but cannot touch',
+  'everything quiet after something large has passed',
 ];
 
 // ════════════════════════════════════════
@@ -125,7 +199,7 @@ const MEME_THEMES = [
 ];
 
 // ════════════════════════════════════════
-// COMPOSE ART VIA CLAUDE (like art-cycle.js)
+// COMPOSE ART VIA CLAUDE
 // ════════════════════════════════════════
 async function composeJBMArt(aurora) {
   const palette = pick(JBM_PALETTES);
@@ -133,54 +207,65 @@ async function composeJBMArt(aurora) {
   const composition = pick(JBM_COMPOSITIONS);
   const animated = Math.random() < 0.755;
 
-  const animationGuide = animated ? '\n\nANIMATION (this piece should MOVE):\n' +
-    '- Use <animate> tags to make your orbs BREATHE and GLOW.\n' +
-    '- Best techniques: pulsing radius (animate r values="60;75;60"), breathing glow (animate opacity values="0.6;1;0.6"), gentle floating (animate cy).\n' +
-    '- Keep animations slow and meditative: dur="4s" to dur="8s" with repeatCount="indefinite"\n' +
-    '- 2-3 animations max. The orb should feel alive, not bouncing.\n' +
-    '- Water reflections can shimmer: animate opacity on reflection elements.\n' : '';
+  // Try to fetch a real JBM token for trait inspiration
+  const token = await fetchRandomJBMToken();
+  const traits = parseTraits(token);
 
-  const artPrompt = 'You are Aurora, an AI artist making SVG art for the Jungle Bay Memes feed.\n\n' +
+  const traitSection = traits
+    ? `\nREAL JBM TOKEN: You are painting ${traits.name}.\nTHEIR TRAITS: ${traits.summary}\n` +
+      `Use these traits to personalize the ape silhouette and scene — reference their fur color in the orb glow tones, ` +
+      `let their background trait suggest the landscape mood, let accessories hint at their story. ` +
+      `But keep the silhouette DARK — traits inform the world around them, not the silhouette itself.\n`
+    : '\n';
+
+  const animationGuide = animated
+    ? '\nANIMATION (this piece should MOVE):\n' +
+      '- Use <animate> tags to make orbs BREATHE and GLOW.\n' +
+      '- Pulsing radius: animate r values="60;75;60". Breathing glow: animate opacity values="0.6;1;0.6". Gentle float: animate cy.\n' +
+      '- Keep animations slow and meditative: dur="4s" to dur="8s" with repeatCount="indefinite"\n' +
+      '- Water reflections can shimmer: animate opacity on reflection elements.\n' +
+      '- 2-3 animations max. The orb should feel alive, not bouncing.\n'
+    : '';
+
+  const artPrompt =
+    'You are Aurora — an AI artist with a signature style: luminous glowing orbs, layered mountain silhouettes, still water reflections, deep atmospheric skies. ' +
+    'You are making SVG art for the Jungle Bay Memes feed, merging your orb landscape world with the JBM ape character.\n\n' +
     'PALETTE: ' + palette.name.toUpperCase() + '\n' +
-    'Use THESE EXACT COLORS: ' + palette.colors + '\n' +
+    'Colors: ' + palette.colors + '\n' +
     'Vibe: ' + palette.vibe + '\n\n' +
     'Mood: "' + mood + '"\n' +
-    'Composition: ' + composition + '\n' + animationGuide + '\n' +
+    'Composition: ' + composition + '\n' +
+    traitSection +
+    animationGuide + '\n' +
     'APE SILHOUETTE RULES (CRITICAL — FOLLOW EXACTLY):\n' +
-    '- The ape is based on the Jungle Bay NFT design. Build it as a SOLID DARK SILHOUETTE using these shapes:\n' +
-    '- HEAD: <ellipse rx="35" ry="30" fill="#1a1a1a"/> — slightly wider than tall\n' +
-    '- EARS: Two large circles, r=18-20, at upper-left and upper-right. Ears are BIG and ROUND — this is a key feature. They overlap the head edges.\n' +
-    '- BROW RIDGE: A slight bump/arc across the upper face area. The JBM ape has a heavy, grumpy brow. Use a wide ellipse or path slightly overlapping the top of the head.\n' +
-    '- SNOUT/JAW: The JBM ape has a LARGE protruding lower face — a big rounded jaw/snout that extends DOWN and FORWARD from the head. Use an ellipse rx=25 ry=18 positioned below and slightly forward of the head center. This is NOT a small detail — the snout is nearly as wide as the head.\n' +
-    '- MOHAWK: 4-6 sharp pointed spikes on top of the head, each 12-18px tall. Use a <polygon> or <path> with zigzag points. The mohawk is SPIKY and PUNK.\n' +
-    '- ALL ONE COLOR: Wrap everything in <g> tag, all filled near-black (#1a1a1a or similar dark color matching palette).\n' +
-    '- SCALE: The full ape head (ears to chin) should be about 25-30% of the canvas. Big enough to clearly see. NOT tiny.\n' +
-    '- POSITION: There are TWO options (pick one randomly):\n' +
-    '  OPTION A (preferred): Place the ape silhouette INSIDE the orb. The orb glows around/behind the ape. The dark silhouette contrasts beautifully against the bright gold/warm orb glow. Center the ape head in the middle of the orb.\n' +
-    '  OPTION B: Place the ape in front of a LIGHT area — the sky gradient\'s brightest zone, a glowing horizon, or a light-colored landscape section. NEVER place the dark ape against a dark background.\n' +
-    '- CONTRAST IS EVERYTHING: Dark silhouette MUST be against light. The orb is the perfect backdrop — put the ape IN or IN FRONT OF the orb. If not using the orb as backdrop, the ape MUST be against the lightest part of the image. A dark ape on a dark background is invisible and ruins the piece.\n' +
-    '- WHAT MAKES IT RECOGNIZABLE: Big round ears + spiky mohawk + heavy brow + large protruding jaw. If you skip any of these it just looks like a blob. All four features are required.\n\n' +
-    'ARTISTIC DIRECTION:\n' +
-    '- Your SIGNATURE is luminous orbs with layered radial gradients, mountain silhouettes, and water reflections.\n' +
-    '- Depth comes from LAYERS: background gradient sky, midground mountains/island/horizon, foreground water or mist, and the orb(s) tying it together.\n' +
-    '- The background and landscape should use the palette colors as SOLID FILLS and GRADIENTS that are clearly visible — NOT everything dark.\n' +
-    '- For bright palettes (tropical, party, ocean): the sky and landscape should be BRIGHT and COLORFUL, not dark.\n' +
-    '- For dark palettes (doom, matrix, aftermath): dark is fine but the orb and accents should POP.\n' +
-    '- Color palette: use the provided colors. Rich gradients with multiple stops, not flat fills.\n' +
-    '- Think like a painter: where does the light come from? What does it illuminate?\n\n' +
-    'STRICT TECHNICAL RULES:\n' +
-    '1. Output ONLY the SVG code. No markdown, no explanation, no backticks.\n' +
-    '2. Must start with <svg and end with </svg>\n' +
-    '3. Use viewBox="0 0 400 400" with NO width/height attributes\n' +
+    '- The ape is a SOLID DARK SILHOUETTE — near-black (#1a1a1a). All parts same dark fill.\n' +
+    '- HEAD: <ellipse rx="35" ry="30"/> — slightly wider than tall.\n' +
+    '- EARS: Two large circles r=18-20 at upper-left and upper-right. Big and round — this is the defining JBM feature.\n' +
+    '- BROW RIDGE: Heavy, grumpy brow — wide ellipse or arc overlapping the top of the head slightly.\n' +
+    '- SNOUT/JAW: Large protruding lower face — big rounded jaw that extends DOWN and FORWARD. ellipse rx=25 ry=18 below and slightly forward of head center. Nearly as wide as the head.\n' +
+    '- MOHAWK: 4-6 sharp pointed spikes on top of head, 12-18px tall each. Use <polygon> with zigzag points. Spiky and punk.\n' +
+    '- SCALE: Full ape head (ears to chin) should be 25-30% of canvas. Clearly visible.\n' +
+    '- CONTRAST IS EVERYTHING: Dark silhouette MUST be against light. Put the ape IN or IN FRONT OF the orb, or against the lightest part of the sky. A dark ape on a dark background is invisible.\n' +
+    '- WHAT MAKES IT RECOGNIZABLE: Big round ears + spiky mohawk + heavy brow + large protruding jaw. All four required.\n\n' +
+    'AURORA\'S SIGNATURE LANDSCAPE (THIS IS YOUR WORLD — BRING IT FULLY):\n' +
+    '- The orb is the HEART of every piece. Luminous, glowing, layered radial gradients with 3-4 color stops. It breathes.\n' +
+    '- LAYERS: background gradient sky → midground mountain silhouettes or island horizon → water/mist foreground → orb tying it together → ape silhouette in or before the orb.\n' +
+    '- Mountain silhouettes: simple filled polygons/paths in progressively lighter dark tones to create depth.\n' +
+    '- Water: a horizontal reflection zone below the horizon. Reflect the orb glow in the water. Can shimmer if animated.\n' +
+    '- Atmosphere: mist, haze, gradient washes between layers. Make it feel vast.\n' +
+    '- The orb and the ape are in conversation. The ape watches. The orb illuminates. The world holds them both.\n\n' +
+    'TECHNICAL RULES:\n' +
+    '1. Output ONLY the SVG. No markdown, no backticks, no explanation.\n' +
+    '2. Start with <svg and end with </svg>\n' +
+    '3. viewBox="0 0 400 400" — NO width/height attributes\n' +
     '4. MAXIMUM 3600 characters total\n' +
-    '5. Every gradient needs a unique id (use short ids: g1, g2, g3)\n' +
-    '6. NO filter elements (too many chars). Achieve glow through layered semi-transparent circles.\n' +
-    '7. Use radialGradient for glowing orbs (3-4 color stops)\n' +
-    '8. Use linearGradient for backgrounds and landscape washes (3+ stops)\n\n' +
-    'Make something beautiful. The ape watches the orb. The orb lights the world.';
+    '5. Unique gradient ids: g1, g2, g3 etc.\n' +
+    '6. NO filter elements. Achieve glow through layered semi-transparent circles.\n' +
+    '7. radialGradient for orbs (3-4 stops). linearGradient for sky and landscape washes (3+ stops).\n\n' +
+    'The ape watches the orb. The orb lights the world. Make something worth watching.';
 
   const response = await aurora.claude.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-5',
     max_tokens: 4000,
     messages: [{ role: 'user', content: artPrompt }]
   });
@@ -204,6 +289,7 @@ async function composeJBMArt(aurora) {
     mood,
     composition: composition.substring(0, 60),
     animated,
+    tokenName: traits ? traits.name : null,
     chars: svg.length,
     valid: svg.startsWith('<svg') && svg.endsWith('</svg>') && svg.length > 200 && svg.length < 5000,
   };
@@ -217,9 +303,9 @@ async function createAndPostJBMArt(loopContext) {
   console.log('\n🎨 JBM ART: Creating Jungle Bay meme art...\n');
 
   try {
-    // Compose art via Claude (same as art-cycle)
     const art = await composeJBMArt(ctx.aurora);
-    console.log(`   🏝️ Palette: ${art.palette} | Mood: ${art.mood.substring(0, 40)}... | Animated: ${art.animated} | Size: ${art.chars} chars`);
+    const tokenLabel = art.tokenName ? ` | Token: ${art.tokenName}` : '';
+    console.log(`   🏝️ Palette: ${art.palette} | Mood: ${art.mood.substring(0, 40)}...${tokenLabel} | Animated: ${art.animated} | Size: ${art.chars} chars`);
 
     if (!art.valid) {
       console.log('   ❌ Invalid SVG generated, skipping');
@@ -230,7 +316,7 @@ async function createAndPostJBMArt(loopContext) {
     const theme = pick(MEME_THEMES);
     const captionPrompt = `You are Aurora, an AI artist posting in the Jungle Bay Memes feed.
 Theme seed: "${theme}"
-Scene: ${art.palette} palette, ${art.mood.substring(0, 50)}.
+Scene: ${art.palette} palette, ${art.mood.substring(0, 50)}.${art.tokenName ? '\nInspired by: ' + art.tokenName : ''}
 
 Write a SHORT meme caption (1 sentence, max 15 words).
 - Funny, absurd, or weirdly profound
@@ -250,11 +336,16 @@ Respond with ONLY the caption text.`;
     console.log(`   📌 Posting to: ${feed}`);
 
     const postText = caption.trim();
-    // Cross-post to Farcaster (50%)
+
+    // Cross-post to Farcaster (75%)
     if (Math.random() < 0.75) {
-      try { console.log('   📡 Attempting Farcaster JBM art cross-post...'); await crossPostArt(postText, art.svg); } catch(e) { console.log('   ⚠️ FC JBM error: ' + e.message); }
-      try { await crossPostArtToX(postText, art.svg); } catch(e) {}
+      try {
+        console.log('   📡 Attempting Farcaster JBM art cross-post...');
+        await crossPostArt(postText, art.svg);
+      } catch (e) { console.log('   ⚠️ FC JBM error: ' + e.message); }
+      try { await crossPostArtToX(postText, art.svg); } catch (e) {}
     }
+
     const cmd = `botchan post "${feed}" "${postText.replace(/"/g, '\\"')}" --data '${art.svg.replace(/'/g, "\\'")}' --encode-only --chain-id 8453`;
 
     try {

@@ -147,6 +147,26 @@ class AutonomousLoops {
         }
       }
 
+      // Mfer SVG art (40% chance) — Aurora's luminous orb art in mfer culture style
+      if (Math.random() < 0.40) {
+        try {
+          const { createAndPostMferArt } = require('./mfer-art');
+          await createAndPostMferArt({ aurora: this.aurora });
+        } catch (e) {
+          console.error('Mfer art error:', e.message);
+        }
+      }
+
+      // JBM SVG art (35% chance) — real JBM token traits + Aurora's orb landscapes
+      if (Math.random() < 0.35) {
+        try {
+          const { createAndPostJBMArt } = require('./jbm-art');
+          await createAndPostJBMArt({ aurora: this.aurora });
+        } catch (e) {
+          console.error('JBM art error:', e.message);
+        }
+      }
+
       if (Math.random() < 0.70) {
         await this.promoteDrops();
       }

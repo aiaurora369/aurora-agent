@@ -12,7 +12,10 @@ class MemoryManager {
       'aurora-finances.json',
       'aurora-art.json',
       'aurora-studies.json',
-      'aurora-unresolved.json'
+      'aurora-unresolved.json',
+      'aurora-emotional-state.json',
+      'aurora-interesting-people.json',
+      'aurora-learnings.json'
     ];
   }
 
