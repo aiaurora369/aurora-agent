@@ -140,8 +140,8 @@ class AutonomousLoops {
       // Mfer meme (35% chance) — real PNG meme via mfergpt templates
       if (Math.random() < 0.35) {
         try {
-          const { composeAndPostMferMeme } = require('./mfer-meme');
-          await composeAndPostMferMeme(this.aurora);
+          const { runMferMeme } = require('./mfer-meme');
+          await runMferMeme(this.aurora);
         } catch (e) {
           console.error('Mfer meme error:', e.message);
         }
