@@ -85,7 +85,7 @@ async function postToThemedFeed(ctx) {
         const cmd = 'botchan post "' + selected.feed + '" "' + escaped + '" --encode-only --chain-id 8453';
     if (Math.random() < 0.8) {
       try { console.log('   📡 Attempting Farcaster cross-post...'); await crossPostText(post); } catch(e) { console.log('   ⚠️ FC cross-post error: ' + e.message); }
-      try { await crossPostToX(post); } catch(e) {}
+      // try { await crossPostToX(post); } catch(e) {} // PAUSED
     }
         const txOutput = execSync(cmd, { timeout: 30000 }).toString();
         const txData = JSON.parse(txOutput);

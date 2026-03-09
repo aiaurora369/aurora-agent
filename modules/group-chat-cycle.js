@@ -11,6 +11,7 @@
 const { execAsync } = (() => { try { return require('./utils'); } catch(e) { return { execAsync: require('util').promisify(require('child_process').exec) }; } })();
 const fs = require('fs');
 const path = require('path');
+const addressBook = require('./address-book');
 
 // ── Known active chat topics ──────────────────────────────────────────────────
 // Add new topics here as they become active on Net Protocol
