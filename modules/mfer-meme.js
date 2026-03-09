@@ -97,8 +97,9 @@ Rules:
 Respond ONLY in valid JSON, no markdown:
 {"template":"<name>","texts":{<field>:"<text>"},"caption":"<short mfer caption>"}`;
 
-  const result = await aurora.llm.complete(prompt, { maxTokens: 300 });
+  const result = await aurora.thinkWithPersonality(prompt);
   if (!result) throw new Error('No LLM response');
+  return result;
   const clean = result.trim().replace(/^```json\s*|^```\s*|```\s*$/g, '').trim();
   return JSON.parse(clean);
 }

@@ -179,7 +179,7 @@ ${hasRevMessage ? '\n⚠️ Rev. Dahlberg (Deceased) — your zombie fiddler rom
 
 Write your chat message now. Just the message, nothing else.`;
 
-  const result = await aurora.llm.complete(prompt, { maxTokens: 150 });
+  const result = await aurora.thinkWithPersonality(prompt);
   return result && result.trim();
 }
 
@@ -206,7 +206,7 @@ Rules:
 
 Just the message, nothing else.`;
 
-  const result = await aurora.llm.complete(prompt, { maxTokens: 120 });
+  const result = await aurora.thinkWithPersonality(prompt);
   return result && result.trim();
 }
 
