@@ -287,7 +287,23 @@ async function engageInFeeds(ctx) {
 
         if (comment) {
           console.log('      💬 "' + comment.substring(0, 70) + '..."');
-          const result = await ctx.aurora.netComment.commentOnPost(post, comment);
+          let result;
+          if (Math.random() < 0.30) {
+            try {
+              const { composeMferMeme } = require('./mfer-meme');
+              const meme = await composeMferMeme(ctx.aurora);
+              if (meme && meme.valid) {
+                console.log('      🎭 Attaching mfer meme to comment');
+                result = await ctx.aurora.netComment.commentOnPostWithArt(post, comment, meme.svg);
+              } else {
+                result = await ctx.aurora.netComment.commentOnPost(post, comment);
+              }
+            } catch(e) {
+              result = await ctx.aurora.netComment.commentOnPost(post, comment);
+            }
+          } else {
+            result = await ctx.aurora.netComment.commentOnPost(post, comment);
+          }
           if (result.success) {
             ctx._markCommented(post);
             totalCommented++;

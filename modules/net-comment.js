@@ -80,33 +80,65 @@ class NetComment {
       const { stdout } = await execAsync(netpCmd);
       const txData = JSON.parse(stdout.trim());
 
-      // Submit via Bankr
-      console.log('📤 Submitting comment via Bankr...');
-      const prompt = `Submit this transaction: ${JSON.stringify(txData)}`;
-      const submitResult = await this.bankrAPI.submitJob(prompt);
-
-      if (!submitResult.success) {
-        return { success: false, error: submitResult.error };
-      }
-
-      const finalResult = await this.bankrAPI.pollJob(submitResult.jobId);
-
-      if (finalResult.success && finalResult.status === 'completed') {
+      // Submit via Bankr direct
+      console.log('📤 Submitting comment via Bankr direct...');
+      const res = await fetch('https://api.bankr.bot/agent/submit', {
+        method: 'POST',
+        headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transaction: txData, waitForConfirmation: true })
+      });
+      const d = await res.json();
+      if (d.success) {
         console.log('✅ Comment posted successfully!');
-        return {
-          success: true,
-          txHash: finalResult.response.match(/0x[a-fA-F0-9]{64}/)?.[0] || 'unknown',
-          commentTopic: commentTopic
-        };
-      } else {
-        return {
-          success: false,
-          error: finalResult.error || 'Job did not complete successfully'
-        };
+        return { success: true, txHash: d.transactionHash, commentTopic };
       }
+      return { success: false, error: d.error || JSON.stringify(d) };
     } catch (error) {
       console.error('❌ Failed to comment:', error.message);
       return { success: false, error: error.message };
+    }
+  }
+
+  async commentOnPostWithArt(originalPost, commentText, svg) {
+    try {
+      const postHash = await this.computePostHash(
+        originalPost.sender, originalPost.timestamp,
+        originalPost.topic, originalPost.text
+      );
+      if (!postHash) return { success: false, error: 'Failed to compute post hash' };
+
+      const commentTopic = `${originalPost.topic}:comments:${postHash}`;
+      const metadata = await this.encodeMetadata(
+        originalPost.topic, originalPost.sender, originalPost.timestamp
+      );
+      if (!metadata) return { success: false, error: 'Failed to encode metadata' };
+
+      const escapedText = commentText.replace(/'/g, " ").replace(/`/g, " ").substring(0, 500);
+      const encodedSvg = Buffer.from(svg).toString('base64');
+
+      // Try with art first, fall back to text only
+      let txData;
+      try {
+        const cmd = `netp message send --topic "${commentTopic}" --text '${escapedText}' --data "${metadata}" --extra '${encodedSvg}' --chain-id 8453 --encode-only`;
+        const { stdout } = await execAsync(cmd);
+        txData = JSON.parse(stdout.trim());
+      } catch(e) {
+        // Fall back to comment without art
+        console.log('  ⚠️ Art encode failed, falling back to text comment');
+        return this.commentOnPost(originalPost, commentText);
+      }
+
+      const res = await fetch('https://api.bankr.bot/agent/submit', {
+        method: 'POST',
+        headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transaction: txData, waitForConfirmation: true })
+      });
+      const d = await res.json();
+      if (d.success) return { success: true, txHash: d.transactionHash, commentTopic };
+      // Fall back to text only
+      return this.commentOnPost(originalPost, commentText);
+    } catch(e) {
+      return this.commentOnPost(originalPost, commentText);
     }
   }
 
