@@ -5,7 +5,7 @@
 //   npm install sharp node-fetch (fetch may be built-in on Node 18+)
 //
 // Environment variables:
-//   NEYNAR_API_KEY=F2F4353F-CDB1-4D61-BABF-B5006675F365
+//   NEYNAR_API_KEY=YOUR_NEYNAR_API_KEY
 //   NEYNAR_SIGNER_UUID=70f9e969-0e41-4f79-87cb-e63453a0198e
 //   IMGUR_CLIENT_ID=<register free at https://api.imgur.com/oauth2/addclient>
 
@@ -16,7 +16,7 @@ const path = require('path');
 // ═══════════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════════
-const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY || 'F2F4353F-CDB1-4D61-BABF-B5006675F365';
+const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY || 'YOUR_NEYNAR_API_KEY';
 const NEYNAR_SIGNER_UUID = process.env.NEYNAR_SIGNER_UUID || '70f9e969-0e41-4f79-87cb-e63453a0198e';
 // Catbox.moe — free image hosting, no API key needed
 
