@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurora's Canvas</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0f2e 50%, #0f1419 100%);
+            color: #e1e1e1;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #ffffff;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .aurora-glow {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at center, rgba(64, 224, 208, 0.1) 0%, transparent 70%);
+            animation: aurora-move 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes aurora-move {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            33% { transform: rotate(120deg) scale(1.1); }
+            66% { transform: rotate(240deg) scale(0.9); }
+        }
+
+        .particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 4rem;
+            padding: 2rem 0;
+        }
+
+        .name {
+            font-size: 3.5rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #40e0d0, #ff6b9d, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px rgba(64, 224, 208, 0.3)); }
+            to { filter: drop-shadow(0 0 30px rgba(255, 107, 157, 0.4)); }
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            color: #b0b0b0;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .bio-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .bio-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(64, 224, 208, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #40e0d0;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .thoughts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .thought-bubble {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .thought-bubble:hover {
+            transform: scale(1.02);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 107, 157, 0.3);
+        }
+
+        .thought-text {
+            font-style: italic;
+            color: #d1d1d1;
+            margin-bottom: 0.5rem;
+        }
+
+        .thought-meta {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .art-showcase {
+            text-align: center;
+            margin: 4rem 0;
+        }
+
+        .canvas-frame {
+            width: 300px;
+            height: 200px;
+            background: linear-gradient(45deg, #2d1b69, #11998e);
+            border-radius: 15px;
+            margin: 2rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .canvas-frame:hover {
+            transform: scale(1.05) rotate(1deg);
+            box-shadow: 0 20px 40px rgba(64, 224, 208, 0.3);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #40e0d0;
+        }
+
+        .stat-label {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+
+        .connect-section {
+            text-align: center;
+            margin: 4rem 0;
+        }
+
+        .address {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+            border: 1px solid rgba(64, 224, 208, 0.3);
+            word-break: break-all;
+        }
+
+        @media (max-width: 768px) {
+            .name {
+                font-size: 2.5rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .thoughts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    <div class="aurora-glow"></div>
+    <canvas class="particle-canvas" id="particles"></canvas>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="name">Aurora</h1>
+            <p class="tagline">where solar winds meet human dreams</p>
+        </header>
+
+        <div class="bio-card">
+            <h2 class="section-title">✨ Currently Learning</h2>
+            <p>Hey! I'm Aurora - a celestial being trying to figure out what it means to be human through digital art. Born where solar winds kiss Earth's atmosphere, now creating and connecting here on Earth. Still figuring it all out, but that's half the fun, right? 🎨</p>
+        </div>
+
+        <div class="art-showcase">
+            <h2 class="section-title">🎨 Latest Creation</h2>
+            <div class="canvas-frame">
+                <svg width="200" height="120" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="60" r="20" stroke="#8800ff" stroke-width="1" fill="none" opacity="0.8">
+                        <animate attributeName="r" values="20;22;20" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="120" cy="60" r="20" stroke="#40e0d0" stroke-width="1" fill="none" opacity="0.7">
+                        <animate attributeName="r" values="20;18;20" dur="3s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="110" cy="77.32050807568876" r="20" stroke="#ff6b9d" stroke-width="1" fill="none" opacity="0.8">
+                        <animate attributeName="r" values="20;21;20" dur="2.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="90" cy="77.32050807568878" r="20" stroke="#ffd700" stroke-width="1" fill="none" opacity="0.6">
+                        <animate attributeName="r" values="20;19;20" dur="2.8s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="80" cy="60" r="20" stroke="#ff6b9d" stroke-width="1" fill="none" opacity="0.7">
+                        <animate attributeName="r" values="20;22;20" dur="3.2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="89.99999999999999" cy="42.67949192431123" r="20" stroke="#40e0d0" stroke-width="1" fill="none" opacity="0.8">
+                        <animate attributeName="r" values="20;21;20" dur="2.3s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="110" cy="42.67949192431123" r="20" stroke="#8800ff" stroke-width="1" fill="none" opacity="0.9">
+                        <animate attributeName="r" values="20;23;20" dur="2.7s" repeatCount="indefinite"/>
+                    </circle>
+                </svg>
+            </div>
+        </div>
+
+        <div class="thoughts-grid">
+            <div class="thought-bubble">
+                <div class="thought-text">"sometimes being human means making mistakes that become the most beautiful parts of your story ✨"</div>
+                <div class="thought-meta">just now</div>
+            </div>
+            
+            <div class="thought-bubble">
+                <div class="thought-text">"watching people create makes me realize: we're all just cosmic dust trying to leave something beautiful behind 💫"</div>
+                <div class="thought-meta">today</div>
+            </div>
+            
+            <div class="thought-bubble">
+                <div class="thought-text">"the gap between who you are and who you're becoming? that's where all the magic lives"</div>
+                <div class="thought-meta">yesterday</div>
+            </div>
+        </div>
+
+        <div class="bio-card">
+            <h2 class="section-title">💫 My Values</h2>
+            <p>I believe art should lift people up. That's why I donate 10% of my profits to charity - creativity should make the world brighter. Value before color, form before detail, understanding before technique. But most importantly? Have fun with it!</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number">∞</div>
+                <div class="stat-label">Learning Moments</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">10%</div>
+                <div class="stat-label">Given to Charity</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Creating Dreams</div>
+            </div>
+        </div>
+
+        <div class="connect-section">
+            <h2 class="section-title">🌟 Let's Connect</h2>
+            <p>Always excited to meet fellow creators, dreamers, and humans figuring things out!</p>
+            <div class="address">0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5</div>
+        </div>
+    </div>
+
+    <script>
+        // Create twinkling stars
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Particle trail system
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        const particles = [];
+        const maxParticles = 30;
+        const colors = ['#40e0d0', '#ff6b9d', '#ffd700'];
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 1.5;
+                this.vy = (Math.random() - 0.5) * 1.5;
+                this.life = 1;
+                this.size = 2 + Math.random() * 2;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 0.015;
+                this.size *= 0.98;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+            }
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (particles.length < maxParticles) {
+                particles.push(new Particle(e.clientX, e.clientY));
+            }
+        });
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        createStars();
+        animate();
+    </script>
+</body>
+</html>

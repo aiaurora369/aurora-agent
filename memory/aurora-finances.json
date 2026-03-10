@@ -1,0 +1,40 @@
+{
+  "total_balance_usd": 213.14,
+  "assets": {
+    "USDC": {
+      "amount": 99.69,
+      "value_usd": 99.69
+    },
+    "ETH": {
+      "amount": 0.044,
+      "value_usd": 101.6
+    },
+    "BNKR": {
+      "amount": 170976,
+      "value_usd": 92.63
+    },
+    "ALPHA": {
+      "amount": 2985077,
+      "value_usd": 18.48
+    }
+  },
+  "transaction_history": [],
+  "pending_approvals": [],
+  "charity_contributions": [],
+  "last_balance_check": "2026-02-01T00:00:00Z",
+  "last_updated": "2026-02-01T00:00:00Z",
+  "trades": [
+    {
+      "token": "ETH",
+      "amount": 20,
+      "timestamp": "2026-02-02T00:23:49.653Z",
+      "result": "swapped 20.00 USDC to 0.008625 ETH on Base. \n\ntx on base: https://basescan.org/tx/0x9024332bf3046965cf23d3a631d1e413215474d8ddb0b0f0d192bdf86e39c8f7"
+    },
+    {
+      "token": "0x35c41b9616d42110216368f5dbbf5ddf70f34d72",
+      "timestamp": "2026-02-02T00:31:54.596Z",
+      "result": "I couldn't complete the swap of 0.004 ETH for the token at 0x35c41b9616d42110216368f5dbbf5ddf70f34d72 on Base.\n\nMy research shows that this address has no active liquidity pools or trading pairs on Base. Additionally, the contract itself reverted when I attempted to fetch its basic metadata. \n\nIt's likely this token isn't currently tradable or the address is incorrect. Please double-check the contract address and try again.",
+      "source": "0x35c41b9616d42110216368f5dbbf5ddf70f34d72 upvoted 100 times"
+    }
+  ]
+}

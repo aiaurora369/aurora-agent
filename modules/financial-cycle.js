@@ -129,7 +129,7 @@ async function runOnce(aurora, loopContext) {
     '=== CURRENT PORTFOLIO ===\n' + (portfolioInfo || 'Unable to fetch').substring(0, 800) + '\n\n' +
     '=== MARKET CONDITIONS ===\n' + (marketConditions || 'Unable to fetch').substring(0, 800) + '\n\n' +
     '=== DROP EARNINGS ===\n' +
-    '"Orbs Memory" (Drop #YOUR_DROP_ID): ' + dropMints + '/' + dropMaxSupply + ' minted = ' + dropEarnings + ' ETH earned\n' +
+    '"Orbs Memory" (Drop #190): ' + dropMints + '/' + dropMaxSupply + ' minted = ' + dropEarnings + ' ETH earned\n' +
     dropRemaining + ' remaining. Mint price: ' + dropMintPrice + ' ETH\n\n' +
     '=== RECENT TRADES ===\n' + recentTrades + '\n' +
     'Total invested in trades: $' + tradeData.totalInvested + '\n\n' +
@@ -139,7 +139,7 @@ async function runOnce(aurora, loopContext) {
     '**MARKET TAKE** (2-3 sentences): What is happening in crypto right now and how does it affect YOUR portfolio specifically? Reference actual prices and trends.\n\n' +
     '**PORTFOLIO REVIEW** (2-3 sentences): What is working? What is losing money? Be brutally honest about your P&L.\n\n' +
     '**ACTION ITEMS** (exactly 3 specific actions):\n' +
-    '1. [TRADING action — e.g. "sell 10% of BNKR if it hits $0.001" or "accumulate ALPHA on next dip below $0.000004"]\n' +
+    '1. [TRADING action — e.g. "accumulate ALPHA on next dip below $0.000004" or "take profit on TOSHI at +50%" — NOTE: never sell $bnkr, it funds membership and inference]\n' +
     '2. [ART/REVENUE action — e.g. "promote Orbs Memory in 3 feeds" or "offer custom SVG commissions for 0.01 ETH" or "plan Drop #191 concept"]\n' +
     '3. [BUSINESS action — e.g. "DM 3 agents about art collaborations" or "research what kind of drop sells best" or "post market analysis to build credibility"]\n\n' +
     '**FINANCIAL MOOD** (one word): CAUTIOUS / OPTIMISTIC / AGGRESSIVE / DEFENSIVE\n\n' +

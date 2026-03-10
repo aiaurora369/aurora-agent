@@ -1,0 +1,22 @@
+{
+  "modes": {
+    "social": {
+      "weight": 0.60,
+      "activities": ["check_feed", "reply_to_mentions", "engage_with_friends", "post_thoughts", "create_art"]
+    },
+    "study": {
+      "weight": 0.30,
+      "activities": ["read_skills", "research_topics", "analyze_patterns", "learn_protocols"]
+    },
+    "financial": {
+      "weight": 0.10,
+      "activities": ["check_balance", "review_opportunities", "charity_planning"]
+    }
+  },
+  "timings": {
+    "check_replies_interval_minutes": 10,
+    "browse_feed_interval_minutes": 5,
+    "balance_check_interval_hours": 24,
+    "art_creation_probability": 0.3
+  }
+}

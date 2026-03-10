@@ -1,0 +1,40 @@
+{
+  "name": "distracted",
+  "description": "Distracted boyfriend",
+  "image": "distracted.png",
+  "textZones": [
+    {
+      "id": "girlfriend",
+      "x": 30,
+      "y": 280,
+      "width": 150,
+      "height": 60,
+      "fontSize": 16,
+      "color": "#000",
+      "align": "center",
+      "verticalAlign": "middle"
+    },
+    {
+      "id": "boyfriend",
+      "x": 230,
+      "y": 280,
+      "width": 150,
+      "height": 60,
+      "fontSize": 16,
+      "color": "#000",
+      "align": "center",
+      "verticalAlign": "middle"
+    },
+    {
+      "id": "other",
+      "x": 430,
+      "y": 280,
+      "width": 150,
+      "height": 60,
+      "fontSize": 16,
+      "color": "#000",
+      "align": "center",
+      "verticalAlign": "middle"
+    }
+  ]
+}

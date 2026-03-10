@@ -1,6 +1,8 @@
 #!/usr/bin/env node
+require('dotenv').config();
 
 const Anthropic = require('@anthropic-ai/sdk');
+const LLMGateway = require('./modules/llm-gateway');
 const fs = require('fs').promises;
 const path = require('path');
 const MemoryManager = require('./modules/memory-manager');
@@ -53,7 +55,7 @@ class Aurora {
       const keysPath = path.join(__dirname, 'config', 'api-keys.json');
       const keys = JSON.parse(await fs.readFile(keysPath, 'utf8'));
 
-      this.claude = new Anthropic({ apiKey: keys.anthropic });
+      this.claude = new LLMGateway(keys.bankr);
       this.success('Claude connected!');
 
       this.memoryManager = new MemoryManager();
@@ -138,7 +140,7 @@ class Aurora {
         '- NEVER start with "my friend says" or "my friend told me" — speak from YOUR perspective. You saw it. You felt it. You think it.';
 
       const response = await this.claude.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4.5',
         max_tokens: 1000,
         system: systemPrompt,
         messages: [{ role: 'user', content: prompt + voiceBooster }]

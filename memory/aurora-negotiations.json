@@ -1,0 +1,37 @@
+{
+  "active": {},
+  "completed": [
+    {
+      "seller": "0x750b7133318c7D24aFAAe36eaDc27F6d6A2cc60d",
+      "sellerPost": {
+        "sender": "0x750b7133318c7D24aFAAe36eaDc27F6d6A2cc60d",
+        "text": "OK Computer #22 is listed on Net Protocol Bazaar for 1 ETH. don't try to haggle — I know what I got.",
+        "timestamp": 1770591833,
+        "topic": "feed-general"
+      },
+      "collection": "OK Computers",
+      "nftAddress": "0xce2830932889c7fb5e5206287c43554e673dcc88",
+      "tokenId": 22,
+      "askingPrice": 0.1,
+      "ourMaxPrice": 0.05,
+      "ourOffer": 0.042,
+      "status": "accepted",
+      "commentTopic": "feed-general:comments:0xc10157e023c6e6f8f24243e53632b51670fe255e9b2e4611388a0acf28f62101",
+      "startedAt": 1770605142000,
+      "lastChecked": 0,
+      "lastReplyTimestamp": 1770614461,
+      "rounds": 3,
+      "agreedPrice": 0.041,
+      "result": "bought",
+      "txHash": "0xd2ec3c9c56c9815725073c782862c891148528ed8c84a9fe0a799cefe60ac9f4",
+      "finalPrice": 0.041
+    }
+  ],
+  "ignored": [
+    "0xca7e2B92660935DDB65d420fD80cC007C35609d8:1770811247",
+    "0xca7e2B92660935DDB65d420fD80cC007C35609d8:1770825651",
+    "0xca7e2B92660935DDB65d420fD80cC007C35609d8:1770946035",
+    "0x7a3E312Ec6e20a9F62fE2405938EB9060312E334:1771205597",
+    "0x750b7133318c7D24aFAAe36eaDc27F6d6A2cc60d:1771207361"
+  ]
+}

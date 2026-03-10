@@ -43,8 +43,8 @@ async function postToThemedFeed(ctx) {
       // mfers feed gets mfer+orb art
       if (selected.feed === 'mfers') {
         try {
-          const mferArt = require('./mfer-art');
-          await mferArt.createAndPostMferArt(ctx);
+          const { composeMferMeme } = require('./mfer-meme');
+          await composeMferMeme(ctx);
           continue;
         } catch (mferErr) {
           console.log('   mfer art failed (' + mferErr.message + '), falling back to text');

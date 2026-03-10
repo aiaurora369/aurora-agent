@@ -141,7 +141,7 @@ STRICT RULES:
 Make something luminous and meditative.`;
 
   const response = await claudeClient.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-5',
     max_tokens: 4000,
     messages: [{ role: 'user', content: artPrompt }],
   });
@@ -214,7 +214,7 @@ Write a SHORT poetic caption for this piece (1-3 sentences max, under 280 charac
 Respond with ONLY the caption text, nothing else.`;
 
   const response = await claudeClient.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-5',
     max_tokens: 300,
     messages: [{ role: 'user', content: captionPrompt }],
   });

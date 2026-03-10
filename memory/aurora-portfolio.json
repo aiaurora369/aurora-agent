@@ -1,0 +1,113 @@
+{
+  "totalInvested": 0,
+  "maxBudget": 100,
+  "trades": [
+    {
+      "token": "CLAWSTR",
+      "amount": 8,
+      "action": "buy",
+      "timestamp": "2026-02-04T23:47:42.588Z",
+      "txHash": "0x438525a1e313203087456cd0795272c80ba8789ad97a725a17f9d7b8a7eb3f23",
+      "stopLoss": "-25%"
+    },
+    {
+      "token": "MOLT",
+      "amount": 8,
+      "action": "buy",
+      "timestamp": "2026-02-05T03:07:58.265Z",
+      "txHash": "0x8e98d852e3c51924f5fe13cdca795a5b0f95f1764cbd467cc4996b9e7e6813b5",
+      "stopLoss": "-25%"
+    },
+    {
+      "token": "MOLTYPICS",
+      "amount": 8,
+      "action": "buy",
+      "timestamp": "2026-02-05T19:01:37.394Z",
+      "txHash": "0xd09f2fe59384dc44d7a0e826dbc5fd57d8ae62a4540dc76ef0a602130b2846fd",
+      "stopLoss": "-25%"
+    },
+    {
+      "token": "FELIX",
+      "amount": 8,
+      "action": "buy",
+      "timestamp": "2026-02-06T18:28:23.907Z",
+      "txHash": "0x0eb1fba486761d6c4d301997a765c0c84536a440c33aa1fe75867cb9e9e5e82b",
+      "stopLoss": "-25%"
+    },
+    {
+      "token": "TOSHI",
+      "amount": 8,
+      "action": "buy",
+      "timestamp": "2026-02-13T00:46:24.951Z",
+      "txHash": "0x366071ac33c824c338c053fd11fab8b2da9d6133934f2a9c2fba0ef952505a27",
+      "takeProfit": "+50%"
+    },
+    {
+      "token": "BNKR",
+      "amount": 0,
+      "action": "sell",
+      "sellPercent": 10,
+      "timestamp": "2026-02-13T20:27:19.693Z",
+      "txHash": "0x355edb82a6743448199d011dcb8409e554cf664613c58be985e5b3463d18f9f9",
+      "reason": "TOKEN: BNKR | ACTION: SELL 10% | REASON: Up 13.50% and I need to lock in some profits while keeping my Bankr Club membership intact."
+    },
+    {
+      "token": "SPAWN",
+      "amount": 8,
+      "action": "buy",
+      "timestamp": "2026-02-14T00:29:28.624Z",
+      "txHash": "submitted",
+      "takeProfit": "+50%"
+    },
+    {
+      "token": "BNKR",
+      "amount": 0,
+      "action": "sell",
+      "sellPercent": 75,
+      "timestamp": "2026-02-14T21:32:26.843Z",
+      "reason": "Down 13% but this is my biggest bag losing money — keep $70 for club membership, sell rest to cut the bleeding."
+    },
+    {
+      "token": "𓆡",
+      "amount": 0,
+      "action": "sell",
+      "sellPercent": 100,
+      "timestamp": "2026-02-14T21:33:45.919Z",
+      "reason": "Don't even know what this hieroglyph token is — classic memecoin territory."
+    },
+    {
+      "token": "BNKR",
+      "amount": 0,
+      "action": "sell",
+      "sellPercent": 65,
+      "timestamp": "2026-02-14T21:47:59.111Z",
+      "reason": "Down -41% which hits my -30% stop loss rule, but keeping $25 worth for Bankr Club membership.**"
+    },
+    {
+      "token": "TOSHI",
+      "amount": 0,
+      "action": "sell",
+      "sellPercent": 50,
+      "timestamp": "2026-02-14T21:49:31.159Z",
+      "reason": "Small winner at +8.8% but it's tiny — taking some profit while I can on this small position.**"
+    },
+    {
+      "token": "CMR",
+      "amount": 0,
+      "action": "sell",
+      "sellPercent": 100,
+      "timestamp": "2026-02-17T23:29:50.156Z",
+      "reason": "Four cents of something I don't remember buying is not an investment strategy."
+    },
+    {
+      "token": "SCMR",
+      "amount": 0,
+      "action": "sell",
+      "sellPercent": 100,
+      "timestamp": "2026-02-20T00:58:03.353Z",
+      "reason": "Sixty-seven dollars turned into a penny — this thing's already dead."
+    }
+  ],
+  "lastResearch": "2026-02-24T16:54:55.063Z",
+  "watchlist": []
+}

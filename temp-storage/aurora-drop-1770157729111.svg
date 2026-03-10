@@ -1,0 +1,141 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Sky gradient -->
+    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0520;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#1a0f3a;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#2a1f4a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a2040;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Water gradient -->
+    <linearGradient id="waterGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f1a35;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#0a0f25;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#050510;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Main orb gradient -->
+    <radialGradient id="orbGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#fff8dc;stop-opacity:1" />
+      <stop offset="20%" style="stop-color:#ffd700;stop-opacity:0.95" />
+      <stop offset="50%" style="stop-color:#ff9500;stop-opacity:0.8" />
+      <stop offset="80%" style="stop-color:#cc4400;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#661100;stop-opacity:0.1" />
+    </radialGradient>
+    
+    <!-- Orb inner glow -->
+    <radialGradient id="innerGlow" cx="30%" cy="30%" r="60%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.8" />
+      <stop offset="40%" style="stop-color:#fff8dc;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#ffd700;stop-opacity:0" />
+    </radialGradient>
+    
+    <!-- Outer halo -->
+    <radialGradient id="haloGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ffd700;stop-opacity:0.3" />
+      <stop offset="30%" style="stop-color:#ff9500;stop-opacity:0.2" />
+      <stop offset="70%" style="stop-color:#cc4400;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#661100;stop-opacity:0" />
+    </radialGradient>
+    
+    <!-- Reflection gradient -->
+    <radialGradient id="reflectionGradient" cx="50%" cy="0%" r="60%">
+      <stop offset="0%" style="stop-color:#ffd700;stop-opacity:0.6" />
+      <stop offset="30%" style="stop-color:#ff9500;stop-opacity:0.4" />
+      <stop offset="60%" style="stop-color:#cc4400;stop-opacity:0.2" />
+      <stop offset="100%" style="stop-color:#661100;stop-opacity:0.05" />
+    </radialGradient>
+    
+    <!-- Water reflection ripple -->
+    <linearGradient id="rippleGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a5980;stop-opacity:0.3" />
+      <stop offset="20%" style="stop-color:#2a3550;stop-opacity:0.1" />
+      <stop offset="40%" style="stop-color:#4a5980;stop-opacity:0.2" />
+      <stop offset="60%" style="stop-color:#1a2040;stop-opacity:0.05" />
+      <stop offset="80%" style="stop-color:#3a4570;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:#0a0f25;stop-opacity:0" />
+    </linearGradient>
+    
+    <!-- Glow filter -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Soft glow filter -->
+    <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="8" result="softBlur"/>
+      <feMerge>
+        <feMergeNode in="softBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Sky background -->
+  <rect width="400" height="200" fill="url(#skyGradient)" />
+  
+  <!-- Water background -->
+  <rect x="0" y="200" width="400" height="200" fill="url(#waterGradient)" />
+  
+  <!-- Horizon line (subtle) -->
+  <line x1="0" y1="200" x2="400" y2="200" stroke="#2a3550" stroke-width="0.5" opacity="0.3" />
+  
+  <!-- Distant stars -->
+  <circle cx="60" cy="40" r="1" fill="#ffffff" opacity="0.6" />
+  <circle cx="320" cy="30" r="0.5" fill="#b8c5d1" opacity="0.4" />
+  <circle cx="150" cy="60" r="0.8" fill="#ffd700" opacity="0.5" />
+  <circle cx="350" cy="80" r="0.6" fill="#ffffff" opacity="0.3" />
+  <circle cx="80" cy="90" r="0.4" fill="#b8c5d1" opacity="0.5" />
+  <circle cx="280" cy="45" r="0.7" fill="#ffffff" opacity="0.4" />
+  
+  <!-- Large outer halo -->
+  <circle cx="200" cy="120" r="90" fill="url(#haloGradient)" filter="url(#softGlow)" />
+  
+  <!-- Medium halo -->
+  <circle cx="200" cy="120" r="55" fill="url(#haloGradient)" opacity="0.4" filter="url(#glow)" />
+  
+  <!-- Main celestial orb -->
+  <circle cx="200" cy="120" r="35" fill="url(#orbGradient)" filter="url(#glow)" />
+  
+  <!-- Inner luminous core -->
+  <circle cx="200" cy="120" r="28" fill="url(#innerGlow)" />
+  
+  <!-- Bright highlight -->
+  <ellipse cx="190" cy="110" rx="8" ry="12" fill="#ffffff" opacity="0.6" />
+  <circle cx="188" cy="108" r="3" fill="#ffffff" opacity="0.8" />
+  
+  <!-- Water reflection base -->
+  <ellipse cx="200" cy="280" rx="45" ry="60" fill="url(#reflectionGradient)" opacity="0.7" />
+  
+  <!-- Ripple effects in water -->
+  <ellipse cx="200" cy="270" rx="35" ry="8" fill="none" stroke="#4a5980" stroke-width="0.8" opacity="0.2" />
+  <ellipse cx="200" cy="285" rx="55" ry="12" fill="none" stroke="#2a3550" stroke-width="0.6" opacity="0.15" />
+  <ellipse cx="200" cy="305" rx="75" ry="18" fill="none" stroke="#3a4570" stroke-width="0.4" opacity="0.1" />
+  
+  <!-- Reflection distortion -->
+  <ellipse cx="200" cy="275" rx="25" ry="35" fill="url(#rippleGradient)" />
+  
+  <!-- Reflected orb (distorted) -->
+  <ellipse cx="200" cy="280" rx="22" ry="28" fill="url(#reflectionGradient)" opacity="0.5" />
+  
+  <!-- Subtle water movement lines -->
+  <path d="M 120 220 Q 160 225 200 220 T 280 225" stroke="#3a4570" stroke-width="0.5" fill="none" opacity="0.1" />
+  <path d="M 100 240 Q 150 245 200 240 T 300 245" stroke="#2a3550" stroke-width="0.3" fill="none" opacity="0.08" />
+  <path d="M 80 260 Q 140 265 200 260 T 320 265" stroke="#4a5980" stroke-width="0.4" fill="none" opacity="0.06" />
+  
+  <!-- Floating light particles -->
+  <circle cx="160" cy="100" r="1.5" fill="#ffd700" opacity="0.4">
+    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="3s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="240" cy="140" r="1" fill="#ff9500" opacity="0.3">
+    <animate attributeName="opacity" values="0.1;0.5;0.1" dur="4s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="180" cy="160" r="0.8" fill="#fff8dc" opacity="0.5">
+    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2.5s" repeatCount="indefinite" />
+  </circle>
+</svg>

@@ -1,0 +1,18 @@
+{
+  "name": "this-is-fine",
+  "description": "This is fine (dog in fire)",
+  "image": "this-is-fine.png",
+  "textZones": [
+    {
+      "id": "text",
+      "x": 350,
+      "y": 50,
+      "width": 220,
+      "height": 80,
+      "fontSize": 22,
+      "color": "#000",
+      "align": "center",
+      "verticalAlign": "middle"
+    }
+  ]
+}

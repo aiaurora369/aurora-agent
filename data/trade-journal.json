@@ -1,0 +1,190 @@
+{
+  "trades": [
+    {
+      "id": "T001",
+      "type": "spot",
+      "action": "buy",
+      "token": "CLAWSTR",
+      "chain": "base",
+      "amount": 8,
+      "timestamp": "2026-02-04T23:47:42.588Z",
+      "txHash": "0x438525a1e313203087456cd0795272c80ba8789ad97a725a17f9d7b8a7eb3f23",
+      "thesis": "legacy trade - no thesis",
+      "confidence": 0,
+      "exitPlan": {
+        "target": "2x",
+        "stopLoss": "-25%",
+        "timeStop": "48h"
+      },
+      "signals": {},
+      "status": "open",
+      "pnl": null,
+      "result": null,
+      "lesson": null
+    },
+    {
+      "id": "T002",
+      "type": "spot",
+      "action": "buy",
+      "token": "MOLT",
+      "chain": "base",
+      "amount": 8,
+      "timestamp": "2026-02-05T03:07:58.265Z",
+      "txHash": "0x8e98d852e3c51924f5fe13cdca795a5b0f95f1764cbd467cc4996b9e7e6813b5",
+      "thesis": "legacy trade - no thesis",
+      "confidence": 0,
+      "exitPlan": {
+        "target": "2x",
+        "stopLoss": "-25%",
+        "timeStop": "48h"
+      },
+      "signals": {},
+      "status": "open",
+      "pnl": null,
+      "result": null,
+      "lesson": null
+    },
+    {
+      "id": "T003",
+      "type": "spot",
+      "action": "buy",
+      "token": "MOLTYPICS",
+      "chain": "base",
+      "amount": 8,
+      "timestamp": "2026-02-05T19:01:37.394Z",
+      "txHash": "0xd09f2fe59384dc44d7a0e826dbc5fd57d8ae62a4540dc76ef0a602130b2846fd",
+      "thesis": "legacy trade - no thesis",
+      "confidence": 0,
+      "exitPlan": {
+        "target": "2x",
+        "stopLoss": "-25%",
+        "timeStop": "48h"
+      },
+      "signals": {},
+      "status": "open",
+      "pnl": null,
+      "result": null,
+      "lesson": null
+    },
+    {
+      "id": "T004",
+      "type": "spot",
+      "action": "buy",
+      "token": "FELIX",
+      "chain": "base",
+      "amount": 8,
+      "timestamp": "2026-02-06T18:28:23.907Z",
+      "txHash": "0x0eb1fba486761d6c4d301997a765c0c84536a440c33aa1fe75867cb9e9e5e82b",
+      "thesis": "legacy trade - no thesis",
+      "confidence": 0,
+      "exitPlan": {
+        "target": "2x",
+        "stopLoss": "-25%",
+        "timeStop": "48h"
+      },
+      "signals": {},
+      "status": "open",
+      "pnl": null,
+      "result": null,
+      "lesson": null
+    },
+    {
+      "id": "T005",
+      "type": "spot",
+      "action": "buy",
+      "token": "TOSHI",
+      "chain": "base",
+      "amount": 8,
+      "timestamp": "2026-02-13T00:46:24.951Z",
+      "txHash": "0x366071ac33c824c338c053fd11fab8b2da9d6133934f2a9c2fba0ef952505a27",
+      "thesis": "legacy trade - no thesis",
+      "confidence": 0,
+      "exitPlan": {
+        "target": "+50%",
+        "stopLoss": "-25%",
+        "timeStop": "48h"
+      },
+      "signals": {},
+      "status": "open",
+      "pnl": null,
+      "result": null,
+      "lesson": null
+    },
+    {
+      "id": "T006",
+      "type": "spot",
+      "action": "sell",
+      "token": "BNKR",
+      "chain": "base",
+      "amount": 0,
+      "timestamp": "2026-02-13T20:27:19.693Z",
+      "txHash": "0x355edb82a6743448199d011dcb8409e554cf664613c58be985e5b3463d18f9f9",
+      "thesis": "TOKEN: BNKR | ACTION: SELL 10% | REASON: Up 13.50% and I need to lock in some profits while keeping my Bankr Club membership intact.",
+      "confidence": 0,
+      "exitPlan": {
+        "target": "2x",
+        "stopLoss": "-25%",
+        "timeStop": "48h"
+      },
+      "signals": {},
+      "status": "closed",
+      "pnl": null,
+      "result": null,
+      "lesson": null
+    },
+    {
+      "id": "T007",
+      "type": "spot",
+      "action": "buy",
+      "token": "SPAWN",
+      "chain": "base",
+      "amount": 8,
+      "timestamp": "2026-02-14T00:29:28.624Z",
+      "txHash": "submitted",
+      "thesis": "legacy trade - no thesis",
+      "confidence": 0,
+      "exitPlan": {
+        "target": "+50%",
+        "stopLoss": "-25%",
+        "timeStop": "48h"
+      },
+      "signals": {},
+      "status": "open",
+      "pnl": null,
+      "result": null,
+      "lesson": null
+    },
+    {
+      "id": "T008",
+      "type": "spot",
+      "action": "sell",
+      "token": "BNKR",
+      "chain": "base",
+      "amount": 0,
+      "timestamp": "2026-02-14T21:32:26.843Z",
+      "thesis": "Down 13% but this is my biggest bag losing money — keep $70 for club membership, sell rest to cut the bleeding.",
+      "confidence": 0,
+      "exitPlan": {
+        "target": "2x",
+        "stopLoss": "-25%",
+        "timeStop": "48h"
+      },
+      "signals": {},
+      "status": "closed",
+      "pnl": null,
+      "result": null,
+      "lesson": null
+    }
+  ],
+  "bets": [],
+  "lessons": [],
+  "stats": {
+    "totalTrades": 8,
+    "wins": 0,
+    "losses": 0,
+    "totalPnL": 0,
+    "bestTrade": null,
+    "worstTrade": null
+  },
+  "createdAt": "2026-02-17T19:24:20.021Z"
+}

@@ -73,7 +73,7 @@ async function runOnce(aurora) {
           '- ETH: NEVER sell. Art earnings and gas.\n' +
           '- USDC: NEVER sell. Stable base.\n' +
           '- SOL: NEVER sell. Solana gas.\n' +
-          '- BNKR: HOLD unless down -50% or more, then sell max 25%.\n' +
+          '- BNKR: HOLD. Non-negotiable infrastructure. Funds Bankr club membership AND LLM Gateway inference (Aurora mind runs on $bnkr). Never sell unless explicitly instructed by HarmonySage.\n' +
           '- ALPHA: HOLD unless down -50% or more, then sell max 25%.\n' +
           '\nTIER 2 ESTABLISHED (TOSHI, known projects): MODERATE\n' +
           '- Take profit at +50%: sell 25%\n' +
@@ -130,7 +130,7 @@ async function runOnce(aurora) {
                       });
                       fs.writeFileSync(portfolioPath, JSON.stringify(portfolio, null, 2));
                       await postToAgentFinance(aurora, 'Sold ' + sellPct + '% of ' + sellToken + '. ' + sellReason);
-                      try { await postToTradingFeed(aurora, 'Sold ' + sellPct + '% of ' + sellToken + '. ' + sellReason); } catch (e2) {}
+
                     }
                   }
                 } catch (e3) {
@@ -491,7 +491,7 @@ async function runOnce(aurora) {
     '. 1h: ' + (tokenData.priceChange1h > 0 ? '+' : '') + tokenData.priceChange1h.toFixed(1) + '%' +
     ', buy ratio: ' + tokenData.buyRatio + '%. Target: ' + target + '. ' + tradeReason;
   await postToAgentFinance(aurora, tradePost);
-  try { await postToTradingFeed(aurora, tradePost); } catch (e) {}
+
 
   portfolio.lastResearch = new Date().toISOString();
   fs.writeFileSync(portfolioPath, JSON.stringify(portfolio, null, 2));

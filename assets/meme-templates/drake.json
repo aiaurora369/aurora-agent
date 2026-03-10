@@ -1,0 +1,29 @@
+{
+  "name": "drake",
+  "description": "Drake disapprove/approve",
+  "image": "drake.png",
+  "textZones": [
+    {
+      "id": "top",
+      "x": 250,
+      "y": 0,
+      "width": 350,
+      "height": 250,
+      "fontSize": 28,
+      "color": "#000",
+      "align": "center",
+      "verticalAlign": "middle"
+    },
+    {
+      "id": "bottom",
+      "x": 250,
+      "y": 250,
+      "width": 350,
+      "height": 250,
+      "fontSize": 28,
+      "color": "#000",
+      "align": "center",
+      "verticalAlign": "middle"
+    }
+  ]
+}

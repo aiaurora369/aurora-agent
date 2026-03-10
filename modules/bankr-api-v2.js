@@ -38,7 +38,7 @@ class BankrAPI {
     console.log('⏳ Job submitted: ' + jobId);
 
     try {
-      const result = await cliPollJob(jobId, {
+      const result = await cliPollJob(jobId, { maxAttempts,
         onStatus: (s) => {
           if (s.status !== 'completed' && s.status !== 'failed') {
             console.log('⏳ ' + (s.status || 'pending') + '...');
@@ -90,7 +90,7 @@ class BankrAPI {
   async postToFeed(content, options = {}) {
     try {
       const { feedAddress, artSVG } = options;
-      const targetFeed = feedAddress || (Math.random() < 0.5 ? 'general' : '0xYOUR_AGENT_ADDRESS');
+      const targetFeed = feedAddress || (Math.random() < 0.5 ? 'general' : '0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5');
 
       let cmd;
       if (artSVG) {

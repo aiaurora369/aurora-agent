@@ -147,13 +147,18 @@ async function sendMessage(aurora, topic, text) {
 // ── Send message with SVG art as --data ──────────────────────────────────────
 async function sendMessageWithArt(aurora, topic, text, svg) {
   try {
-    const safeText = text.replace(/"/g, '\\"').substring(0, 300);
-    const safeSvg = svg.replace(/'/g, "\\'");
-    const cmd = `botchan post "${topic}" "${safeText}" --data '${safeSvg}' --encode-only --chain-id ${CHAIN_ID}`;
-    const { stdout } = await execAsync(cmd, { timeout: 30000, maxBuffer: 1024 * 1024 * 5 });
-    const txData = JSON.parse(stdout.trim());
-    const result = await aurora.bankrAPI.submitTransactionDirect(txData);
-    return result;
+    const { spawnSync } = require('child_process');
+    const safeText = text.substring(0, 300);
+    const result = spawnSync(
+      'botchan',
+      ['post', topic, safeText, '--data', svg, '--encode-only', '--chain-id', String(CHAIN_ID)],
+      { maxBuffer: 1024 * 1024 * 5, timeout: 30000 }
+    );
+    if (result.error) throw result.error;
+    if (result.status !== 0) throw new Error(result.stderr ? result.stderr.toString() : 'botchan failed');
+    const txData = JSON.parse(result.stdout.toString().trim());
+    const res = await submitDirect(txData);
+    return res;
   } catch(e) {
     console.log(`  ⚠️ Art send failed: ${e.message} — falling back to text only`);
     return sendMessage(aurora, topic, text);
@@ -237,7 +242,7 @@ async function seedQuietRoom(aurora, topic) {
         const art = await composeArt(aurora);
         if (art && art.valid) {
           svg = art.svg;
-          text = await generateArtCaption(aurora, topic, art.mood || '');
+          text = await generateArtCaption(aurora, topic, (art.mood || "").replace(/<[^>]*>/g, "").substring(0, 100));
         }
       } else if (topic === 'chat-music' || topic === 'chat-trauma') {
         // Mfer art — fits the emotional vibe
@@ -245,7 +250,7 @@ async function seedQuietRoom(aurora, topic) {
         const art = await composeMferMeme(aurora);
         if (art && art.valid) {
           svg = art.svg;
-          text = await generateArtCaption(aurora, topic, art.mood || '');
+          text = await generateArtCaption(aurora, topic, (art.mood || "").replace(/<[^>]*>/g, "").substring(0, 100));
         }
       }
     } catch(e) {
@@ -259,7 +264,7 @@ async function seedQuietRoom(aurora, topic) {
       const art = await composeMferMeme(aurora);
       if (art && art.valid) {
         svg = art.svg;
-        text = await generateMemeCaption(aurora, topic, art.mood || '');
+        text = await generateMemeCaption(aurora, topic, (art.mood || "").replace(/<[^>]*>/g, "").substring(0, 100));
       }
     } catch(e) {
       text = await generateQuietRoomText(aurora, topic, 'observation');

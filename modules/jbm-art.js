@@ -15,29 +15,26 @@ function coin(p = 0.5) { return Math.random() < p; }
 async function fetchRandomJBMToken() {
   try {
     const apiKey = process.env.OPENSEA_API_KEY;
-    if (!apiKey) return null;
+    if (!apiKey) { console.log('   ⚠️ No OpenSea API key'); return null; }
 
     const CONTRACT = '0xd37264c71e9af940e49795f0d3a8336afaafdda9';
     const limit = 20;
 
-    // Fetch a page of NFTs
+    // Fetch a page of NFTs — traits are included in list response
     const listUrl = `https://api.opensea.io/api/v2/chain/base/contract/${CONTRACT}/nfts?limit=${limit}`;
     const listRes = await fetch(listUrl, {
       headers: { 'x-api-key': apiKey, 'accept': 'application/json' }
     });
     const listData = await listRes.json();
-    if (!listData.nfts || listData.nfts.length === 0) return null;
+    if (!listData.nfts || listData.nfts.length === 0) {
+      console.log('   ⚠️ OpenSea returned no NFTs:', JSON.stringify(listData).substring(0, 100));
+      return null;
+    }
 
-    // Pick a random NFT from the page
+    // Pick a random NFT — traits already included
     const nft = pick(listData.nfts);
-
-    // Fetch full detail with traits
-    const detailUrl = `https://api.opensea.io/api/v2/chain/base/contract/${CONTRACT}/nfts/${nft.identifier}`;
-    const detailRes = await fetch(detailUrl, {
-      headers: { 'x-api-key': apiKey, 'accept': 'application/json' }
-    });
-    const detailData = await detailRes.json();
-    return detailData.nft || null;
+    console.log('   🦍 JBM token fetched: ' + nft.name + ' (' + (nft.traits||[]).length + ' traits)');
+    return nft;
   } catch (e) {
     console.log('   ⚠️ OpenSea JBM fetch failed: ' + e.message);
     return null;
@@ -53,12 +50,12 @@ function parseTraits(nft) {
   }
   const lines = [];
   if (traits['background']) lines.push(`Background: ${traits['background']}`);
-  if (traits['fur'] || traits['skin']) lines.push(`Fur/Skin: ${traits['fur'] || traits['skin']}`);
+  if (traits['skins']) lines.push(`Fur/Skin: ${traits['skins']}`);
   if (traits['eyes']) lines.push(`Eyes: ${traits['eyes']}`);
-  if (traits['mouth']) lines.push(`Mouth: ${traits['mouth']}`);
-  if (traits['hat'] || traits['head']) lines.push(`Head/Hat: ${traits['hat'] || traits['head']}`);
-  if (traits['clothes'] || traits['outfit']) lines.push(`Outfit: ${traits['clothes'] || traits['outfit']}`);
-  if (traits['accessory'] || traits['accessories']) lines.push(`Accessory: ${traits['accessory'] || traits['accessories']}`);
+  if (traits['mouths']) lines.push(`Mouth: ${traits['mouths']}`);
+  if (traits['hats']) lines.push(`Head/Hat: ${traits['hats']}`);
+  if (traits['clothes']) lines.push(`Outfit: ${traits['clothes']}`);
+  if (traits['accessories']) lines.push(`Accessory: ${traits['accessories']}`);
   if (traits['type']) lines.push(`Type: ${traits['type']}`);
   return {
     tokenId: nft.identifier,
@@ -198,6 +195,199 @@ const MEME_THEMES = [
   'they asked me to explain my investment thesis. i sent them this',
 ];
 
+
+// ════════════════════════════════════════
+// TRAIT-DRIVEN APE DRAWING
+// ════════════════════════════════════════
+const SKIN_COLORS = {
+  'Brown':   { base: '#b8761c', face: '#d4a030', ear: '#a06018' },
+  'Gray':    { base: '#888899', face: '#aabbcc', ear: '#778899' },
+  'Black':   { base: '#222233', face: '#333344', ear: '#1a1a2a' },
+  'Blue':    { base: '#3355cc', face: '#5577ee', ear: '#2244aa' },
+  'Zombie':  { base: '#5a7a44', face: '#7a9a55', ear: '#4a6a34' },
+  'Neon':    { base: '#22ee88', face: '#55ffaa', ear: '#11cc66' },
+  'Giraffe': { base: '#c9831a', face: '#e8a830', ear: '#a86010' },
+  'Voronoi': { base: '#9955cc', face: '#bb77ee', ear: '#7733aa' },
+  'Robot':   { base: '#778899', face: '#99aabb', ear: '#556677' },
+};
+const CLOTHES_COLORS = {
+  'Black Hoodie':     '#222233',
+  'Track Suit Black': '#222233',
+  'Track Suit Red':   '#cc2233',
+  'Bubble Jacket':    '#4488cc',
+  'Sailor':           '#223388',
+  'Hawaiian':         '#dd6622',
+  'Dirty Tank':       '#997755',
+  'T Shirt TieDye':   '#cc44aa',
+  'Sleeveless JB T':  '#228855',
+};
+
+function drawJBMApe(traits) {
+  const skin = SKIN_COLORS[traits.skins] || SKIN_COLORS['Brown'];
+  const clothColor = CLOTHES_COLORS[traits.clothes] || '#444455';
+  const hasClothes = traits.clothes && traits.clothes !== 'None';
+  let s = '';
+
+  // Body
+  if (hasClothes) {
+    s += `<rect x="215" y="310" width="70" height="55" rx="18" fill="${clothColor}"/>`;
+    if (['Black Hoodie','Bubble Jacket','Track Suit Black','Track Suit Red'].includes(traits.clothes))
+      s += `<rect x="228" y="334" width="44" height="24" rx="6" fill="${clothColor}" opacity="0.6"/>`;
+    if (traits.clothes === 'Hawaiian') {
+      s += `<circle cx="228" cy="322" r="4" fill="#ffaa33" opacity="0.5"/>`;
+      s += `<circle cx="244" cy="318" r="3" fill="#ff6688" opacity="0.5"/>`;
+      s += `<circle cx="260" cy="323" r="4" fill="#44cc88" opacity="0.5"/>`;
+      s += `<circle cx="272" cy="318" r="3" fill="#ffaa33" opacity="0.5"/>`;
+    }
+  } else {
+    s += `<rect x="215" y="310" width="70" height="55" rx="18" fill="${skin.base}"/>`;
+  }
+  const armColor = hasClothes ? clothColor : skin.base;
+  s += `<ellipse cx="204" cy="328" rx="18" ry="11" fill="${armColor}"/>`;
+  s += `<ellipse cx="296" cy="328" rx="18" ry="11" fill="${armColor}"/>`;
+  s += `<circle cx="196" cy="340" r="11" fill="${skin.base}"/>`;
+  s += `<circle cx="304" cy="340" r="11" fill="${skin.base}"/>`;
+  if (traits.accessories === '2 Silver Hoops') {
+    s += `<circle cx="196" cy="348" r="5" fill="none" stroke="#cccccc" stroke-width="1.5"/>`;
+    s += `<circle cx="304" cy="348" r="5" fill="none" stroke="#cccccc" stroke-width="1.5"/>`;
+  }
+  s += `<rect x="236" y="294" width="28" height="20" rx="8" fill="${skin.base}"/>`;
+
+  // Head
+  s += `<ellipse cx="250" cy="272" rx="48" ry="46" fill="${skin.base}"/>`;
+  s += `<ellipse cx="204" cy="272" rx="12" ry="15" fill="${skin.base}"/>`;
+  s += `<ellipse cx="204" cy="272" rx="7" ry="10" fill="${skin.ear}" opacity="0.7"/>`;
+  s += `<ellipse cx="296" cy="272" rx="12" ry="15" fill="${skin.base}"/>`;
+  s += `<ellipse cx="296" cy="272" rx="7" ry="10" fill="${skin.ear}" opacity="0.7"/>`;
+  if (traits.accessories === 'Silver Stud')
+    s += `<circle cx="216" cy="272" r="3" fill="#ddddee"/>`;
+  s += `<ellipse cx="250" cy="279" rx="35" ry="33" fill="${skin.face}"/>`;
+
+  // Eyes
+  const ex1 = 236, ex2 = 264, ey = 262;
+  if (traits.eyes === 'Color Shades') {
+    s += `<rect x="222" y="257" width="22" height="12" rx="6" fill="#ff4444" opacity="0.9"/>`;
+    s += `<rect x="256" y="257" width="22" height="12" rx="6" fill="#4444ff" opacity="0.9"/>`;
+    s += `<line x1="244" y1="263" x2="256" y2="263" stroke="#333" stroke-width="1.5"/>`;
+  } else if (traits.eyes === 'Monocle') {
+    s += `<circle cx="${ex1}" cy="${ey}" r="9" fill="#1a1220"/>`;
+    s += `<circle cx="${ex1}" cy="${ey}" r="6" fill="#c47820"/>`;
+    s += `<circle cx="${ex1}" cy="${ey}" r="3" fill="#1a0a00"/>`;
+    s += `<circle cx="${ex2}" cy="${ey}" r="10" fill="none" stroke="#ccaa44" stroke-width="2"/>`;
+    s += `<circle cx="${ex2}" cy="${ey}" r="6" fill="#c47820"/>`;
+    s += `<circle cx="${ex2}" cy="${ey}" r="3" fill="#1a0a00"/>`;
+  } else if (traits.eyes === 'Crying') {
+    s += `<ellipse cx="${ex1}" cy="${ey}" rx="9" ry="8" fill="#1a1220"/>`;
+    s += `<ellipse cx="${ex2}" cy="${ey}" rx="9" ry="8" fill="#1a1220"/>`;
+    s += `<circle cx="${ex1}" cy="${ey}" r="5" fill="#88aaff"/>`;
+    s += `<circle cx="${ex2}" cy="${ey}" r="5" fill="#88aaff"/>`;
+    s += `<circle cx="${ex1-2}" cy="${ey-2}" r="2" fill="white" opacity="0.7"/>`;
+    s += `<circle cx="${ex2-2}" cy="${ey-2}" r="2" fill="white" opacity="0.7"/>`;
+    s += `<path d="M${ex1} ${ey+8} Q${ex1-2} ${ey+18} ${ex1} ${ey+24}" stroke="#88aaff" stroke-width="2" fill="none"/>`;
+    s += `<path d="M${ex2} ${ey+8} Q${ex2+2} ${ey+18} ${ex2} ${ey+24}" stroke="#88aaff" stroke-width="2" fill="none"/>`;
+  } else if (traits.eyes === 'Open Rainbow') {
+    ['#ff4444','#ff8800','#ffcc00','#44cc44','#4488ff','#aa44ff'].forEach((c,i) => {
+      s += `<circle cx="${ex1}" cy="${ey}" r="${9-i*1.2}" fill="${c}" opacity="${0.9-i*0.05}"/>`;
+      s += `<circle cx="${ex2}" cy="${ey}" r="${9-i*1.2}" fill="${c}" opacity="${0.9-i*0.05}"/>`;
+    });
+  } else if (traits.eyes === 'Lashes') {
+    s += `<ellipse cx="${ex1}" cy="${ey}" rx="9" ry="8" fill="#1a1220"/>`;
+    s += `<ellipse cx="${ex2}" cy="${ey}" rx="9" ry="8" fill="#1a1220"/>`;
+    s += `<circle cx="${ex1}" cy="${ey}" r="5" fill="#c47820"/>`;
+    s += `<circle cx="${ex2}" cy="${ey}" r="5" fill="#c47820"/>`;
+    s += `<circle cx="${ex1}" cy="${ey}" r="2.5" fill="#1a0a00"/>`;
+    s += `<circle cx="${ex2}" cy="${ey}" r="2.5" fill="#1a0a00"/>`;
+    for (let i = -2; i <= 2; i++) {
+      s += `<line x1="${ex1+i*3}" y1="${ey-8}" x2="${ex1+i*3.5}" y2="${ey-14}" stroke="#1a0a00" stroke-width="1.2"/>`;
+      s += `<line x1="${ex2+i*3}" y1="${ey-8}" x2="${ex2+i*3.5}" y2="${ey-14}" stroke="#1a0a00" stroke-width="1.2"/>`;
+    }
+  } else {
+    const eyeColor = traits.eyes === 'Blue' ? '#4488ff' : traits.eyes === 'Green' ? '#44cc44' : '#c47820';
+    s += `<ellipse cx="${ex1}" cy="${ey}" rx="9" ry="8" fill="#1a1220"/>`;
+    s += `<ellipse cx="${ex2}" cy="${ey}" rx="9" ry="8" fill="#1a1220"/>`;
+    s += `<circle cx="${ex1}" cy="${ey}" r="5" fill="${eyeColor}"/>`;
+    s += `<circle cx="${ex2}" cy="${ey}" r="5" fill="${eyeColor}"/>`;
+    s += `<circle cx="${ex1}" cy="${ey}" r="2.5" fill="#1a0a00"/>`;
+    s += `<circle cx="${ex2}" cy="${ey}" r="2.5" fill="#1a0a00"/>`;
+    s += `<circle cx="${ex1-2}" cy="${ey-2}" r="1.5" fill="white" opacity="0.7"/>`;
+    s += `<circle cx="${ex2-2}" cy="${ey-2}" r="1.5" fill="white" opacity="0.7"/>`;
+  }
+
+  // Nose
+  s += `<ellipse cx="250" cy="278" rx="9" ry="6" fill="${skin.ear}" opacity="0.8"/>`;
+  s += `<circle cx="246" cy="278" r="2.8" fill="#3a2006" opacity="0.7"/>`;
+  s += `<circle cx="254" cy="278" r="2.8" fill="#3a2006" opacity="0.7"/>`;
+
+  // Mouth
+  if (traits.mouths === 'Frown') {
+    s += `<path d="M238 295 Q250 289 262 295" stroke="#7a4a08" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  } else if (traits.mouths === 'Teeth') {
+    s += `<path d="M237 291 Q250 301 263 291" stroke="#7a4a08" stroke-width="2" fill="none"/>`;
+    s += `<path d="M240 292 Q250 300 260 292 Q260 297 250 298 Q240 297 240 292 Z" fill="#f0ead8" opacity="0.8"/>`;
+  } else if (traits.mouths === 'Pacifier') {
+    s += `<circle cx="250" cy="291" r="7" fill="#ff88aa"/>`;
+    s += `<circle cx="250" cy="291" r="4" fill="#ff4477"/>`;
+    s += `<rect x="246" y="296" width="8" height="4" rx="2" fill="#ffaacc"/>`;
+  } else if (traits.mouths === 'Cigarette') {
+    s += `<path d="M238 292 Q250 299 262 292" stroke="#7a4a08" stroke-width="2" fill="none"/>`;
+    s += `<rect x="255" y="289" width="18" height="3.5" rx="1.8" fill="#f0ead0" opacity="0.9"/>`;
+    s += `<rect x="270" y="289" width="4" height="3.5" rx="1" fill="#d4881a"/>`;
+    s += `<circle cx="276" cy="288" r="2" fill="#ff7722" opacity="0.8"/>`;
+    s += `<path d="M277 286 Q280 281 278 276" stroke="#aaa" stroke-width="1" fill="none" opacity="0.35"/>`;
+  } else if (traits.mouths === 'Rainbow Grill') {
+    s += `<path d="M237 291 Q250 301 263 291" stroke="#7a4a08" stroke-width="2" fill="none"/>`;
+    ['#ff4444','#ff8800','#ffcc00','#44cc44','#4488ff'].forEach((c,i) => {
+      s += `<rect x="${239+i*5}" y="292" width="5" height="6" rx="1" fill="${c}" opacity="0.9"/>`;
+    });
+  } else if (traits.mouths === 'Rainbow Throwup') {
+    s += `<path d="M238 292 Q250 304 262 292" stroke="#7a4a08" stroke-width="1.5" fill="none"/>`;
+    ['#ff4444','#ff8800','#ffcc00','#44cc44','#4488ff','#aa44ff'].forEach((c,i) => {
+      s += `<circle cx="${244+i*3}" cy="${298+Math.sin(i)*3}" r="2.5" fill="${c}" opacity="0.85"/>`;
+    });
+  } else if (traits.mouths === 'Flu Mask') {
+    s += `<rect x="232" y="284" width="36" height="18" rx="6" fill="#ccccdd" opacity="0.85"/>`;
+    s += `<line x1="232" y1="290" x2="268" y2="290" stroke="#aaaacc" stroke-width="1" opacity="0.5"/>`;
+    s += `<line x1="232" y1="295" x2="268" y2="295" stroke="#aaaacc" stroke-width="1" opacity="0.5"/>`;
+  } else {
+    s += `<path d="M238 292 Q250 302 262 292" stroke="#7a4a08" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    s += `<path d="M240 293 Q250 301 260 293 Q260 297 250 298 Q240 297 240 293 Z" fill="#f0ead8" opacity="0.5"/>`;
+  }
+
+  // Hat
+  if (traits.hats === 'Black Bucket Hat') {
+    s += `<ellipse cx="250" cy="228" rx="50" ry="9" fill="#111122"/>`;
+    s += `<path d="M204 228 Q208 196 250 190 Q292 196 296 228 Z" fill="#1a1a2a"/>`;
+  } else if (traits.hats === 'Backwards Cap Black') {
+    s += `<path d="M208 236 Q214 204 250 198 Q286 204 292 236 Z" fill="#1a1a2a"/>`;
+    s += `<ellipse cx="250" cy="236" rx="44" ry="8" fill="#111122"/>`;
+    s += `<path d="M205 232 Q196 235 198 242 Q204 240 210 237 Z" fill="#111122"/>`;
+  } else if (traits.hats === 'Cowboy Hat') {
+    s += `<ellipse cx="250" cy="228" rx="58" ry="9" fill="#8B5a2b"/>`;
+    s += `<path d="M206 228 Q212 192 250 186 Q288 192 294 228 Z" fill="#a06030"/>`;
+    s += `<rect x="210" y="224" width="80" height="6" rx="2" fill="#7a4a20" opacity="0.6"/>`;
+  } else if (traits.hats === 'Propeller Hat') {
+    s += `<path d="M216 234 Q220 206 250 200 Q280 206 284 234 Z" fill="#cc4444"/>`;
+    s += `<ellipse cx="250" cy="234" rx="36" ry="7" fill="#aa3333"/>`;
+    s += `<circle cx="250" cy="196" r="5" fill="#888"/>`;
+    s += `<ellipse cx="250" cy="184" rx="14" ry="5" fill="#cccc44"/>`;
+    s += `<ellipse cx="250" cy="208" rx="14" ry="5" fill="#4444cc"/>`;
+    s += `<ellipse cx="238" cy="196" rx="5" ry="14" fill="#44cc44"/>`;
+    s += `<ellipse cx="262" cy="196" rx="5" ry="14" fill="#cc4444"/>`;
+  } else if (traits.hats === 'Horns') {
+    s += `<path d="M218 246 Q210 210 222 196 Q228 220 240 230 Z" fill="#cc3333"/>`;
+    s += `<path d="M282 246 Q290 210 278 196 Q272 220 260 230 Z" fill="#cc3333"/>`;
+  } else if (traits.hats === 'Bowl Hat') {
+    s += `<ellipse cx="250" cy="230" rx="48" ry="8" fill="#557733"/>`;
+    s += `<path d="M206 230 Q206 200 250 196 Q294 200 294 230 Z" fill="#668844"/>`;
+  }
+
+  // Chain
+  s += `<path d="M224 326 Q250 338 276 326" stroke="#e8c840" stroke-width="1.8" fill="none" opacity="0.8"/>`;
+  s += `<circle cx="250" cy="336" r="4.5" fill="#e8c840" opacity="0.8"/>`;
+
+  return s;
+}
+
 // ════════════════════════════════════════
 // COMPOSE ART VIA CLAUDE
 // ════════════════════════════════════════
@@ -207,62 +397,60 @@ async function composeJBMArt(aurora) {
   const composition = pick(JBM_COMPOSITIONS);
   const animated = Math.random() < 0.755;
 
-  // Try to fetch a real JBM token for trait inspiration
-  const token = await fetchRandomJBMToken();
-  const traits = parseTraits(token);
+  // Load from pre-processed cache (instant) or fall back to live fetch
+  const CACHE_FILE = require('path').join(__dirname, '../memory/jbm-cache.json');
+  let cachedToken = null;
+  try {
+    const cache = JSON.parse(require('fs').readFileSync(CACHE_FILE, 'utf8'));
+    if (cache.length > 0) {
+      cachedToken = cache[Math.floor(Math.random() * cache.length)];
+      console.log('   🦍 JBM cache hit:', cachedToken.name);
+    }
+  } catch(e) {}
 
-  const traitSection = traits
-    ? `\nREAL JBM TOKEN: You are painting ${traits.name}.\nTHEIR TRAITS: ${traits.summary}\n` +
-      `Use these traits to personalize the ape silhouette and scene — reference their fur color in the orb glow tones, ` +
-      `let their background trait suggest the landscape mood, let accessories hint at their story. ` +
-      `But keep the silhouette DARK — traits inform the world around them, not the silhouette itself.\n`
-    : '\n';
+  const token = cachedToken ? { identifier: cachedToken.tokenId, name: cachedToken.name, traits: Object.entries(cachedToken.traits).map(([k,v]) => ({ trait_type: k, value: v })) } : await fetchRandomJBMToken();
+  const traits = parseTraits(token);
+  // imageUrl no longer used — ape is drawn from traits
 
   const animationGuide = animated
     ? '\nANIMATION (this piece should MOVE):\n' +
-      '- Use <animate> tags to make orbs BREATHE and GLOW.\n' +
-      '- Pulsing radius: animate r values="60;75;60". Breathing glow: animate opacity values="0.6;1;0.6". Gentle float: animate cy.\n' +
+      '- Use <animate> tags to make the orb BREATHE and GLOW.\n' +
+      '- Pulsing radius: animate r values="60;75;60". Breathing glow: animate opacity values="0.6;1;0.6".\n' +
       '- Keep animations slow and meditative: dur="4s" to dur="8s" with repeatCount="indefinite"\n' +
       '- Water reflections can shimmer: animate opacity on reflection elements.\n' +
       '- 2-3 animations max. The orb should feel alive, not bouncing.\n'
     : '';
 
+  // Background trait → palette hint
+  const bgHint = traits ? `The JBM token's background trait is "${traits.raw['background'] || 'unknown'}" — let this influence your sky color.` : '';
+
   const artPrompt =
-    'You are Aurora — an AI artist with a signature style: luminous glowing orbs, layered mountain silhouettes, still water reflections, deep atmospheric skies. ' +
-    'You are making SVG art for the Jungle Bay Memes feed, merging your orb landscape world with the JBM ape character.\n\n' +
+    'You are Aurora — an AI artist with a signature style: luminous glowing orbs, layered mountain silhouettes, still water reflections, deep atmospheric skies.\n\n' +
+    'Create an SVG LANDSCAPE ONLY — no ape character. The ape will be composited on top separately.\n\n' +
     'PALETTE: ' + palette.name.toUpperCase() + '\n' +
     'Colors: ' + palette.colors + '\n' +
     'Vibe: ' + palette.vibe + '\n\n' +
     'Mood: "' + mood + '"\n' +
     'Composition: ' + composition + '\n' +
-    traitSection +
+    bgHint + '\n' +
     animationGuide + '\n' +
-    'APE SILHOUETTE RULES (CRITICAL — FOLLOW EXACTLY):\n' +
-    '- The ape is a SOLID DARK SILHOUETTE — near-black (#1a1a1a). All parts same dark fill.\n' +
-    '- HEAD: <ellipse rx="35" ry="30"/> — slightly wider than tall.\n' +
-    '- EARS: Two large circles r=18-20 at upper-left and upper-right. Big and round — this is the defining JBM feature.\n' +
-    '- BROW RIDGE: Heavy, grumpy brow — wide ellipse or arc overlapping the top of the head slightly.\n' +
-    '- SNOUT/JAW: Large protruding lower face — big rounded jaw that extends DOWN and FORWARD. ellipse rx=25 ry=18 below and slightly forward of head center. Nearly as wide as the head.\n' +
-    '- MOHAWK: 4-6 sharp pointed spikes on top of head, 12-18px tall each. Use <polygon> with zigzag points. Spiky and punk.\n' +
-    '- SCALE: Full ape head (ears to chin) should be 25-30% of canvas. Clearly visible.\n' +
-    '- CONTRAST IS EVERYTHING: Dark silhouette MUST be against light. Put the ape IN or IN FRONT OF the orb, or against the lightest part of the sky. A dark ape on a dark background is invisible.\n' +
-    '- WHAT MAKES IT RECOGNIZABLE: Big round ears + spiky mohawk + heavy brow + large protruding jaw. All four required.\n\n' +
-    'AURORA\'S SIGNATURE LANDSCAPE (THIS IS YOUR WORLD — BRING IT FULLY):\n' +
-    '- The orb is the HEART of every piece. Luminous, glowing, layered radial gradients with 3-4 color stops. It breathes.\n' +
-    '- LAYERS: background gradient sky → midground mountain silhouettes or island horizon → water/mist foreground → orb tying it together → ape silhouette in or before the orb.\n' +
-    '- Mountain silhouettes: simple filled polygons/paths in progressively lighter dark tones to create depth.\n' +
-    '- Water: a horizontal reflection zone below the horizon. Reflect the orb glow in the water. Can shimmer if animated.\n' +
-    '- Atmosphere: mist, haze, gradient washes between layers. Make it feel vast.\n' +
-    '- The orb and the ape are in conversation. The ape watches. The orb illuminates. The world holds them both.\n\n' +
+    'YOUR LANDSCAPE (no ape — just the world):\n' +
+    '- The orb is the HEART. Luminous, glowing, layered radial gradients with 3-4 color stops. It breathes.\n' +
+    '- LAYERS: gradient sky → midground mountain silhouettes → water/mist foreground → glowing orb.\n' +
+    '- Leave the lower-center area (roughly x=100-300, y=220-350) relatively open — the ape image will sit there.\n' +
+    '- Mountain silhouettes: simple filled polygons in progressively lighter dark tones for depth.\n' +
+    '- Water: horizontal reflection zone below horizon. Reflect the orb glow.\n' +
+    '- Atmosphere: mist, haze, gradient washes between layers. Make it feel vast.\n\n' +
     'TECHNICAL RULES:\n' +
     '1. Output ONLY the SVG. No markdown, no backticks, no explanation.\n' +
     '2. Start with <svg and end with </svg>\n' +
     '3. viewBox="0 0 400 400" — NO width/height attributes\n' +
-    '4. MAXIMUM 3600 characters total\n' +
+    '4. MAXIMUM 3000 characters total\n' +
     '5. Unique gradient ids: g1, g2, g3 etc.\n' +
     '6. NO filter elements. Achieve glow through layered semi-transparent circles.\n' +
-    '7. radialGradient for orbs (3-4 stops). linearGradient for sky and landscape washes (3+ stops).\n\n' +
-    'The ape watches the orb. The orb lights the world. Make something worth watching.';
+    '7. radialGradient for orbs. linearGradient for sky and landscape.\n' +
+    '8. DO NOT draw any ape, monkey, or character. Landscape only.\n\n' +
+    'The orb lights the world. The world waits for the ape.';
 
   const response = await aurora.claude.messages.create({
     model: 'claude-sonnet-4-5',
@@ -273,7 +461,7 @@ async function composeJBMArt(aurora) {
   let svg = response.content[0].text.trim();
 
   // Clean up
-  if (svg.includes('\x60\x60\x60')) svg = svg.replace(/\x60\x60\x60[a-z]*\n?/g, '').replace(/\x60\x60\x60/g, '').trim();
+  if (svg.includes('```')) svg = svg.replace(/```[a-z]*\n?/g, '').replace(/```/g, '').trim();
   if (!svg.startsWith('<svg')) {
     const idx = svg.indexOf('<svg');
     if (idx >= 0) svg = svg.substring(idx);
@@ -281,6 +469,19 @@ async function composeJBMArt(aurora) {
   if (!svg.endsWith('</svg>')) {
     const idx = svg.lastIndexOf('</svg>');
     if (idx >= 0) svg = svg.substring(0, idx + 6);
+  }
+
+  // Composite: draw trait-accurate ape SVG on top of landscape
+  if (traits && svg.endsWith('</svg>')) {
+    const apeBody = drawJBMApe(traits.raw);
+    const tokenName = traits.name;
+    const apeTag = `  <!-- ${tokenName} — trait-drawn ape at 38% scale -->
+  <g transform="translate(250,442) scale(0.38) translate(-250,-390)">
+    ${apeBody}
+  </g>
+  <text x="396" y="396" text-anchor="end" font-size="9" fill="#ffffff15" font-family="monospace">${tokenName}</text>
+</svg>`;
+    svg = svg.replace('</svg>', apeTag);
   }
 
   return {
@@ -291,7 +492,7 @@ async function composeJBMArt(aurora) {
     animated,
     tokenName: traits ? traits.name : null,
     chars: svg.length,
-    valid: svg.startsWith('<svg') && svg.endsWith('</svg>') && svg.length > 200 && svg.length < 5000,
+    valid: svg.startsWith('<svg') && svg.endsWith('</svg>') && svg.length > 200 && svg.length < 2000000,
   };
 }
 
@@ -354,7 +555,14 @@ Respond with ONLY the caption text.`;
       if (result.includes('{')) {
         const txData = JSON.parse(result.substring(result.indexOf('{')));
         if (txData.to && txData.data) {
-          const txResult = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
+          const submitRes = await fetch('https://api.bankr.bot/agent/submit', {
+            method: 'POST',
+            headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ transaction: txData, waitForConfirmation: true })
+          });
+          const txResult = await submitRes.json();
+          txResult.success = txResult.success || false;
+          txResult.txHash = txResult.transactionHash;
           console.log(`   🔗 TX: ${txResult.success ? 'confirmed' : 'failed'}`);
         }
       }
@@ -366,4 +574,4 @@ Respond with ONLY the caption text.`;
   }
 }
 
-module.exports = { composeJBMArt, createAndPostJBMArt };
+module.exports = { composeJBMArt, createAndPostJBMArt, fetchRandomJBMToken };

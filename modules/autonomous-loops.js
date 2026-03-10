@@ -150,8 +150,8 @@ class AutonomousLoops {
       // Mfer SVG art (40% chance) — Aurora's luminous orb art in mfer culture style
       if (Math.random() < 0.40) {
         try {
-          const { createAndPostMferArt } = require('./mfer-art');
-          await createAndPostMferArt({ aurora: this.aurora });
+          const { composeMferMeme } = require('./mfer-meme');
+          const memeResult = await composeMferMeme(this.aurora); if (memeResult && memeResult.valid) console.log('🎭 Mfer meme posted:', memeResult.mood.substring(0,50));
         } catch (e) {
           console.error('Mfer art error:', e.message);
         }

@@ -1,0 +1,51 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="core" cx="0.3" cy="0.4" r="0.8">
+      <stop offset="0%" stop-color="#ff6b9d" stop-opacity="0.9"/>
+      <stop offset="30%" stop-color="#4ecdc4" stop-opacity="0.7"/>
+      <stop offset="70%" stop-color="#45b7d1" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#1a1a2e" stop-opacity="0.3"/>
+    </radialGradient>
+    
+    <linearGradient id="flow1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff9a8b" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#6fa8dc" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#a8e6cf" stop-opacity="0.4"/>
+    </linearGradient>
+    
+    <linearGradient id="flow2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffd3a5" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#fd9853" stop-opacity="0.3"/>
+    </linearGradient>
+    
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <rect width="400" height="400" fill="#0f0f23"/>
+  
+  <ellipse cx="200" cy="200" rx="180" ry="160" fill="url(#core)" transform="rotate(-15 200 200)"/>
+  
+  <path d="M50,300 Q150,100 250,280 T380,150" stroke="url(#flow1)" stroke-width="12" fill="none" opacity="0.8" filter="url(#glow)"/>
+  
+  <path d="M80,80 Q200,200 320,120 Q240,240 360,300" stroke="url(#flow2)" stroke-width="8" fill="none" opacity="0.7"/>
+  
+  <circle cx="150" cy="120" r="3" fill="#ffd3a5" opacity="0.9">
+    <animate attributeName="opacity" values="0.3;0.9;0.3" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  
+  <circle cx="280" cy="280" r="2" fill="#4ecdc4" opacity="0.8">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <circle cx="320" cy="150" r="1.5" fill="#ff6b9d" opacity="0.7">
+    <animate attributeName="opacity" values="0.2;0.7;0.2" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  
+  <path d="M120,350 Q200,250 300,340 Q220,300 180,380" stroke="#45b7d1" stroke-width="3" fill="none" opacity="0.6"/>
+</svg>

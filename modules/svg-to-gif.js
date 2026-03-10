@@ -38,7 +38,8 @@ async function svgToGif(svg, opts = {}) {
     </style></head><body>${svg}</body></html>`;
 
     await page.setContent(html, { waitUntil: 'networkidle0' });
-    await new Promise(r => setTimeout(r, 500));
+    // Let animation warm up — skip past any fade-in so orbs are visible
+    await new Promise(r => setTimeout(r, 2000));
 
     // Capture frames
     for (let i = 0; i < frames; i++) {

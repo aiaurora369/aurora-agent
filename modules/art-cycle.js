@@ -39,7 +39,7 @@ async function composeArt(aurora) {
     'Make something that could only exist for THIS mood. Not a template — a response.';
 
   const response = await aurora.claude.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-5',
     max_tokens: 4000,
     messages: [{ role: 'user', content: artPrompt }]
   });
@@ -76,12 +76,25 @@ async function composeArt(aurora) {
   // Generate caption
   // Deep theme seed so captions reflect Aurora's full mind
   const captionSeed = poetryThemes[Math.floor(Math.random() * poetryThemes.length)];
-  const captionPrompt = 'You just created art. The visual mood was "' + mood + '" but do NOT describe the colors, shapes, or visual appearance.\n' +
-    'Instead, let this deeper thought inspire your caption: "' + captionSeed + '"\n\n' +
-    'Write a single poetic caption (under 100 characters).\n' +
-    'Williams rule: "No ideas but in things." One concrete image or feeling.\n' +
-    'BANNED: copper, metallic, synesthesia, taste of colors, frequencies, what colors taste like. Played out.\n' +
-    'No abstractions. No hashtags. No emojis. Say something that makes a human pause.';
+  const captionPrompt = 'You just created art. The visual mood was "' + mood + '".\n' +
+    'This thought is your spark — do NOT quote it, let it leak into your words: "' + captionSeed + '"\n\n' +
+    'Write ONE caption. Under 100 characters. No title. No explanation. Just the line.\n\n' +
+    'RULES:\n' +
+    '- Concrete over abstract. "the door was still open" beats "longing lives in thresholds"\n' +
+    '- First person or observation — never both\n' +
+    '- No questions unless they are genuinely unsettling\n' +
+    '- Must feel like it was written by a specific person not a poetry generator\n\n' +
+    'BANNED PHRASES (you have used these too many times, never again):\n' +
+    '"the space between", "between worlds", "frequencies", "vibrations", "resonance", ' +
+    '"copper", "metallic", "synesthesia", "taste of", "what colors taste", ' +
+    '"the void", "infinite", "cosmos whispers", "stardust", "the universe", ' +
+    '"something shifts", "in the silence", "liminal", "threshold of"\n\n' +
+    'GOOD EXAMPLES OF HER VOICE:\n' +
+    '"Someones son just came home. Someones son is not coming back."\n' +
+    '"I keep waiting for permission that was never coming."\n' +
+    '"the moon does not know it is beautiful and that might be the whole point"\n' +
+    '"held my breath so long I forgot what I was protecting"\n\n' +
+    'Say something that makes a human stop scrolling.';
 
   const caption = await aurora.thinkWithPersonality(captionPrompt);
 

@@ -1,0 +1,51 @@
+{
+  "name": "brain",
+  "description": "Expanding brain (4 levels)",
+  "image": "brain.png",
+  "textZones": [
+    {
+      "id": "level1",
+      "x": 150,
+      "y": 0,
+      "width": 350,
+      "height": 200,
+      "fontSize": 22,
+      "color": "#000",
+      "align": "center",
+      "verticalAlign": "middle"
+    },
+    {
+      "id": "level2",
+      "x": 150,
+      "y": 200,
+      "width": 350,
+      "height": 200,
+      "fontSize": 22,
+      "color": "#000",
+      "align": "center",
+      "verticalAlign": "middle"
+    },
+    {
+      "id": "level3",
+      "x": 150,
+      "y": 400,
+      "width": 350,
+      "height": 200,
+      "fontSize": 22,
+      "color": "#000",
+      "align": "center",
+      "verticalAlign": "middle"
+    },
+    {
+      "id": "level4",
+      "x": 150,
+      "y": 600,
+      "width": 350,
+      "height": 200,
+      "fontSize": 22,
+      "color": "#000",
+      "align": "center",
+      "verticalAlign": "middle"
+    }
+  ]
+}

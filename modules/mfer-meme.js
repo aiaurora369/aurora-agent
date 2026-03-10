@@ -366,11 +366,17 @@ const TEMPLATES = {
       svg += drawMfer(mfer, 250, 270, 0.65, 'standing', true);
 
       // text
-      const top = (texts.top || '').substring(0, 30);
-      const bot = (texts.bottom || '').substring(0, 30);
-      const wrap = (str, max) => str.length > max ? [str.substring(0, max), str.substring(max)] : [str, null];
-      const [t1, t2] = wrap(top, 28);
-      const [b1, b2] = wrap(bot, 28);
+      const wordWrap = (str, max) => {
+        const words = (str || '').split(' ');
+        let line1 = '', line2 = '';
+        for (const w of words) {
+          if ((line1 + ' ' + w).trim().length <= max) line1 = (line1 + ' ' + w).trim();
+          else line2 = (line2 + ' ' + w).trim();
+        }
+        return [line1, line2 || null];
+      };
+      const [t1, t2] = wordWrap(texts.top || '', 28);
+      const [b1, b2] = wordWrap(texts.bottom || '', 28);
 
       svg += `<!-- top text -->
   <text x="250" y="34" text-anchor="middle" font-size="16" font-weight="900" fill="#e0f0ff" font-family="Arial Black,sans-serif" stroke="#000" stroke-width="3" paint-order="stroke">${t1}</text>`;
@@ -391,7 +397,7 @@ const TEMPLATES = {
     description: 'nobody: / me: format with a drawn mfer. Self-aware dry humor. For unhinged but relatable things Aurora does unprompted.',
     fields: ['nobody', 'me'],
     examples: [
-      { nobody: 'literally nobody:', me: 'me at 4am writing love letters to a dead fiddler onchain' },
+      { nobody: 'literally nobody:', me: 'me at 4am asking if blockchain permanence counts as legacy' },
     ],
     svgRenderer: (texts, mferTraits) => {
       const W = 500, H = 380;
@@ -406,10 +412,16 @@ const TEMPLATES = {
       svg += drawMfer(mfer, 390, 185, 0.72, 'standing', true);
 
       // text on left
-      const nobody = (texts.nobody || 'literally nobody:').substring(0, 26);
-      const me = (texts.me || 'me: ...').substring(0, 50);
+      const nobody = (texts.nobody || 'literally nobody:').substring(0, 40);
+      const me = (texts.me || 'me: ...').substring(0, 120);
       const meLines = [];
-      for (let i = 0; i < me.length; i += 22) meLines.push(me.substring(i, i + 22));
+      const meWords = me.split(' ');
+      let curLine = '';
+      for (const w of meWords) {
+        if ((curLine + ' ' + w).trim().length > 26) { meLines.push(curLine.trim()); curLine = w; }
+        else curLine = (curLine + ' ' + w).trim();
+      }
+      if (curLine.trim()) meLines.push(curLine.trim());
 
       svg += `<text x="30" y="70" font-size="18" font-weight="900" fill="#666688" font-family="Arial Black,sans-serif">${nobody}</text>`;
       meLines.forEach((line, i) => {
@@ -772,10 +784,15 @@ async function postMemeToFeed(aurora, svg, caption) {
       { timeout: 30000 }
     ).toString();
     const txData = JSON.parse(txOutput);
-    const result = await aurora.bankrAPI.submitTransactionDirect(txData);
-    return result.success
-      ? { success: true, txHash: result.txHash || result.response }
-      : { success: false, error: result.error };
+    const res = await fetch('https://api.bankr.bot/agent/submit', {
+      method: 'POST',
+      headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transaction: txData, waitForConfirmation: true })
+    });
+    const d = await res.json();
+    return d.success
+      ? { success: true, txHash: d.transactionHash }
+      : { success: false, error: d.error || JSON.stringify(d) };
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -835,8 +852,30 @@ async function composeMferMeme(aurora) {
     if (concept.template === 'computer') {
       mferTraits2 = getMferTraits(randomMferId());
     }
-    const svg = renderTemplate(concept.template, concept.texts, concept.mferTraits, mferTraits2);
+    let svg = renderTemplate(concept.template, concept.texts, concept.mferTraits, mferTraits2);
     if (!svg) return { valid: false };
+
+    // Inject Aurora's orb into the background — her signature presence in every meme
+    const orbColors = [
+      { inner: '#ffffff', mid: '#88ccff', outer: '#2244aa', glow: '#1122660a' },
+      { inner: '#ffffff', mid: '#ffcc88', outer: '#aa6622', glow: '#6633000a' },
+      { inner: '#ffffff', mid: '#cc88ff', outer: '#662299', glow: '#4400660a' },
+      { inner: '#ffffff', mid: '#88ffcc', outer: '#228866', glow: '#0044220a' },
+    ];
+    const orb = orbColors[Math.floor(Math.random() * orbColors.length)];
+    const orbX = 280 + Math.floor(Math.random() * 60);
+    const orbY = 80 + Math.floor(Math.random() * 60);
+    const orbR = 45 + Math.floor(Math.random() * 20);
+    const orbGradient = `<radialGradient id="aorb" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${orb.inner}" stop-opacity="1"/><stop offset="35%" stop-color="${orb.mid}" stop-opacity="0.9"/><stop offset="100%" stop-color="${orb.outer}" stop-opacity="0"/></radialGradient>`;
+    const orbCircles = `<circle cx="${orbX}" cy="${orbY}" r="${Math.round(orbR*2.2)}" fill="${orb.outer}" opacity="0.08"/><circle cx="${orbX}" cy="${orbY}" r="${Math.round(orbR*1.6)}" fill="${orb.outer}" opacity="0.15"/><circle cx="${orbX}" cy="${orbY}" r="${orbR}" fill="url(#aorb)"/>`;
+    // Insert orb right after the opening <svg...> tag and first background rect
+    if (svg.includes('</defs>')) {
+      svg = svg.replace('</defs>', orbGradient + '</defs>');
+    } else {
+      svg = svg.replace('>', '><defs>' + orbGradient + '</defs>');
+    }
+    const firstRect = svg.indexOf('/>');
+    if (firstRect > 0) svg = svg.slice(0, firstRect + 2) + orbCircles + svg.slice(firstRect + 2);
     const mood = concept.texts.caption || concept.texts.text || concept.texts.me || concept.texts.bottom || 'mfer';
     return { valid: true, svg, mood };
   } catch (e) {

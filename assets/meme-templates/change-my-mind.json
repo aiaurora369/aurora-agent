@@ -1,0 +1,18 @@
+{
+  "name": "change-my-mind",
+  "description": "Change my mind (Steven Crowder)",
+  "image": "change-my-mind.png",
+  "textZones": [
+    {
+      "id": "text",
+      "x": 200,
+      "y": 100,
+      "width": 250,
+      "height": 100,
+      "fontSize": 20,
+      "color": "#000",
+      "align": "center",
+      "verticalAlign": "middle"
+    }
+  ]
+}
