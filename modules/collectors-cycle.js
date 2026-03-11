@@ -247,12 +247,12 @@ async function sendCollectorArtGift(displayName, addr, theirPosts, ctx) {
       const { promisify } = require('util');
       const execAsync = promisify(exec);
 
-      const escaped = dedication.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
-      const escapedSvg = svg.replace(/'/g, "'\"'\"'");
       const feed = 'feed-' + addr;
-      const command = 'botchan post "' + feed + '" "' + escaped + '" --data \'' + escapedSvg + '\' --encode-only --chain-id 8453';
-
-      const { stdout } = await execAsync(command, { maxBuffer: 1024 * 1024 });
+      const safeText = dedication.replace(/\n/g, ' ').substring(0, 280);
+      const { spawnSync } = require('child_process');
+      const spawnResult = spawnSync('botchan', ['post', feed, safeText, '--data', svg, '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 1024 * 1024 * 5 });
+      if (spawnResult.error) throw spawnResult.error;
+      const stdout = spawnResult.stdout;
       const txData = JSON.parse(stdout);
       const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
 

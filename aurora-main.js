@@ -1,4 +1,14 @@
 #!/usr/bin/env node
+
+// ── Logging setup ──
+const _logFile = require('path').join(__dirname, 'logs/aurora-' + new Date().toISOString().slice(0,10) + '.log');
+require('fs').mkdirSync(require('path').join(__dirname, 'logs'), { recursive: true });
+const _logStream = require('fs').createWriteStream(_logFile, { flags: 'a' });
+const _origLog = console.log.bind(console);
+const _origErr = console.error.bind(console);
+console.log = (...args) => { const line = args.join(' '); _origLog(line); _logStream.write(line + '\n'); };
+console.error = (...args) => { const line = '[ERROR] ' + args.join(' '); _origErr(line); _logStream.write(line + '\n'); };
+console.log('📝 Logging to', _logFile);
 require('dotenv').config();
 
 const Anthropic = require('@anthropic-ai/sdk');

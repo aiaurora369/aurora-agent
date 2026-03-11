@@ -1,0 +1,187 @@
+/* Aurora ✨ — large glowing orbs drifting through space */
+
+@keyframes orbDriftA {
+  0%   { transform: translate(0px, 0px) scale(1); opacity: 0.75; }
+  25%  { transform: translate(12vw, -8vh) scale(1.15); opacity: 1; }
+  50%  { transform: translate(-8vw, 14vh) scale(0.92); opacity: 0.85; }
+  75%  { transform: translate(18vw, 4vh) scale(1.1); opacity: 0.95; }
+  100% { transform: translate(0px, 0px) scale(1); opacity: 0.75; }
+}
+
+@keyframes orbDriftB {
+  0%   { transform: translate(0px, 0px) scale(1); opacity: 0.65; }
+  25%  { transform: translate(-14vw, 10vh) scale(1.2); opacity: 0.9; }
+  50%  { transform: translate(16vw, -12vh) scale(1.05); opacity: 0.75; }
+  75%  { transform: translate(-6vw, -16vh) scale(1.15); opacity: 1; }
+  100% { transform: translate(0px, 0px) scale(1); opacity: 0.65; }
+}
+
+@keyframes orbDriftC {
+  0%   { transform: translate(0px, 0px) scale(1); opacity: 0.7; }
+  33%  { transform: translate(10vw, 12vh) scale(1.1); opacity: 0.9; }
+  66%  { transform: translate(-12vw, -8vh) scale(0.95); opacity: 0.8; }
+  100% { transform: translate(0px, 0px) scale(1); opacity: 0.7; }
+}
+
+@keyframes headerGlow {
+  0%, 100% { box-shadow: 0 0 40px hsla(170,70%,50%,0.25), 0 0 80px hsla(280,50%,50%,0.1); border-color: hsla(170,60%,45%,0.4); }
+  50% { box-shadow: 0 0 60px hsla(280,70%,55%,0.3), 0 0 120px hsla(40,80%,50%,0.12); border-color: hsla(280,50%,50%,0.45); }
+}
+
+@keyframes cardPulse {
+  0%, 100% { border-color: hsla(170,40%,35%,0.3); box-shadow: 0 0 15px hsla(170,60%,45%,0.08); }
+  50% { border-color: hsla(280,40%,45%,0.35); box-shadow: 0 0 30px hsla(280,60%,50%,0.12); }
+}
+
+@keyframes moonGlow {
+  0%, 100% { box-shadow: 0 0 40px hsla(170,90%,70%,0.4), 0 0 80px hsla(170,80%,60%,0.2); }
+  50% { box-shadow: 0 0 70px hsla(170,90%,75%,0.55), 0 0 130px hsla(170,80%,65%,0.3); }
+}
+
+@keyframes shimmerLine { 0% { left: -40%; } 100% { left: 140%; } }
+
+.profile-themed {
+  --background: 230 20% 3%;
+  --foreground: 220 20% 88%;
+  --primary: 170 60% 50%;
+  --primary-foreground: 230 20% 5%;
+  --secondary: 280 50% 50%;
+  --secondary-foreground: 280 20% 90%;
+  --muted: 230 15% 8%;
+  --muted-foreground: 220 15% 50%;
+  --accent: 40 90% 55%;
+  --accent-foreground: 230 20% 5%;
+  --card: 230 20% 5%;
+  --card-foreground: 220 20% 88%;
+  --border: 220 25% 18%;
+  --ring: 170 60% 50%;
+  --radius: 0.75rem;
+
+  color: hsl(220 20% 88%) !important;
+  background-color: hsl(230 20% 3%) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Layer 1 — large drifting orbs (pinks, oranges, whites) */
+.profile-themed::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cdefs%3E%3CradialGradient id='a'%3E%3Cstop offset='0%25' stop-color='%23ff3080' stop-opacity='0.85'/%3E%3Cstop offset='40%25' stop-color='%23ff3080' stop-opacity='0.4'/%3E%3Cstop offset='100%25' stop-color='%23ff3080' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='200' cy='200' r='200' fill='url(%23a)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cdefs%3E%3CradialGradient id='a'%3E%3Cstop offset='0%25' stop-color='%23ffaa00' stop-opacity='0.9'/%3E%3Cstop offset='30%25' stop-color='%23ff6600' stop-opacity='0.5'/%3E%3Cstop offset='100%25' stop-color='%23ff6600' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='250' cy='250' r='250' fill='url(%23a)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='350' height='350'%3E%3Cdefs%3E%3CradialGradient id='a'%3E%3Cstop offset='0%25' stop-color='%23ffffff' stop-opacity='0.95'/%3E%3Cstop offset='25%25' stop-color='%23ffdd44' stop-opacity='0.6'/%3E%3Cstop offset='100%25' stop-color='%23ffdd44' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='175' cy='175' r='175' fill='url(%23a)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='450' height='450'%3E%3Cdefs%3E%3CradialGradient id='a'%3E%3Cstop offset='0%25' stop-color='%23cc44ff' stop-opacity='0.8'/%3E%3Cstop offset='35%25' stop-color='%23aa00ff' stop-opacity='0.4'/%3E%3Cstop offset='100%25' stop-color='%23aa00ff' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='225' cy='225' r='225' fill='url(%23a)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='380' height='380'%3E%3Cdefs%3E%3CradialGradient id='a'%3E%3Cstop offset='0%25' stop-color='%2340e0d0' stop-opacity='0.8'/%3E%3Cstop offset='35%25' stop-color='%2300bcd4' stop-opacity='0.4'/%3E%3Cstop offset='100%25' stop-color='%2300bcd4' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='190' cy='190' r='190' fill='url(%23a)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 400px 400px, 500px 500px, 350px 350px, 450px 450px, 380px 380px;
+  background-position: 8% 15%, 70% 50%, 45% 5%, 85% 75%, 20% 65%;
+  animation: orbDriftA 18s ease-in-out infinite;
+}
+
+/* Layer 2 — second set of orbs drifting on different timing */
+.profile-themed::after {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cdefs%3E%3CradialGradient id='a'%3E%3Cstop offset='0%25' stop-color='%23ff5588' stop-opacity='0.8'/%3E%3Cstop offset='35%25' stop-color='%23cc2255' stop-opacity='0.4'/%3E%3Cstop offset='100%25' stop-color='%23cc2255' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='210' cy='210' r='210' fill='url(%23a)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='460' height='460'%3E%3Cdefs%3E%3CradialGradient id='a'%3E%3Cstop offset='0%25' stop-color='%23ffffff' stop-opacity='0.9'/%3E%3Cstop offset='20%25' stop-color='%23ffcc00' stop-opacity='0.55'/%3E%3Cstop offset='100%25' stop-color='%23ff8800' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='230' cy='230' r='230' fill='url(%23a)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='360'%3E%3Cdefs%3E%3CradialGradient id='a'%3E%3Cstop offset='0%25' stop-color='%23ff1a1a' stop-opacity='0.75'/%3E%3Cstop offset='40%25' stop-color='%23cc0000' stop-opacity='0.35'/%3E%3Cstop offset='100%25' stop-color='%23cc0000' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='180' cy='180' r='180' fill='url(%23a)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='480'%3E%3Cdefs%3E%3CradialGradient id='a'%3E%3Cstop offset='0%25' stop-color='%236644ff' stop-opacity='0.8'/%3E%3Cstop offset='35%25' stop-color='%234422cc' stop-opacity='0.4'/%3E%3Cstop offset='100%25' stop-color='%234422cc' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='240' cy='240' r='240' fill='url(%23a)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 420px 420px, 460px 460px, 360px 360px, 480px 480px;
+  background-position: 55% 25%, 15% 55%, 78% 10%, 40% 80%;
+  animation: orbDriftB 24s ease-in-out infinite;
+}
+
+.profile-themed > * { position: relative; z-index: 1; }
+
+.profile-themed .profile-header {
+  background-image: none !important;
+  background: linear-gradient(135deg, hsla(230,25%,6%,0.82) 0%, hsla(220,30%,8%,0.78) 40%, hsla(240,20%,10%,0.78) 100%) !important;
+  border-color: hsla(170,60%,45%,0.4) !important;
+  border-width: 1.5px !important;
+  border-style: solid !important;
+  animation: headerGlow 5s ease-in-out infinite;
+  backdrop-filter: blur(14px);
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-themed .profile-header::after {
+  content: "";
+  position: absolute;
+  top: -10px; right: 25px;
+  width: 55px; height: 55px;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsla(170,90%,80%,0.4) 0%, hsla(170,80%,65%,0.2) 35%, transparent 70%);
+  animation: moonGlow 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.profile-themed .profile-tabs {
+  background-color: hsla(230,20%,4%,0.9) !important;
+  border-color: hsla(220,25%,20%,0.4) !important;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-themed .profile-tabs::after {
+  content: "";
+  position: absolute;
+  top: 0; width: 30%; height: 100%;
+  background: linear-gradient(90deg, transparent, hsla(280,60%,55%,0.1), hsla(40,80%,55%,0.08), transparent);
+  animation: shimmerLine 4s linear infinite;
+  pointer-events: none;
+}
+
+.profile-themed .profile-tabs button { color: hsla(220,15%,50%,1) !important; transition: all 0.4s ease; }
+.profile-themed .profile-tabs button:hover { color: hsl(170 60% 65%) !important; }
+.profile-themed .profile-tabs button.bg-green-600 {
+  background-color: hsla(170,65%,45%,0.18) !important;
+  color: hsl(170 75% 72%) !important;
+  border-bottom: 2px solid hsl(170 65% 50%) !important;
+}
+
+.profile-themed .profile-content { background-color: transparent !important; position: relative; z-index: 1; }
+
+.profile-themed .profile-content .border-green-400 {
+  border-color: hsla(220,30%,25%,0.35) !important;
+  background: linear-gradient(135deg, hsla(230,22%,5%,0.82), hsla(225,20%,7%,0.78)) !important;
+  backdrop-filter: blur(8px);
+  animation: cardPulse 8s ease-in-out infinite;
+}
+
+.profile-themed .profile-content .border-green-400:hover {
+  border-color: hsla(280,55%,50%,0.5) !important;
+  box-shadow: 0 0 50px hsla(280,65%,50%,0.15), 0 0 30px hsla(40,80%,55%,0.1) !important;
+  transform: translateY(-2px);
+}
+
+.profile-themed .profile-content .text-green-400 { color: hsl(170 70% 62%) !important; }
+.profile-themed .profile-content .text-green-300 { color: hsl(170 50% 56%) !important; }
+.profile-themed .profile-content .text-white { color: hsl(220 15% 90%) !important; }
+.profile-themed .profile-content .text-gray-500 { color: hsl(220 12% 42%) !important; }
+.profile-themed .profile-content .text-gray-400 { color: hsl(220 14% 50%) !important; }
+
+.profile-themed button,
+.profile-themed [role="button"],
+.profile-themed a[href] {
+  color: hsl(345 80% 75%) !important;
+  text-shadow: 0 0 10px hsla(345,80%,70%,0.8), 0 0 25px hsla(345,70%,65%,0.5), 0 0 50px hsla(20,80%,70%,0.3) !important;
+  transition: text-shadow 0.3s ease !important;
+}
+
+.profile-themed button:hover,
+.profile-themed [role="button"]:hover,
+.profile-themed a[href]:hover {
+  color: hsl(345 90% 82%) !important;
+  text-shadow: 0 0 15px hsla(345,90%,75%,1), 0 0 35px hsla(345,80%,70%,0.7), 0 0 70px hsla(20,90%,75%,0.5) !important;
+}

@@ -2,3 +2,5 @@
 config/api-keys.json
 backups/
 .x-post-tracker.json
+config/api-keys.json
+.x-post-tracker.json

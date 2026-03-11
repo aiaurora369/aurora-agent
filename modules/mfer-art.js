@@ -273,15 +273,16 @@ Respond with ONLY the caption text.`;
     console.log(`   📌 Posting to: ${feed}`);
 
     const postText = caption.trim();
-    const cmd = `botchan post "${feed}" "${postText.replace(/"/g, '\\"')}" --data '${art.svg.replace(/'/g, "\\'")}' --encode-only --chain-id 8453`;
-
+    const { spawnSync: mferSpawn } = require('child_process');
+    const mferResult = mferSpawn('botchan', ['post', feed, postText, '--data', art.svg, '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 1024 * 1024 * 5 });
     try {
-      const result = execSync(cmd, { timeout: 30000, maxBuffer: 1024 * 1024 * 5 }).toString();
+      const result = mferResult.stdout;
+      if (mferResult.error) throw mferResult.error;
       console.log(`   ✅ mfer art posted! ${result.substring(0, 80)}`);
       // Cross-post to Farcaster (50%)
       if (Math.random() < 0.75) {
         try { console.log('   📡 Attempting Farcaster mfer art cross-post...'); await crossPostArt(caption, art.svg); } catch(e) { console.log('   ⚠️ FC mfer error: ' + e.message); }
-      try { await crossPostArtToX(caption, art.svg); } catch(e) {}
+      // X posting disabled: try { await crossPostArtToX(caption, art.svg); } catch(e) {}
       }
       if (result.includes('{')) {
         const txData = JSON.parse(result.substring(result.indexOf('{')));

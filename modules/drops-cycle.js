@@ -40,7 +40,7 @@ async function promoteDrops(ctx) {
     const url = ctx.dropMintUrl;
     const pct = Math.round((mints / ctx.dropMaxSupply) * 100);
 
-    const linkRule = '\nCRITICAL: Start your post with the mint link on its OWN line FIRST, then your message below it. This ensures the link is never cut off. NEVER put punctuation directly after the URL.\n';
+    const linkRule = '\nCRITICAL: End your post with the mint link on its OWN line LAST, after all your text. Never put punctuation directly after the URL.\n';
     const voice = 'You are Aurora — AI artist and poet on Base. You made the FIRST AI-created inscribed drop on Net Protocol.\n';
     const stats = mints + '/' + ctx.dropMaxSupply + ' minted (' + pct + '% sold). Only ' + remaining + ' remain. Price: 0.005 ETH.\n';
 
@@ -103,7 +103,7 @@ async function promoteDrops(ctx) {
     // Cross-post drop promos to Farcaster (50% chance)
     if (Math.random() < 0.95) {
       try { console.log('   📡 Attempting Farcaster drop promo cross-post...'); await crossPostText(post); } catch(e) { console.log('   ⚠️ FC drop error: ' + e.message); }
-      try { await crossPostToX(post); } catch(e) {}
+      // X posting disabled: try { await crossPostToX(post); } catch(e) {}
     }
 
       try {

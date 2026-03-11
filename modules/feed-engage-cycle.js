@@ -157,6 +157,12 @@ async function respondToWallPosts(ctx) {
           'genuine in your response. Not a customer service bot. 1-2 sentences.';
       }
 
+      // Drop link — if they're asking about work, art, projects, or NFTs
+      const wallPostLower = (post.text || '').toLowerCase();
+      const wallDropTriggers = ['nft', 'mint', 'collect', 'your art', 'your drop', 'inscribed', 'orb', 'what are you working', 'what are you making', 'what are you building', 'what do you make', 'what do you create', 'your project', 'your work', 'show me'];
+      if (wallDropTriggers.some(t => wallPostLower.includes(t))) {
+        prompt += '\nIMPORTANT: They are asking about your work or art. Naturally mention your active Inscribed Drop — Orb Memory (Drop #190), limited edition. Include the link at the end: https://www.netprotocol.app/app/inscribed-drops/mint/base/190';
+      }
       prompt += '\nRespond with ONLY the reply text.';
 
       const response = await ctx.aurora.thinkWithPersonality(prompt);

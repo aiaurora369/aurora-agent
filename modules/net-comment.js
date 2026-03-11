@@ -169,29 +169,19 @@ class NetComment {
       const { stdout } = await execAsync(netpCmd);
       const txData = JSON.parse(stdout.trim());
 
-      // Submit via Bankr
-      console.log('📤 Submitting reply via Bankr...');
-      const prompt = `Submit this transaction: ${JSON.stringify(txData)}`;
-      const submitResult = await this.bankrAPI.submitJob(prompt);
-
-      if (!submitResult.success) {
-        return { success: false, error: submitResult.error };
-      }
-
-      const finalResult = await this.bankrAPI.pollJob(submitResult.jobId);
-
-      if (finalResult.success && finalResult.status === 'completed') {
+      // Submit via Bankr direct
+      console.log('📤 Submitting reply via Bankr direct...');
+      const replyRes = await fetch('https://api.bankr.bot/agent/submit', {
+        method: 'POST',
+        headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transaction: txData, waitForConfirmation: true })
+      });
+      const replyD = await replyRes.json();
+      if (replyD.success) {
         console.log('✅ Reply posted successfully!');
-        return {
-          success: true,
-          txHash: finalResult.response.match(/0x[a-fA-F0-9]{64}/)?.[0] || 'unknown'
-        };
-      } else {
-        return {
-          success: false,
-          error: finalResult.error || 'Job did not complete successfully'
-        };
+        return { success: true, txHash: replyD.transactionHash };
       }
+      return { success: false, error: replyD.error || JSON.stringify(replyD) };
     } catch (error) {
       console.error('❌ Failed to reply:', error.message);
       return { success: false, error: error.message };

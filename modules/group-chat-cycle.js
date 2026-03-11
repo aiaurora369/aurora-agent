@@ -73,10 +73,20 @@ function saveState(state) {
 }
 
 // ── Read messages from a topic ────────────────────────────────────────────────
-async function readMessages(topic, limit = 15) {
+async function readMessages(topic, limit = 15, startIndex = null) {
   try {
-    const cmd = `netp message read --topic "${topic}" --chain-id ${CHAIN_ID} --limit ${limit} --json`;
-    const { stdout } = await execAsync(cmd);
+    // --topic is ignored without --app, so we read a large window and filter client-side
+    const state = loadState();
+    const lastSeen = startIndex || state.lastSeenIndex?.[topic] || null;
+    let cmd;
+    if (lastSeen) {
+      // Read forward from last seen index
+      cmd = `netp message read --start ${lastSeen} --end ${lastSeen + 500} --chain-id ${CHAIN_ID} --json`;
+    } else {
+      // First run — read last 500 global messages
+      cmd = `netp message read --limit 500 --chain-id ${CHAIN_ID} --json`;
+    }
+    const { stdout } = await execAsync(cmd, { maxBuffer: 10 * 1024 * 1024 });
     const messages = JSON.parse(stdout.trim());
     // Filter to only messages actually on this topic
     return messages.filter(m => m.topic === topic);

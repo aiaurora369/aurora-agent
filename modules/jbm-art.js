@@ -544,14 +544,21 @@ Respond with ONLY the caption text.`;
         console.log('   📡 Attempting Farcaster JBM art cross-post...');
         await crossPostArt(postText, art.svg);
       } catch (e) { console.log('   ⚠️ FC JBM error: ' + e.message); }
-      try { await crossPostArtToX(postText, art.svg); } catch (e) {}
+      // X posting disabled: try { await crossPostArtToX(postText, art.svg); } catch (e) {}
     }
 
-    const cmd = `botchan post "${feed}" "${postText.replace(/"/g, '\\"')}" --data '${art.svg.replace(/'/g, "\\'")}' --encode-only --chain-id 8453`;
+    // Safe: validate SVG
+    if (!art.svg || !art.svg.startsWith('<svg') || !art.svg.endsWith('</svg>')) {
+      console.log('   ⚠️ Invalid SVG — skipping JBM post');
+      return;
+    }
+    const { spawnSync: jbmSpawn } = require('child_process');
+    const jbmR = jbmSpawn('botchan', ['post', feed, postText, '--data', art.svg, '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 1024 * 1024 * 5 });
 
     try {
-      const result = execSync(cmd, { timeout: 30000, maxBuffer: 1024 * 1024 * 5 }).toString();
-      console.log(`   ✅ JBM art posted! ${result.substring(0, 80)}`);
+      if (jbmR.status !== 0 || !jbmR.stdout) throw new Error((jbmR.stderr || 'botchan failed').substring(0, 200));
+      const result = jbmR.stdout;
+      console.log(`   ✅ JBM art posted!`);
       if (result.includes('{')) {
         const txData = JSON.parse(result.substring(result.indexOf('{')));
         if (txData.to && txData.data) {

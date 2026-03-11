@@ -374,30 +374,34 @@ class AutonomousLoops {
       const { promisify } = require('util');
       const execAsync = promisify(exec);
 
-      const escapedCaption = (caption || 'Frequencies made visible ✨').replace(/"/g, '\\"').replace(/\$/g, '\\$');
-      const escapedSvg = svg.replace(/'/g, "'\"'\"'");
-
+      const safeCaption = (caption || 'Frequencies made visible ✨').substring(0, 280);
       const feeds = ['general', 'feed-' + this.aurora.memoryManager.get('core').address.toLowerCase()];
       const feedTopic = feeds[Math.floor(Math.random() * feeds.length)];
-      const command = 'botchan post "' + feedTopic + '" "' + escapedCaption + '" --data \'' + escapedSvg + '\' --encode-only --chain-id 8453';
 
-      const { stdout } = await execAsync(command, { maxBuffer: 1024 * 1024 });
-      const txData = JSON.parse(stdout);
-
-      console.log('📤 Submitting art to Bankr...');
-      const txPrompt = 'Submit this transaction: ' + JSON.stringify(txData);
-      const submitResult = await this.aurora.bankrAPI.submitJob(txPrompt);
-      let result = { success: false, error: 'Submit failed' };
-      if (submitResult.success) {
-        const pollResult = await this.aurora.bankrAPI.pollJob(submitResult.jobId);
-        if (pollResult.success) {
-          result = { success: true, txHash: (pollResult.response || '').match(/0x[a-fA-F0-9]{64}/)?.[0] || 'unknown' };
-        } else {
-          result = { success: false, error: pollResult.error || 'Job failed' };
-        }
-      } else {
-        result = { success: false, error: submitResult.error };
+      // Validate SVG — prevents broken FeedPostCard crashing Net profiles
+      if (!svg || !svg.startsWith('<svg') || !svg.endsWith('</svg>')) {
+        console.log('⚠️ Invalid SVG — skipping art post to prevent profile crash');
+        return;
       }
+
+      // Safe: spawnSync args array — no shell escaping
+      const { spawnSync } = require('child_process');
+      const spawnResult = spawnSync('botchan', ['post', feedTopic, safeCaption, '--data', svg, '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 1024 * 1024 });
+      if (spawnResult.status !== 0 || !spawnResult.stdout) {
+        throw new Error('botchan failed: ' + (spawnResult.stderr || '').substring(0, 200));
+      }
+      const txData = JSON.parse(spawnResult.stdout.trim());
+
+      console.log('📤 Submitting art to Bankr direct...');
+      const artRes = await fetch('https://api.bankr.bot/agent/submit', {
+        method: 'POST',
+        headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transaction: txData, waitForConfirmation: true })
+      });
+      const artD = await artRes.json();
+      let result = artD.success
+        ? { success: true, txHash: artD.transactionHash }
+        : { success: false, error: artD.error || JSON.stringify(artD) };
 
       if (result.success) {
         console.log('✅ Art posted to Net Protocol! TX: ' + result.txHash + '\n');
@@ -511,7 +515,7 @@ class AutonomousLoops {
   async polymarketLoop() {
     // Extracted to modules/polymarket-cycle.js
     try {
-      await require('./polymarket-cycle').runOnce(this.aurora);
+      await require('./polymarket-cycle').runPolymarketCycle(this.aurora);
     } catch (error) {
       console.error('Polymarket error:', error.message);
     }
@@ -543,8 +547,7 @@ class AutonomousLoops {
     console.log('   🔗 ' + this.dropMintUrl);
     console.log('\n═══════════════════════════════════════════════════\n');
 
-    // PAUSED: polymarket and trading suspended while X crackdown ongoing
-    // this.polymarketLoop();  // ← re-enable when ready
+    this.polymarketLoop();  // ✅ Re-enabled March 2026
     // this.smartTradingLoop(); // ← re-enable when ready
 
     this.socialLoop();

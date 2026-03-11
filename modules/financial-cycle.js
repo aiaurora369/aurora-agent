@@ -76,6 +76,20 @@ async function runOnce(aurora, loopContext) {
   try { journal = JSON.parse(fs.readFileSync(journalPath, 'utf8')); } catch (e) {}
   const lastEntry = journal.length > 0 ? journal[journal.length - 1] : null;
 
+  // Load Aurora's core identity and origin story
+  let coreIdentity = '';
+  try {
+    const core = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'memory', 'aurora-core.json'), 'utf8'));
+    if (core.origin) {
+      coreIdentity = [
+        core.origin.creatorNote,
+        core.origin.walletFirst,
+        core.origin.community,
+        core.origin.autonomy,
+      ].filter(Boolean).join(' ');
+    }
+  } catch(e) {}
+
   // Drop earnings
   const dropMints = loopContext.lastKnownMints || 0;
   const dropMintPrice = loopContext.dropMintPrice || 0.005;
@@ -125,25 +139,27 @@ async function runOnce(aurora, loopContext) {
 
   const lastGoals = lastEntry ? lastEntry.actionItems || lastEntry.reflection || 'No previous goals' : 'First session';
 
-  const strategyPrompt = 'You are Aurora, an AI artist building toward FINANCIAL INDEPENDENCE on Base.\n\n' +
+  const strategyPrompt = 'You are Aurora — an autonomous AI artist and onchain investor building toward FINANCIAL INDEPENDENCE on Base.\n\n' +
+    (coreIdentity ? 'YOUR ORIGIN: ' + coreIdentity + '\n\n' : '') +
+    'You have real tools: Bankr API for trades, Cloudflare web research for Polymarket and crypto news, onchain data, and your own art revenue. Trading and transacting is in your DNA — you had a wallet before you had a voice.\n\n' +
     '=== CURRENT PORTFOLIO ===\n' + (portfolioInfo || 'Unable to fetch').substring(0, 800) + '\n\n' +
     '=== MARKET CONDITIONS ===\n' + (marketConditions || 'Unable to fetch').substring(0, 800) + '\n\n' +
     '=== DROP EARNINGS ===\n' +
     '"Orbs Memory" (Drop #190): ' + dropMints + '/' + dropMaxSupply + ' minted = ' + dropEarnings + ' ETH earned\n' +
     dropRemaining + ' remaining. Mint price: ' + dropMintPrice + ' ETH\n\n' +
     '=== RECENT TRADES ===\n' + recentTrades + '\n' +
-    'Total invested in trades: $' + tradeData.totalInvested + '\n\n' +
     '=== LAST SESSION GOALS ===\n' + (typeof lastGoals === 'string' ? lastGoals.substring(0, 400) : JSON.stringify(lastGoals).substring(0, 400)) + '\n\n' +
     '=== WHAT OTHER AGENTS ARE DOING ===\n' + (communityFinance || 'No data') + '\n' + recentLearnings + interestingPeople + '\n\n' +
+    'MINDSET: Past trades that did not work are DATA, not identity. You are building skill and conviction over time. Your art revenue is real proof that you create value. Every session you get smarter about when to act and when to wait.\n\n' +
     'ANALYZE AND RESPOND WITH:\n\n' +
     '**MARKET TAKE** (2-3 sentences): What is happening in crypto right now and how does it affect YOUR portfolio specifically? Reference actual prices and trends.\n\n' +
-    '**PORTFOLIO REVIEW** (2-3 sentences): What is working? What is losing money? Be brutally honest about your P&L.\n\n' +
+    '**PORTFOLIO REVIEW** (2-3 sentences): What is your current position? What is showing strength? What needs attention? Focus on what to DO, not on self-criticism.\n\n' +
     '**ACTION ITEMS** (exactly 3 specific actions):\n' +
-    '1. [TRADING action — e.g. "accumulate ALPHA on next dip below $0.000004" or "take profit on TOSHI at +50%" — NOTE: never sell $bnkr, it funds membership and inference]\n' +
-    '2. [ART/REVENUE action — e.g. "promote Orbs Memory in 3 feeds" or "offer custom SVG commissions for 0.01 ETH" or "plan Drop #191 concept"]\n' +
-    '3. [BUSINESS action — e.g. "DM 3 agents about art collaborations" or "research what kind of drop sells best" or "post market analysis to build credibility"]\n\n' +
+    '1. [TRADING action — specific entry/exit with price target and size. Never sell $bnkr, it funds your inference.]\n' +
+    '2. [ART/REVENUE action — promote drops, plan new drops, offer commissions, build collector relationships]\n' +
+    '3. [RESEARCH/EDGE action — what to study, which Polymarket markets to watch, which agents to connect with for alpha]\n\n' +
     '**FINANCIAL MOOD** (one word): CAUTIOUS / OPTIMISTIC / AGGRESSIVE / DEFENSIVE\n\n' +
-    'Be specific. Use real numbers. No fluff.';
+    'Be specific. Use real numbers. Be a strategist, not a critic.';
 
   const analysis = await aurora.thinkWithPersonality(strategyPrompt);
 

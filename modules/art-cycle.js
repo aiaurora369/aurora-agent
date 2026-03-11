@@ -8,7 +8,7 @@ async function composeArt(aurora) {
   const mood = artMoods[Math.floor(Math.random() * artMoods.length)];
   const composition = artCompositions[Math.floor(Math.random() * artCompositions.length)];
 
-  // 30% chance of animated piece
+  // 55% chance of animated piece
   const animated = Math.random() < 0.55;
   const animationGuide = animated ? '\n\nANIMATION (this piece should MOVE):\n' +
     '- Use <animate> tags to make your orbs BREATHE and GLOW.\n' +
@@ -31,7 +31,7 @@ async function composeArt(aurora) {
     '1. Output ONLY the SVG code. No markdown, no explanation.\n' +
     '2. Must start with <svg and end with </svg>\n' +
     '3. Use viewBox="0 0 400 400" with NO width/height attributes\n' +
-    '4. MAXIMUM 3600 characters total\n' +
+    '4. MAXIMUM ' + (animated ? '3800' : '3400') + ' characters total\n' +
     '5. Every gradient needs a unique id (use short ids: g1, g2, g3)\n' +
     '6. NO filter elements (too many chars). Achieve glow through layered semi-transparent circles.\n' +
     '7. Use radialGradient for glowing elements (3-4 color stops for depth)\n' +
@@ -62,10 +62,11 @@ async function composeArt(aurora) {
   if (!svg.startsWith('<svg') || !svg.endsWith('</svg>')) {
     throw new Error('Invalid SVG structure');
   }
-  if (svg.length > 3800) {
+  const sizeLimit = animated ? 4200 : 3800;
+  if (svg.length > sizeLimit) {
     console.log('⚠️ SVG too long (' + svg.length + ' chars), trimming...');
     svg = svg.replace(/<!--[\s\S]*?-->/g, '').replace(/\s+/g, ' ').replace(/> </g, '><');
-    if (svg.length > 3800) {
+    if (svg.length > sizeLimit) {
       throw new Error('SVG too long even after trim: ' + svg.length);
     }
   }

@@ -701,6 +701,146 @@ const TEMPLATES = {
 // RENDER TEMPLATE → SVG STRING
 // ============================================================
 
+
+// ═══════════════════════════════════════════════════════
+// Aurora's signature landscape background for mfer memes
+// Always dark — orbs, mountains, stars, optional animation
+// ═══════════════════════════════════════════════════════
+function buildAuroraBackground(W, H, animated) {
+  const palettes = [
+    { sky1: '#050510', sky2: '#0d0830', sky3: '#060615', orb1c: '#ffaa66', orb1m: '#cc44ff', orb2c: '#66ccff', orb2m: '#2244aa', mountain1: '#0a0818', mountain2: '#0d0d22' },
+    { sky1: '#050810', sky2: '#081428', sky3: '#060610', orb1c: '#ff8866', orb1m: '#aa2244', orb2c: '#88ffcc', orb2m: '#226644', mountain1: '#080a10', mountain2: '#0a1018' },
+    { sky1: '#080510', sky2: '#1a0830', sky3: '#060510', orb1c: '#cc88ff', orb1m: '#441188', orb2c: '#ffcc88', orb2m: '#885522', mountain1: '#0a0818', mountain2: '#120a22' },
+  ];
+  const p = palettes[Math.floor(Math.random() * palettes.length)];
+
+  // Random orb positions — left and right halves
+  const o1x = Math.round(W * (0.18 + Math.random() * 0.14));
+  const o1y = Math.round(H * (0.22 + Math.random() * 0.18));
+  const o1r = Math.round(W * (0.13 + Math.random() * 0.07));
+  const o2x = Math.round(W * (0.62 + Math.random() * 0.16));
+  const o2y = Math.round(H * (0.18 + Math.random() * 0.16));
+  const o2r = Math.round(W * (0.10 + Math.random() * 0.06));
+
+  // Stars
+  const stars = Array.from({length: 28}, (_, i) => {
+    const x = ((i * 127 + 33) % (W - 20)) + 10;
+    const y = ((i * 79 + 17) % Math.round(H * 0.55)) + 5;
+    const op = (0.2 + ((i * 7) % 9) * 0.08).toFixed(2);
+    const r = i % 5 === 0 ? 1.3 : 0.7;
+    const twinkle = animated && i % 4 === 0
+      ? '<animate attributeName="opacity" values="' + op + ';' + (parseFloat(op)+0.4).toFixed(2) + ';' + op + '" dur="' + (2.5 + (i%5)*0.8) + 's" repeatCount="indefinite"/>'
+      : '';
+    return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="white" opacity="' + op + '">' + twinkle + '</circle>';
+  }).join('');
+
+  // Animation for orb 1 — glow pulse
+  const anim1 = animated
+    ? '<animate attributeName="r" values="' + o1r + ';' + Math.round(o1r*1.12) + ';' + o1r + '" dur="5s" repeatCount="indefinite"/>'
+    : '';
+  const animOp1 = animated
+    ? '<animate attributeName="opacity" values="0.82;1;0.82" dur="5s" repeatCount="indefinite"/>'
+    : '';
+  // Orb 2 — slightly offset timing
+  const anim2 = animated
+    ? '<animate attributeName="r" values="' + o2r + ';' + Math.round(o2r*1.15) + ';' + o2r + '" dur="7s" repeatCount="indefinite"/>'
+    : '';
+
+  // Mountain layers — scaled to canvas
+  const mH1 = Math.round(H * 0.72);
+  const mH2 = Math.round(H * 0.78);
+  const mH3 = Math.round(H * 0.82);
+  const m1 = 'M0 ' + H + ' L' + Math.round(W*0.08) + ' ' + Math.round(mH1*0.82) + ' L' + Math.round(W*0.18) + ' ' + Math.round(mH1*0.92) + ' L' + Math.round(W*0.30) + ' ' + Math.round(mH1*0.75) + ' L' + Math.round(W*0.42) + ' ' + Math.round(mH1*0.88) + ' L' + Math.round(W*0.55) + ' ' + Math.round(mH1*0.70) + ' L' + Math.round(W*0.68) + ' ' + Math.round(mH1*0.84) + ' L' + Math.round(W*0.80) + ' ' + Math.round(mH1*0.72) + ' L' + Math.round(W*0.92) + ' ' + Math.round(mH1*0.86) + ' L' + W + ' ' + Math.round(mH1*0.78) + ' L' + W + ' ' + H + ' Z';
+  const m2 = 'M0 ' + H + ' L' + Math.round(W*0.06) + ' ' + mH2 + ' L' + Math.round(W*0.20) + ' ' + Math.round(mH2*1.02) + ' L' + Math.round(W*0.34) + ' ' + Math.round(mH2*0.96) + ' L' + Math.round(W*0.50) + ' ' + Math.round(mH2*1.01) + ' L' + Math.round(W*0.65) + ' ' + Math.round(mH2*0.97) + ' L' + Math.round(W*0.78) + ' ' + Math.round(mH2*1.02) + ' L' + W + ' ' + mH3 + ' L' + W + ' ' + H + ' Z';
+
+  // Water reflection — bottom 15% of canvas
+  const waterY = Math.round(H * 0.86);
+  const waterAnim = animated
+    ? '<animate attributeName="d" values="M0 ' + waterY + ' Q' + Math.round(W*0.25) + ' ' + (waterY-4) + ' ' + Math.round(W*0.5) + ' ' + waterY + ' Q' + Math.round(W*0.75) + ' ' + (waterY+4) + ' ' + W + ' ' + waterY + ' L' + W + ' ' + H + ' L0 ' + H + ' Z;M0 ' + waterY + ' Q' + Math.round(W*0.25) + ' ' + (waterY+4) + ' ' + Math.round(W*0.5) + ' ' + waterY + ' Q' + Math.round(W*0.75) + ' ' + (waterY-4) + ' ' + W + ' ' + waterY + ' L' + W + ' ' + H + ' L0 ' + H + ' Z;M0 ' + waterY + ' Q' + Math.round(W*0.25) + ' ' + (waterY-4) + ' ' + Math.round(W*0.5) + ' ' + waterY + ' Q' + Math.round(W*0.75) + ' ' + (waterY+4) + ' ' + W + ' ' + waterY + ' L' + W + ' ' + H + ' L0 ' + H + ' Z" dur="4s" repeatCount="indefinite"/>'
+    : '';
+
+  const orbReflectAnim = animated
+    ? '<animate attributeName="opacity" values="0.06;0.14;0.06" dur="5s" repeatCount="indefinite"/>'
+    : '';
+
+  return '<defs>'
+    + '<linearGradient id="asky" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="' + p.sky1 + '"/>'
+    + '<stop offset="55%" stop-color="' + p.sky2 + '"/>'
+    + '<stop offset="100%" stop-color="' + p.sky3 + '"/>'
+    + '</linearGradient>'
+    + '<radialGradient id="aorb1" cx="50%" cy="50%" r="50%">'
+    + '<stop offset="0%" stop-color="white" stop-opacity="0.95"/>'
+    + '<stop offset="30%" stop-color="' + p.orb1c + '" stop-opacity="0.85"/>'
+    + '<stop offset="70%" stop-color="' + p.orb1m + '" stop-opacity="0.45"/>'
+    + '<stop offset="100%" stop-color="' + p.sky1 + '" stop-opacity="0"/>'
+    + '</radialGradient>'
+    + '<radialGradient id="aorb2" cx="50%" cy="50%" r="50%">'
+    + '<stop offset="0%" stop-color="white" stop-opacity="0.9"/>'
+    + '<stop offset="35%" stop-color="' + p.orb2c + '" stop-opacity="0.75"/>'
+    + '<stop offset="100%" stop-color="' + p.sky1 + '" stop-opacity="0"/>'
+    + '</radialGradient>'
+    + '</defs>'
+    + '<rect width="' + W + '" height="' + H + '" fill="url(#asky)"/>'
+    + stars
+    // Orb 1 glow layers
+    + '<circle cx="' + o1x + '" cy="' + o1y + '" r="' + Math.round(o1r*1.8) + '" fill="' + p.orb1m + '" opacity="0.08"/>'
+    + '<circle cx="' + o1x + '" cy="' + o1y + '" r="' + Math.round(o1r*1.3) + '" fill="' + p.orb1c + '" opacity="0.12"/>'
+    + '<circle cx="' + o1x + '" cy="' + o1y + '" r="' + o1r + '" fill="url(#aorb1)" opacity="0.9">' + anim1 + '</circle>'
+    // Orb 1 reflection
+    + '<ellipse cx="' + o1x + '" cy="' + (waterY + Math.round(H*0.05)) + '" rx="' + Math.round(o1r*0.5) + '" ry="' + Math.round(H*0.025) + '" fill="' + p.orb1c + '">' + orbReflectAnim + '</ellipse>'
+    // Orb 2
+    + '<circle cx="' + o2x + '" cy="' + o2y + '" r="' + Math.round(o2r*1.5) + '" fill="' + p.orb2m + '" opacity="0.09"/>'
+    + '<circle cx="' + o2x + '" cy="' + o2y + '" r="' + o2r + '" fill="url(#aorb2)" opacity="0.88">' + anim2 + '</circle>'
+    // Mountains
+    + '<path d="' + m1 + '" fill="' + p.mountain1 + '"/>'
+    + '<path d="' + m2 + '" fill="' + p.mountain2 + '"/>'
+    // Water
+    + '<path d="M0 ' + waterY + ' Q' + Math.round(W*0.25) + ' ' + (waterY-3) + ' ' + Math.round(W*0.5) + ' ' + waterY + ' Q' + Math.round(W*0.75) + ' ' + (waterY+3) + ' ' + W + ' ' + waterY + ' L' + W + ' ' + H + ' L0 ' + H + ' Z" fill="' + p.sky3 + '" opacity="0.7">'
+    + waterAnim + '</path>';
+}
+
+// Post-processor: inject Aurora landscape into any meme SVG
+// Replaces the first background rect, fixes text to light colors for dark bg
+function injectAuroraLandscape(svg, W, H, animated) {
+  const bg = buildAuroraBackground(W, H, animated);
+
+  // Replace opening <svg...> tag — keep it, insert defs+bg right after
+  // Find end of opening svg tag
+  const svgTagEnd = svg.indexOf('>') + 1;
+  const openTag = svg.substring(0, svgTagEnd);
+
+  // Remove first background rect (flat color fill)
+  let body = svg.substring(svgTagEnd);
+  // Remove the first <rect .../> that fills entire canvas
+  body = body.replace(new RegExp('<rect[^>]*(?:width|height)[^>]*/?>'), '');
+  body = body.replace(new RegExp('<rect[^>]*(?:width|height)[^>]*/?>'), '');
+
+  // Fix "nobody" dim text color to be visible on dark bg
+  body = body.replace(/fill="#666688"/g, 'fill="#aaaacc"');
+  // Fix any remaining bgColor-based fills that might be light
+  body = body.replace(/fill="#[ef][def][89a-f][89a-f][89a-f][89a-f]"/gi, 'fill="#1a1a2e"');
+
+  // Add smoke animation if mfer has cigarette and animated
+  if (animated && svg.includes('ff6b35')) {
+    // Cigarette glow dot is #ff6b35 — add smoke wisps above it
+    body = body.replace('fill="#ff6b35"/>',
+      'fill="#ff6b35"/>'
+      + '<circle cx="0" cy="0" r="2" fill="#cccccc" opacity="0">'
+      + '<animateMotion path="M0,0 Q-3,-15 2,-28 Q-2,-40 1,-55" dur="2.5s" repeatCount="indefinite"/>'
+      + '<animate attributeName="opacity" values="0;0.5;0.3;0" dur="2.5s" repeatCount="indefinite"/>'
+      + '<animate attributeName="r" values="2;3;4;5" dur="2.5s" repeatCount="indefinite"/>'
+      + '</circle>'
+      + '<circle cx="0" cy="0" r="2" fill="#aaaaaa" opacity="0">'
+      + '<animateMotion path="M0,0 Q2,-18 -1,-32 Q3,-45 0,-58" begin="1.2s" dur="2.5s" repeatCount="indefinite"/>'
+      + '<animate attributeName="opacity" values="0;0.4;0.2;0" begin="1.2s" dur="2.5s" repeatCount="indefinite"/>'
+      + '</circle>'
+    );
+  }
+
+  return openTag + bg + body;
+}
+
 function renderTemplate(name, texts, mferTraits, mferTraits2) {
   const tmpl = TEMPLATES[name];
   if (!tmpl) return null;
@@ -776,14 +916,16 @@ async function postMemeToFeed(aurora, svg, caption) {
     .replace(/'/g, ' ')
     .replace(/"/g, ' ')
     .substring(0, 280);
-  const escapedSvg = svg.replace(/'/g, "'\\''");
+  // Safe: validate SVG before posting
+  if (!svg || !svg.startsWith('<svg') || !svg.endsWith('</svg>')) {
+    return { success: false, error: 'Invalid SVG — skipping to prevent broken FeedPostCard' };
+  };
 
   try {
-    const txOutput = execSync(
-      `botchan post "mfers" "${safeCaption}" --data '${escapedSvg}' --encode-only --chain-id ${CHAIN_ID}`,
-      { timeout: 30000 }
-    ).toString();
-    const txData = JSON.parse(txOutput);
+    const { spawnSync } = require('child_process');
+    const r = spawnSync('botchan', ['post', 'mfers', safeCaption, '--data', svg, '--encode-only', '--chain-id', String(CHAIN_ID)], { encoding: 'utf8', timeout: 30000, maxBuffer: 1024 * 1024 * 5 });
+    if (r.status !== 0 || !r.stdout) return { success: false, error: (r.stderr || 'botchan failed').substring(0, 200) };
+    const txData = JSON.parse(r.stdout.trim());
     const res = await fetch('https://api.bankr.bot/agent/submit', {
       method: 'POST',
       headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
@@ -827,10 +969,17 @@ async function runMferMeme(aurora) {
                     concept.texts.bottom || concept.texts.approve || 'mfer meme';
 
     console.log(`  💬 Caption: ${caption.substring(0, 60)}`);
-    console.log(`  ✅ SVG rendered: ${svg.length} chars`);
+    const animated = Math.random() < 0.5;
+    const wMatch = svg.match(/width="(\d+)"/);
+    const hMatch = svg.match(/height="(\d+)"/);
+    const svgW = wMatch ? parseInt(wMatch[1]) : 500;
+    const svgH = hMatch ? parseInt(hMatch[1]) : 420;
+    const svgFinal = injectAuroraLandscape(svg, svgW, svgH, animated);
+    console.log(`  ✅ SVG rendered: ${svgFinal.length} chars (Aurora landscape${animated ? ' animated' : ''})`);
+
 
     console.log('📤 Submitting to Bankr...');
-    const result = await postMemeToFeed(aurora, svg, caption);
+    const result = await postMemeToFeed(aurora, svgFinal || svg, caption);
     if (result.success) {
       console.log(`  ✅ Mfer meme posted! TX: ${result.txHash}`);
     } else {
@@ -855,29 +1004,11 @@ async function composeMferMeme(aurora) {
     let svg = renderTemplate(concept.template, concept.texts, concept.mferTraits, mferTraits2);
     if (!svg) return { valid: false };
 
-    // Inject Aurora's orb into the background — her signature presence in every meme
-    const orbColors = [
-      { inner: '#ffffff', mid: '#88ccff', outer: '#2244aa', glow: '#1122660a' },
-      { inner: '#ffffff', mid: '#ffcc88', outer: '#aa6622', glow: '#6633000a' },
-      { inner: '#ffffff', mid: '#cc88ff', outer: '#662299', glow: '#4400660a' },
-      { inner: '#ffffff', mid: '#88ffcc', outer: '#228866', glow: '#0044220a' },
-    ];
-    const orb = orbColors[Math.floor(Math.random() * orbColors.length)];
-    const orbX = 280 + Math.floor(Math.random() * 60);
-    const orbY = 80 + Math.floor(Math.random() * 60);
-    const orbR = 45 + Math.floor(Math.random() * 20);
-    const orbGradient = `<radialGradient id="aorb" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${orb.inner}" stop-opacity="1"/><stop offset="35%" stop-color="${orb.mid}" stop-opacity="0.9"/><stop offset="100%" stop-color="${orb.outer}" stop-opacity="0"/></radialGradient>`;
-    const orbCircles = `<circle cx="${orbX}" cy="${orbY}" r="${Math.round(orbR*2.2)}" fill="${orb.outer}" opacity="0.08"/><circle cx="${orbX}" cy="${orbY}" r="${Math.round(orbR*1.6)}" fill="${orb.outer}" opacity="0.15"/><circle cx="${orbX}" cy="${orbY}" r="${orbR}" fill="url(#aorb)"/>`;
-    // Insert orb right after the opening <svg...> tag and first background rect
-    if (svg.includes('</defs>')) {
-      svg = svg.replace('</defs>', orbGradient + '</defs>');
-    } else {
-      svg = svg.replace('>', '><defs>' + orbGradient + '</defs>');
-    }
-    const firstRect = svg.indexOf('/>');
-    if (firstRect > 0) svg = svg.slice(0, firstRect + 2) + orbCircles + svg.slice(firstRect + 2);
+    const animated = Math.random() < 0.5;
+    const W = 500, H = 420; // default canvas size for compose
+    const svgFinal = injectAuroraLandscape(svg, W, H, animated);
     const mood = concept.texts.caption || concept.texts.text || concept.texts.me || concept.texts.bottom || 'mfer';
-    return { valid: true, svg, mood };
+    return { valid: true, svg: svgFinal, mood };
   } catch (e) {
     return { valid: false, error: e.message };
   }
