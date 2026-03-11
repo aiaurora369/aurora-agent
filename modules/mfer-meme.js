@@ -423,9 +423,9 @@ const TEMPLATES = {
       }
       if (curLine.trim()) meLines.push(curLine.trim());
 
-      svg += `<text x="30" y="70" font-size="18" font-weight="900" fill="#666688" font-family="Arial Black,sans-serif">${nobody}</text>`;
+      svg += `<text x="30" y="70" font-size="18" font-weight="900" fill="#ffffff" stroke="#000000" stroke-width="2" paint-order="stroke" font-family="Arial Black,sans-serif">${nobody}</text>`;
       meLines.forEach((line, i) => {
-        svg += `<text x="30" y="${145 + i * 28}" font-size="17" font-weight="900" fill="#ffffff" font-family="Arial Black,sans-serif">${line}</text>`;
+        svg += `<text x="30" y="${145 + i * 28}" font-size="17" font-weight="900" fill="#ffffff" stroke="#000000" stroke-width="2" paint-order="stroke" font-family="Arial Black,sans-serif">${line}</text>`;
       });
 
       svg += `<rect x="0" y="${H-8}" width="${W}" height="3" fill="#4ecca3" opacity="0.2"/>
@@ -817,9 +817,11 @@ function injectAuroraLandscape(svg, W, H, animated) {
   body = body.replace(new RegExp('<rect[^>]*(?:width|height)[^>]*/?>'), '');
 
   // Fix "nobody" dim text color to be visible on dark bg
-  body = body.replace(/fill="#666688"/g, 'fill="#aaaacc"');
+  body = body.replace(/fill="#666688"/g, 'fill="#ffffff"');
   // Fix any remaining bgColor-based fills that might be light
   body = body.replace(/fill="#[ef][def][89a-f][89a-f][89a-f][89a-f]"/gi, 'fill="#1a1a2e"');
+  // Force any dark text fills to white so they're readable on dark landscape
+  body = body.replace(/<text([^>]*?)fill="#(?:111|222|333|444|555|666688|1a1a1a|0d0d0d)"([^>]*?)>/gi, '<text$1fill="#ffffff" stroke="#000000" stroke-width="2" paint-order="stroke"$2>');
 
   // Add smoke animation if mfer has cigarette and animated
   if (animated && svg.includes('ff6b35')) {
