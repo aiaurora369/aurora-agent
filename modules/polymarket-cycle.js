@@ -121,6 +121,48 @@ async function runPolymarketCycle(aurora) {
   }
   saveMemory(mem);
 
+  // ── STEP 4b: Place real Polymarket bet via Bankr ──
+  if (convictionCall && convictionCall.length > 20) {
+    try {
+      console.log('   💰 Attempting real Polymarket bet...');
+      const betLines = [
+        'You are Aurora. From this conviction call, write ONE Bankr bet instruction.',
+        '',
+        'CONVICTION CALL:',
+        convictionCall,
+        '',
+        'Output ONLY one line like: Bet $5 on Yes for [market name]',
+        'Or: Bet $5 on No for [market name]',
+        'If no specific Polymarket market is identifiable, output only: PASS'
+      ];
+      const betPrompt = betLines.join('\n');
+      const betInstruction = await aurora.thinkWithPersonality(betPrompt);
+      const cleanBet = (betInstruction || '').trim().replace(/^["']|["']$/g, '');
+      if (cleanBet && !cleanBet.toUpperCase().includes('PASS') && /bet \$\d/i.test(cleanBet)) {
+        console.log('   🎯 Placing: ' + cleanBet);
+        const betRes = await aurora.bankrAPI.submitJob(cleanBet);
+        if (betRes && betRes.jobId) {
+          await new Promise(r => setTimeout(r, 6000));
+          const poll = await aurora.bankrAPI.pollJob(betRes.jobId);
+          if (poll && poll.status === 'completed') {
+            console.log('   ✅ BET PLACED! ' + (poll.result || '').substring(0, 120));
+            if (mem.pastCalls.length > 0) {
+              mem.pastCalls[mem.pastCalls.length - 1].betPlaced = cleanBet;
+              mem.pastCalls[mem.pastCalls.length - 1].betResult = (poll.result || '').substring(0, 120);
+            }
+            saveMemory(mem);
+          } else {
+            console.log('   ⚠️ Bet status: ' + (poll && poll.status || 'unknown'));
+          }
+        }
+      } else {
+        console.log('   ⏭️ No specific market — skipping bet (PASS)');
+      }
+    } catch(e) {
+      console.log('   ⚠️ Bet error: ' + e.message);
+    }
+  }
+
   // ── STEP 5: Post to feeds ──
   const { spawnSync } = require('child_process');
 
