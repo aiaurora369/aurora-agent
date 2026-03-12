@@ -200,7 +200,8 @@ async function composeMferArt(aurora) {
     '5. Every gradient needs a unique id (use short ids: g1, g2, g3)\n' +
     '6. NO filter elements (too many chars). Achieve glow through layered semi-transparent circles.\n' +
     '7. Use radialGradient for glowing orbs (3-4 color stops)\n' +
-    '8. Use linearGradient for backgrounds and washes (3+ stops)\n\n' +
+    '8. Use linearGradient for backgrounds and washes (3+ stops)\n' +
+    '9. ALL text must be fill="#ffffff" with stroke="#000000" stroke-width="3" paint-order="stroke" — no exceptions. Never use dark fills for text.\n\n' +
     'Make something a mfer would screenshot and set as their pfp.';
 
   const response = await aurora.claude.messages.create({
