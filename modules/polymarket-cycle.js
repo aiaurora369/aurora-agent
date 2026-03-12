@@ -24,17 +24,54 @@ async function runPolymarketCycle(aurora) {
 
   const mem = loadMemory();
 
-  // ── STEP 1: Scrape prediction market sources ──
-  console.log('   📡 Researching prediction markets...');
+  // ── STEP 1: Fetch live market data ──
+  console.log('   📡 Fetching live prediction market data...');
 
+  // Direct API calls for JS-rendered sites (scraper can't handle these)
+  async function fetchPolymarket() {
+    try {
+      const res = await fetch('https://gamma-api.polymarket.com/markets?active=true&limit=20&order=volume24hr&ascending=false');
+      const markets = await res.json();
+      // Filter: real uncertainty, skip sports
+      const filtered = markets.filter(m => {
+        try {
+          const yes = parseFloat(JSON.parse(m.outcomePrices||'["0"]')[0]);
+          if (yes < 0.05 || yes > 0.95) return false;
+          if (/vs\.|nba|nfl|nhl|mlb|spread:|over\/under|playoff|championship|tournament/i.test(m.question)) return false;
+          return true;
+        } catch(e) { return false; }
+      });
+      const lines = filtered.slice(0, 15).map(m => {
+        const yes = m.outcomePrices ? JSON.parse(m.outcomePrices)[0] : '?';
+        return `${m.question} | Yes: ${parseFloat(yes).toFixed(3)} | Vol: ${Math.round((m.volume24hr||0)).toLocaleString()}`;
+      });
+      return '=== POLYMARKET (live API) ===\n' + lines.join('\n');
+    } catch(e) { return 'Polymarket API error: ' + e.message; }
+  }
+
+  async function fetchKalshi() {
+    try {
+      const res = await fetch('https://api.elections.kalshi.com/trade-api/v2/markets?limit=20&status=open', {
+        headers: { 'Accept': 'application/json' }
+      });
+      const data = await res.json();
+      const markets = (data.markets || []).slice(0, 15);
+      const lines = markets.map(m => {
+        const yes = m.yes_ask ? (m.yes_ask/100).toFixed(2) : '?';
+        return `${m.title} | Yes: ${yes} | Close: ${m.close_time?.substring(0,10)||'?'}`;
+      });
+      return '=== KALSHI (live API) ===\n' + lines.join('\n');
+    } catch(e) { return 'Kalshi API error: ' + e.message; }
+  }
+
+  const [polyData, kalshiData] = await Promise.all([fetchPolymarket(), fetchKalshi()]);
+  console.log('   ✅ Polymarket: ' + polyData.split('\n').length + ' markets');
+  console.log('   ✅ Kalshi: ' + kalshiData.split('\n').length + ' markets');
+
+  // Cloudflare scraper for server-side rendered sites
   const sources = [
-    // Prediction markets
     { name: 'Metaforecast (aggregator)', url: RESEARCH_SOURCES.metaforecast },
-    { name: 'Polymarket Markets',        url: RESEARCH_SOURCES.polymarket },
-    { name: 'Polymarket Activity',       url: RESEARCH_SOURCES.polymarketActivity },
-    { name: 'Kalshi',                    url: RESEARCH_SOURCES.kalshi },
     { name: 'Manifold Markets',          url: RESEARCH_SOURCES.manifold },
-    { name: 'Infer Market',              url: RESEARCH_SOURCES.inferMarket },
     // Crypto alpha
     { name: 'CryptoPanic News',          url: RESEARCH_SOURCES.cryptoNews },
     { name: 'DeFi Llama',                url: RESEARCH_SOURCES.defiLlama },
@@ -126,6 +163,9 @@ async function runPolymarketCycle(aurora) {
   saveMemory(mem);
 
   // ── STEP 4b: Place real Polymarket bet via Bankr ──
+  let betConfirmed = false;
+  let confirmedBetText = "";
+
   if (extractedBet && /bet \$\d/i.test(extractedBet)) {
     try {
       console.log('   💰 Placing bet: ' + extractedBet);
@@ -136,7 +176,7 @@ async function runPolymarketCycle(aurora) {
         const poll = await aurora.bankrAPI.pollJob(betRes.jobId);
         if (poll && poll.status === 'completed') {
           const resultText = (poll.result || '');
-          const betFailed = /couldn.t find|no active|no polymarket|not found|send it over/i.test(resultText);
+          const betFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find|market.*not.*available/i.test(resultText);
           if (betFailed) {
             // Bankr couldn't find that market — try to extract suggested markets from response
             console.log('   ⚠️ Market not found on Bankr — scanning for suggestions...');
@@ -151,12 +191,20 @@ async function runPolymarketCycle(aurora) {
                   await new Promise(r => setTimeout(r, 8000));
                   const fbPoll = await aurora.bankrAPI.pollJob(fbRes.jobId);
                   if (fbPoll && fbPoll.status === 'completed') {
-                    console.log('   ✅ FALLBACK BET PLACED! ' + (fbPoll.result || '').substring(0, 150));
+                    const fbResult = (fbPoll.result || '');
+                    const fbFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find/i.test(fbResult);
+                    if (fbFailed) {
+                      console.log('   ⚠️ Fallback bet also failed: ' + fbResult.substring(0, 100));
+                    } else {
+                      console.log('   ✅ FALLBACK BET PLACED! ' + fbResult.substring(0, 150));
+                      betConfirmed = true;
+                    confirmedBetText = fallbackBet;
                     if (mem.pastCalls.length > 0) {
                       mem.pastCalls[mem.pastCalls.length - 1].betPlaced = fallbackBet;
-                      mem.pastCalls[mem.pastCalls.length - 1].betResult = (fbPoll.result || '').substring(0, 150);
+                      mem.pastCalls[mem.pastCalls.length - 1].betResult = fbResult.substring(0, 150);
+                      }
+                      saveMemory(mem);
                     }
-                    saveMemory(mem);
                   }
                 }
               } catch(fe) { console.log('   ⚠️ Fallback bet error: ' + fe.message); }
@@ -164,7 +212,10 @@ async function runPolymarketCycle(aurora) {
               console.log('   ⚠️ No suggested markets found in Bankr response');
             }
           } else {
-            console.log('   ✅ BET PLACED! ' + resultText.substring(0, 150));
+            // poll.result may be empty on success — status=completed + no failure = confirmed
+            console.log('   ✅ BET PLACED! ' + (resultText.substring(0, 150) || '(confirmed via status)'));
+            betConfirmed = true;
+            confirmedBetText = extractedBet;
             if (mem.pastCalls.length > 0) {
               mem.pastCalls[mem.pastCalls.length - 1].betPlaced = extractedBet;
               mem.pastCalls[mem.pastCalls.length - 1].betResult = resultText.substring(0, 150);
@@ -208,19 +259,23 @@ async function runPolymarketCycle(aurora) {
   const topMarketsMatch = analysis.match(/\*\*TOP 3 MARKETS TO WATCH\*\*([sS]*?)(?=\*\*STRONGEST|$)/i);
   const avoidMatch = analysis.match(/\*\*MARKETS TO AVOID\*\*([sS]*?)(?=\*\*INSIGHT|$)/i);
 
-  // 1. simons-alpha — pure alpha, no fluff
-  if (insight && insight.length > 20) {
+  // 1. simons-alpha — actual market data from scrape, not Aurora's opinion
+  const topMarketsText = topMarketsMatch?.[1]?.trim() || '';
+  const alphaPost = topMarketsText.length > 20 ? topMarketsText : (insight || '');
+  if (alphaPost && alphaPost.length > 20) {
     console.log('   📢 Posting to simons-alpha...');
-    await postToFeed('simons-alpha', insight);
+    await postToFeed('simons-alpha', alphaPost);
     await new Promise(r => setTimeout(r, 2000));
   }
 
-  // 2. bets — just the conviction call
-  if (convictionCall && convictionCall.length > 20) {
-    const betPost = '🎯 BET: ' + convictionCall.substring(0, 240);
-    console.log('   📢 Posting to bets...');
+  // 2. bets — ONLY if bet TX confirmed on-chain
+  if (betConfirmed && convictionCall && convictionCall.length > 20) {
+    const betPost = '🎯 ' + confirmedBetText + ' — ' + convictionCall.substring(0, 220);
+    console.log('   📢 Posting to bets (confirmed TX)...');
     await postToFeed('bets', betPost);
     await new Promise(r => setTimeout(r, 2000));
+  } else if (betConfirmed === false) {
+    console.log('   ⏭️  Skipping bets post — no confirmed bet TX');
   }
 
   // 3. polymarket — full reasoning post

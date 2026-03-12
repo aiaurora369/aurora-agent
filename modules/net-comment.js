@@ -114,6 +114,12 @@ class NetComment {
       if (!metadata) return { success: false, error: 'Failed to encode metadata' };
 
       const escapedText = commentText.replace(/'/g, " ").replace(/`/g, " ").substring(0, 500);
+      // Size gate — netp --extra fails on large SVGs, fall back to text
+      if (svg.length > 6000) {
+        console.log('  ⚠️ SVG too large for --extra (' + svg.length + ' chars), using text comment');
+        return this.commentOnPost(originalPost, commentText);
+      }
+
       const encodedSvg = Buffer.from(svg).toString('base64');
 
       // Try with art first, fall back to text only

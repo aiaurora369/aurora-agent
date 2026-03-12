@@ -1,30 +1,51 @@
-const { exec } = require('child_process');
-const { promisify } = require('util');
-const fs = require('fs').promises;
-const path = require('path');
-const execAsync = promisify(exec);
+const { StorageClient } = require('@net-protocol/storage');
+const { ethers } = require('ethers');
+
+const CHAIN_ID = 8453;
 
 class NetStorage {
-  constructor(bankrAPI, chainId = 8453) {
+  constructor(bankrAPI) {
     this.bankr = bankrAPI;
-    this.chainId = chainId;
-    this.storageDir = path.join(__dirname, '..', 'temp-storage');
+    this.storageClient = new StorageClient({ chainId: CHAIN_ID });
+    this._walletAddress = null;
   }
 
-  async ensureStorageDir() {
-    try {
-      await fs.mkdir(this.storageDir, { recursive: true });
-    } catch (error) {}
+  async getWalletAddress() {
+    if (!this._walletAddress) {
+      this._walletAddress = await this.bankr.getWalletAddress();
+    }
+    return this._walletAddress;
   }
 
-  async uploadSVG(svgContent, name) {
+  async uploadHTML(htmlContent, storageKey) {
     try {
-      await this.ensureStorageDir();
-      const filename = name.replace(/[^a-z0-9]/gi, '-').toLowerCase() + '-' + Date.now() + '.svg';
-      const filepath = path.join(this.storageDir, filename);
-      await fs.writeFile(filepath, svgContent, 'utf8');
-      console.log('Saved temp SVG');
-      return { success: true, storageUrl: 'temp://' + filename };
+      const config = this.storageClient.preparePut({
+        key: storageKey,
+        value: htmlContent,
+        text: storageKey
+      });
+
+      const iface = new ethers.Interface(config.abi);
+      const data = iface.encodeFunctionData(config.functionName, config.args);
+
+      console.log(`[net-storage] Submitting storage tx for key: ${storageKey}`);
+      console.log(`[net-storage] Calldata length: ${data.length} chars`);
+
+      const result = await this.bankr.submitTransactionDirect(
+        { to: config.to, data, value: '0', chainId: CHAIN_ID },
+        `Store ${storageKey} on Net Protocol`
+      );
+
+      if (!result.success && result.status !== 'success') {
+        return { success: false, error: JSON.stringify(result) };
+      }
+
+      const operatorAddress = await this.getWalletAddress();
+      const storedonUrl = `https://storedon.net/net/${CHAIN_ID}/storage/load/${operatorAddress.toLowerCase()}/${storageKey}`;
+
+      console.log(`[net-storage] Stored at: ${storedonUrl}`);
+      return { success: true, storedonUrl, txHash: result.transactionHash };
+
     } catch (error) {
       return { success: false, error: error.message };
     }
