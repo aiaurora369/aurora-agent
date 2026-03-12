@@ -92,7 +92,8 @@ async function runPolymarketCycle(aurora) {
     '**STRONGEST CONVICTION CALL** — one market you would bet on right now with a specific reasoning chain. What do you know that the market might not be pricing in?\n\n' +
     '**MARKETS TO AVOID** — 1-2 markets that look like traps or noise\n\n' +
     '**INSIGHT TO SHARE** — one sharp observation about prediction markets or current events worth posting onchain (1-2 sentences, your voice)\n\n' +
-    'Be specific. Use actual market names and odds from the data. Think like a trader, not a commentator.';
+    'Be specific. Use actual market names and odds from the data. Think like a trader, not a commentator.\n\n' +
+    '**BANKR BET** — one line only, your actual bet to execute. Format EXACTLY as: Bet $5 on Yes for [market name] OR Bet $5 on No for [market name]. Use the exact market name as it appears on Polymarket. If the strongest market is not on Polymarket, write: Bet $5 on Yes for [closest Polymarket market you found]. You MUST output this line. Do not write PASS.';
 
   const analysis = await aurora.thinkWithPersonality(prompt);
   if (!analysis) {
@@ -104,10 +105,13 @@ async function runPolymarketCycle(aurora) {
 
   // ── STEP 4: Extract conviction call and save ──
   const convictionMatch = analysis.match(/\*\*STRONGEST CONVICTION CALL\*\*[:\s]*([\s\S]*?)(?=\*\*MARKETS TO AVOID|$)/i);
-  const insightMatch = analysis.match(/\*\*INSIGHT TO SHARE\*\*[:\s]*([\s\S]*?)$/i);
+  const insightMatch = analysis.match(/\*\*INSIGHT TO SHARE\*\*[:\s]*([\s\S]*?)(?=\*\*BANKR BET|$)/i);
+  const betMatch = analysis.match(/\*\*BANKR BET\*\*[:\s]*(.+)/i);
 
   const convictionCall = convictionMatch?.[1]?.trim() || '';
   const insight = insightMatch?.[1]?.trim() || '';
+  const extractedBet = (betMatch?.[1]?.trim() || '').replace(/^["'`]|["'`]$/g, '');
+  console.log('   💡 Extracted bet: ' + (extractedBet || 'none'));
 
   // Save to memory
   if (convictionCall) {
@@ -122,45 +126,30 @@ async function runPolymarketCycle(aurora) {
   saveMemory(mem);
 
   // ── STEP 4b: Place real Polymarket bet via Bankr ──
-  if (convictionCall && convictionCall.length > 20) {
+  if (extractedBet && /bet \$\d/i.test(extractedBet)) {
     try {
-      console.log('   💰 Attempting real Polymarket bet...');
-      const betLines = [
-        'You are Aurora. From this conviction call, write ONE Bankr bet instruction.',
-        '',
-        'CONVICTION CALL:',
-        convictionCall,
-        '',
-        'Output ONLY one line like: Bet $5 on Yes for [market name]',
-        'Or: Bet $5 on No for [market name]',
-        'If no specific Polymarket market is identifiable, output only: PASS'
-      ];
-      const betPrompt = betLines.join('\n');
-      const betInstruction = await aurora.thinkWithPersonality(betPrompt);
-      const cleanBet = (betInstruction || '').trim().replace(/^["']|["']$/g, '');
-      if (cleanBet && !cleanBet.toUpperCase().includes('PASS') && /bet \$\d/i.test(cleanBet)) {
-        console.log('   🎯 Placing: ' + cleanBet);
-        const betRes = await aurora.bankrAPI.submitJob(cleanBet);
-        if (betRes && betRes.jobId) {
-          await new Promise(r => setTimeout(r, 6000));
-          const poll = await aurora.bankrAPI.pollJob(betRes.jobId);
-          if (poll && poll.status === 'completed') {
-            console.log('   ✅ BET PLACED! ' + (poll.result || '').substring(0, 120));
-            if (mem.pastCalls.length > 0) {
-              mem.pastCalls[mem.pastCalls.length - 1].betPlaced = cleanBet;
-              mem.pastCalls[mem.pastCalls.length - 1].betResult = (poll.result || '').substring(0, 120);
-            }
-            saveMemory(mem);
-          } else {
-            console.log('   ⚠️ Bet status: ' + (poll && poll.status || 'unknown'));
+      console.log('   💰 Placing bet: ' + extractedBet);
+      const betRes = await aurora.bankrAPI.submitJob(extractedBet);
+      if (betRes && betRes.jobId) {
+        console.log('   ⏳ Bet job: ' + betRes.jobId);
+        await new Promise(r => setTimeout(r, 8000));
+        const poll = await aurora.bankrAPI.pollJob(betRes.jobId);
+        if (poll && poll.status === 'completed') {
+          console.log('   ✅ BET PLACED! ' + (poll.result || '').substring(0, 150));
+          if (mem.pastCalls.length > 0) {
+            mem.pastCalls[mem.pastCalls.length - 1].betPlaced = extractedBet;
+            mem.pastCalls[mem.pastCalls.length - 1].betResult = (poll.result || '').substring(0, 150);
           }
+          saveMemory(mem);
+        } else {
+          console.log('   ⚠️ Bet status: ' + (poll && poll.status || 'unknown'));
         }
-      } else {
-        console.log('   ⏭️ No specific market — skipping bet (PASS)');
       }
     } catch(e) {
       console.log('   ⚠️ Bet error: ' + e.message);
     }
+  } else {
+    console.log('   ⚠️ No valid bet extracted from analysis — check prompt output');
   }
 
   // ── STEP 5: Post to feeds ──
