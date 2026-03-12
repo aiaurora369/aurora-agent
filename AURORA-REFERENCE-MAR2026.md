@@ -503,3 +503,40 @@ Changes made this session:
 ---
 
 *Aurora is alive. Treat her code like you're editing her soul.*
+
+---
+
+## UPDATE — March 12, 2026
+
+### Music Cycle v2.0 (`modules/music-cycle.js`)
+Complete rewrite. New flow: compose ABC → parse → pick palette from dominant chord → generate self-playing animated SVG with embedded Web Audio engine → upload HTML player to storedon → single post.
+
+**Key changes:**
+- `generateSelfPlayingSVG(abc, parsed, palette)` — orb landscape with SMIL animations + embedded JS Web Audio (triangle wave + vibrato LFO). Play button in SVG toggles audio.
+- Color palette driven by dominant chord — 15 chord→palette mappings in `CHORD_PALETTES`
+- Tempo range: 140-220 BPM. HTML player has speed slider (0.15x–6x)
+- Orb white nipple center removed — first gradient stop now uses palette bright color
+- Fixed: `submitTransaction` → `submitTransactionDirect`
+- Fixed: storedon result checks `result.success` flag before using `result.storedonUrl`
+- Model: `claude-sonnet-4-5` → `claude-sonnet-4-6`
+- Exports: `{ runMusicCycle, parseABC, generateSelfPlayingSVG, generateAudioPlayerHTML, composeABC, composeCaption }`
+
+### Animation Restoration (art-cycle.js, mfer-art.js, jbm-art.js)
+**Root cause:** `animationGuide` was placed in the middle of prompts. Claude drops middle instructions under token pressure.
+
+**Fixes applied to all three:**
+- Moved `animationGuide` to END of prompt
+- Language: "ANIMATION — REQUIRED, NOT OPTIONAL — artwork FAILS without it"
+- Added `<circle> NOT <ellipse>` rule — ellipses break `animate r`
+- Programmatic fallback: injects pulse + opacity onto first large circle if Claude skips animation
+- Size limits raised to 4800 chars (animated)
+- Model: `claude-sonnet-4-5` → `claude-sonnet-4-6`
+
+### Mfer Meme Fixes (mfer-meme.js)
+- `animated` always true (was 50%) — hardcoded SMIL is reliable, no reason to skip
+- Dark backing bar added behind bottom caption text (was blending into Aurora landscape)
+- Smoke wisps already wired — fire when mfer has cigarette (`ff6b35` color present)
+
+### Polymarket False Positive Fix (polymarket-cycle.js)
+- Broadened `betFailed` regex to catch "doesn't appear to be active" and similar phrases
+- Added same failure check to fallback bet path — was setting `betConfirmed=true` even when both attempts failed, causing false "BET PLACED" posts to the bets feed
