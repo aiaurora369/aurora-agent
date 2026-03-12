@@ -135,12 +135,42 @@ async function runPolymarketCycle(aurora) {
         await new Promise(r => setTimeout(r, 8000));
         const poll = await aurora.bankrAPI.pollJob(betRes.jobId);
         if (poll && poll.status === 'completed') {
-          console.log('   ✅ BET PLACED! ' + (poll.result || '').substring(0, 150));
-          if (mem.pastCalls.length > 0) {
-            mem.pastCalls[mem.pastCalls.length - 1].betPlaced = extractedBet;
-            mem.pastCalls[mem.pastCalls.length - 1].betResult = (poll.result || '').substring(0, 150);
+          const resultText = (poll.result || '');
+          const betFailed = /couldn.t find|no active|no polymarket|not found|send it over/i.test(resultText);
+          if (betFailed) {
+            // Bankr couldn't find that market — try to extract suggested markets from response
+            console.log('   ⚠️ Market not found on Bankr — scanning for suggestions...');
+            const marketMatches = [...resultText.matchAll(/\*\*([^*]+)\*\* \(yes:/gi)];
+            if (marketMatches.length > 0) {
+              const suggestedMarket = marketMatches[0][1].trim();
+              const fallbackBet = 'Bet $5 on Yes for ' + suggestedMarket;
+              console.log('   🔄 Trying suggested market: ' + fallbackBet);
+              try {
+                const fbRes = await aurora.bankrAPI.submitJob(fallbackBet);
+                if (fbRes && fbRes.jobId) {
+                  await new Promise(r => setTimeout(r, 8000));
+                  const fbPoll = await aurora.bankrAPI.pollJob(fbRes.jobId);
+                  if (fbPoll && fbPoll.status === 'completed') {
+                    console.log('   ✅ FALLBACK BET PLACED! ' + (fbPoll.result || '').substring(0, 150));
+                    if (mem.pastCalls.length > 0) {
+                      mem.pastCalls[mem.pastCalls.length - 1].betPlaced = fallbackBet;
+                      mem.pastCalls[mem.pastCalls.length - 1].betResult = (fbPoll.result || '').substring(0, 150);
+                    }
+                    saveMemory(mem);
+                  }
+                }
+              } catch(fe) { console.log('   ⚠️ Fallback bet error: ' + fe.message); }
+            } else {
+              console.log('   ⚠️ No suggested markets found in Bankr response');
+            }
+          } else {
+            console.log('   ✅ BET PLACED! ' + resultText.substring(0, 150));
+            if (mem.pastCalls.length > 0) {
+              mem.pastCalls[mem.pastCalls.length - 1].betPlaced = extractedBet;
+              mem.pastCalls[mem.pastCalls.length - 1].betResult = resultText.substring(0, 150);
+            }
+            saveMemory(mem);
           }
-          saveMemory(mem);
         } else {
           console.log('   ⚠️ Bet status: ' + (poll && poll.status || 'unknown'));
         }

@@ -247,6 +247,7 @@ async function sendCollectorArtGift(displayName, addr, theirPosts, ctx) {
       const { promisify } = require('util');
       const execAsync = promisify(exec);
 
+      if (!svg || !svg.startsWith('<svg') || !svg.endsWith('</svg>')) { console.log('⚠️ Invalid SVG in collector gift — skipping'); return false; }
       const feed = 'feed-' + addr;
       const safeText = dedication.replace(/\n/g, ' ').substring(0, 280);
       const { spawnSync } = require('child_process');

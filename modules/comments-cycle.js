@@ -139,6 +139,7 @@ async function runOnce(ctx) {
           if (!post.topic || !post.timestamp) continue;
           if (post.topic.includes(':comments:')) continue;
           if (!post.topic.includes('-')) continue;
+          if (post.topic.startsWith('chat-')) continue;
 
           const feed = post.topic.replace('feed-', '');
           if (feed.startsWith('0x')) continue;

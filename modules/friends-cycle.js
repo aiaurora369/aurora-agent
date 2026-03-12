@@ -323,6 +323,7 @@ async function sendPersonalizedArtGift(name, friend, ctx) {
   console.log('      🎁 "' + dedication.substring(0, 80) + '..."');
 
   try {
+    if (!svg || !svg.startsWith('<svg') || !svg.endsWith('</svg>')) { console.log('⚠️ Invalid SVG in friends gift — skipping'); return false; }
     const feed = 'feed-' + friend.address.toLowerCase();
     const safeText = dedication.replace(/\n/g, ' ').substring(0, 280);
     const { spawnSync } = require('child_process');

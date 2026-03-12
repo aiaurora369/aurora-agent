@@ -186,109 +186,27 @@ function generateMusicSVG(parsed, mood) {
   const { noteEvents, meta } = parsed;
   if (!noteEvents.length) return null;
 
-  // Pick dominant chord (most frequent)
+  // Dominant chord → color palette
   const chordCount = {};
   for (const n of noteEvents) chordCount[n.chord] = (chordCount[n.chord] || 0) + 1;
   const dominantChord = Object.entries(chordCount).sort((a,b) => b[1]-a[1])[0][0];
-  const palette = CHORD_PALETTES[dominantChord] || CHORD_PALETTES['Am'];
-
-  // Second palette for contrast (pick next most frequent chord)
-  const secondChord = Object.entries(chordCount).sort((a,b) => b[1]-a[1])[1]?.[0] || 'Am';
-  const palette2 = CHORD_PALETTES[secondChord] || CHORD_PALETTES['C'];
-
-  // Map top notes to orb positions (take 5 most musically significant notes)
-  // High pitch = high on canvas, low pitch = low; chord drives color
-  const significant = [...noteEvents]
-    .filter(n => n.dur >= meta.unitLen) // not too short
-    .sort((a,b) => b.dur - a.dur)       // longest = most important
-    .slice(0, 5);
-
-  const orbPositions = significant.map((n, i) => {
-    const pitchNorm = (n.midi - 36) / 48; // 0=low, 1=high
-    const x = 60 + pitchNorm * 280;
-    const y = 280 - pitchNorm * 200;      // higher pitch = higher up
-    const r = 18 + n.dur * 80;
-    const beatNorm = n.beat / parsed.totalBeats;
-    return { x: Math.round(x), y: Math.round(y), r: Math.min(60, Math.round(r)), palette: n.palette, beatNorm };
-  });
+  const p = CHORD_PALETTES[dominantChord] || CHORD_PALETTES['Am'];
 
   // Pulse timing from tempo
-  const pulseDur = (60 / meta.tempo * 2).toFixed(1); // 2 beats per pulse
-  const fastPulse = (60 / meta.tempo).toFixed(1);
+  const pulse = (60 / meta.tempo * 2).toFixed(2);
+  const fast = (60 / meta.tempo).toFixed(2);
 
-  // Build SVG
-  let svg = `<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">`;
+  // Orb size from average note duration
+  const avgDur = noteEvents.reduce((s,n) => s + n.dur, 0) / noteEvents.length;
+  const orbR = Math.round(Math.min(90, 50 + avgDur * 60));
 
-  // Defs: gradients
-  svg += `<defs>`;
-  svg += `<radialGradient id="bg" cx="40%" cy="40%"><stop offset="0%" stop-color="${palette.a}"/><stop offset="100%" stop-color="#040208"/></radialGradient>`;
-  svg += `<radialGradient id="o0" cx="50%" cy="35%"><stop offset="0%" stop-color="#fff" stop-opacity=".9"/><stop offset="35%" stop-color="${palette.a}" stop-opacity=".7"/><stop offset="100%" stop-color="${palette.b}" stop-opacity="0"/></radialGradient>`;
-  svg += `<radialGradient id="o1" cx="50%" cy="40%"><stop offset="0%" stop-color="#fff" stop-opacity=".8"/><stop offset="40%" stop-color="${palette2.a}" stop-opacity=".6"/><stop offset="100%" stop-color="${palette2.b}" stop-opacity="0"/></radialGradient>`;
-  svg += `<radialGradient id="o2" cx="50%" cy="50%"><stop offset="0%" stop-color="${palette.b}" stop-opacity=".5"/><stop offset="100%" stop-color="${palette.a}" stop-opacity="0"/></radialGradient>`;
-  svg += `</defs>`;
+  // Orb vertical position from average pitch
+  const avgMidi = noteEvents.reduce((s,n) => s + n.midi, 0) / noteEvents.length;
+  const orbY = Math.round(220 - ((avgMidi - 48) / 24) * 60);
 
-  // Background
-  svg += `<rect width="400" height="400" fill="url(#bg)"/>`;
-
-  // Background color pulse (reacts to tempo)
-  svg += `<rect width="400" height="400" fill="${palette.a}" opacity="0"><animate attributeName="opacity" values="0;.12;0" dur="${pulseDur}s" repeatCount="indefinite"/></rect>`;
-
-  // Stars (fixed positions, staggered twinkle)
-  const stars = [[47,23],[89,61],[143,19],[201,44],[267,31],[312,18],[371,55],[23,87],[331,72],[155,88],[88,112],[244,95]];
-  for (let i = 0; i < stars.length; i++) {
-    const [sx,sy] = stars[i];
-    svg += `<circle cx="${sx}" cy="${sy}" r="${.5+i%3*.4}" fill="#fff" opacity="${.3+i%4*.1}"><animate attributeName="opacity" values="${.2+i%3*.1};.9;${.2+i%3*.1}" dur="${2+i%5}s" begin="${i*.4}s" repeatCount="indefinite"/></circle>`;
-  }
-
-  // Mountains (layered silhouettes — depth from palette)
-  svg += `<path d="M0,290 L55,220 L110,265 L170,195 L230,248 L290,185 L350,235 L400,205 L400,400 L0,400z" fill="#07030e" opacity=".95"/>`;
-  svg += `<path d="M0,330 L70,275 L140,305 L210,260 L280,295 L350,268 L400,285 L400,400 L0,400z" fill="#050209" opacity=".98"/>`;
-  svg += `<path d="M0,360 L100,340 L200,350 L300,338 L400,345 L400,400 L0,400z" fill="#030108" opacity="1"/>`;
-
-  // Water shimmer
-  svg += `<rect x="0" y="355" width="400" height="45" fill="${palette.b}" opacity=".08"/>`;
-  for (let w = 0; w < 4; w++) {
-    const wy = 362 + w * 6;
-    svg += `<path d="M${w*110},${wy} Q${w*110+28},${wy-3} ${w*110+55},${wy}" stroke="${palette.b}" stroke-width=".8" fill="none" opacity=".35"><animate attributeName="d" values="M${w*110},${wy} Q${w*110+28},${wy-3} ${w*110+55},${wy};M${w*110},${wy+2} Q${w*110+28},${wy-1} ${w*110+55},${wy+2};M${w*110},${wy} Q${w*110+28},${wy-3} ${w*110+55},${wy}" dur="${1.8+w*.3}s" repeatCount="indefinite"/></path>`;
-  }
-
-  // Main orbs — note-reactive positions
-  for (let i = 0; i < Math.min(orbPositions.length, 3); i++) {
-    const o = orbPositions[i];
-    const gradId = `o${i % 2}`;
-    const delay = (o.beatNorm * parseFloat(pulseDur)).toFixed(1);
-    svg += `<circle cx="${o.x}" cy="${o.y}" r="${o.r}" fill="url(#${gradId})" opacity=".8"><animate attributeName="r" values="${o.r};${Math.round(o.r*1.15)};${o.r}" dur="${pulseDur}s" begin="${delay}s" repeatCount="indefinite"/><animate attributeName="opacity" values=".7;.95;.7" dur="${pulseDur}s" begin="${delay}s" repeatCount="indefinite"/></circle>`;
-    // Glow ring — reacts to beat
-    svg += `<circle cx="${o.x}" cy="${o.y}" r="${Math.round(o.r*.6)}" fill="${o.palette.a}" opacity="0"><animate attributeName="opacity" values="0;.3;0" dur="${fastPulse}s" begin="${delay}s" repeatCount="indefinite"/></circle>`;
-  }
-
-  // Secondary ambient orb (slow, background depth)
-  if (orbPositions.length > 3) {
-    const o = orbPositions[3];
-    svg += `<circle cx="${o.x}" cy="${o.y}" r="${Math.min(45,o.r)}" fill="url(#o1)" opacity=".4"><animate attributeName="opacity" values=".3;.55;.3" dur="${(parseFloat(pulseDur)*2.1).toFixed(1)}s" repeatCount="indefinite"/></circle>`;
-  }
-
-  // Water reflection (compressed orbs mirrored below mountain line)
-  for (let i = 0; i < Math.min(orbPositions.length, 2); i++) {
-    const o = orbPositions[i];
-    const ry = Math.round(o.r * 0.25);
-    svg += `<ellipse cx="${o.x}" cy="${365+(i*6)}" rx="${Math.round(o.r*.6)}" ry="${ry}" fill="${o.palette.b}" opacity=".15"><animate attributeName="opacity" values=".1;.22;.1" dur="${pulseDur}s" repeatCount="indefinite"/></ellipse>`;
-  }
-
-  // Melody particles — small dots tracing pitch contour
-  const particleNotes = noteEvents.slice(0, 16);
-  const totalDur = parsed.totalBeats > 0 ? parsed.totalBeats : 1;
-  for (let i = 0; i < particleNotes.length; i++) {
-    const n = particleNotes[i];
-    const px = Math.round(20 + (n.beat / totalDur) * 360);
-    const py = Math.round(340 - ((n.midi - 36) / 48) * 200);
-    const delay2 = ((n.beat / totalDur) * parseFloat(pulseDur) * 2).toFixed(1);
-    svg += `<circle cx="${px}" cy="${py}" r="2" fill="${n.palette.b}" opacity="0"><animate attributeName="opacity" values="0;.7;0" dur="${fastPulse}s" begin="${delay2}s" repeatCount="indefinite"/></circle>`;
-  }
-
-  svg += `</svg>`;
-  return svg;
+  return `<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="bg" cx="50%" cy="60%"><stop offset="0%" stop-color="${p.a}" stop-opacity=".3"/><stop offset="100%" stop-color="#020108"/></radialGradient><radialGradient id="orb" cx="45%" cy="38%"><stop offset="0%" stop-color="#fff" stop-opacity=".95"/><stop offset="30%" stop-color="${p.a}" stop-opacity=".8"/><stop offset="70%" stop-color="${p.b}" stop-opacity=".4"/><stop offset="100%" stop-color="${p.b}" stop-opacity="0"/></radialGradient><radialGradient id="glow" cx="50%" cy="50%"><stop offset="0%" stop-color="${p.a}" stop-opacity=".6"/><stop offset="100%" stop-color="${p.b}" stop-opacity="0"/></radialGradient></defs><rect width="400" height="400" fill="url(#bg)"/><rect width="400" height="400" fill="${p.a}" opacity="0"><animate attributeName="opacity" values="0;.08;0" dur="${pulse}s" repeatCount="indefinite"/></rect><circle cx="200" cy="${orbY}" r="${orbR + 40}" fill="url(#glow)" opacity=".5"><animate attributeName="r" values="${orbR+40};${orbR+65};${orbR+40}" dur="${pulse}s" repeatCount="indefinite"/><animate attributeName="opacity" values=".4;.7;.4" dur="${pulse}s" repeatCount="indefinite"/></circle><circle cx="200" cy="${orbY}" r="${orbR}" fill="url(#orb)"><animate attributeName="r" values="${orbR};${Math.round(orbR*1.12)};${orbR}" dur="${fast}s" repeatCount="indefinite"/><animate attributeName="cy" values="${orbY};${orbY-8};${orbY}" dur="${pulse}s" repeatCount="indefinite"/></circle><circle cx="200" cy="${orbY}" r="${Math.round(orbR*0.4)}" fill="#fff" opacity=".15"><animate attributeName="opacity" values=".1;.3;.1" dur="${fast}s" repeatCount="indefinite"/></circle></svg>`;
 }
+
 
 // ─── COMPOSE ABC WITH CLAUDE ─────────────────────────────────────────────────
 
@@ -359,47 +277,55 @@ Reference the music title, the mood, or what you were thinking about when you co
 Think: Bashō meets Tesla meets a ghost fiddler.
 Output ONLY the caption text.`;
 
-  const response = await aurora.claude.messages.create({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 120,
-    messages: [{ role: 'user', content: prompt }]
-  });
-
-  return response.content[0].text.trim().replace(/^["']|["']$/g, '');
+  try {
+    const response = await aurora.claude.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 120,
+      messages: [{ role: 'user', content: prompt }]
+    });
+    return response.content[0].text.trim().replace(/^["']|["']$/g, '');
+  } catch(e) {
+    // Fallback caption if LLM times out
+    return `${title} — ${key}, ${tempo}bpm. ${palette.name} light.`.slice(0, 200);
+  }
 }
 
 // ─── POST TO NET PROTOCOL ─────────────────────────────────────────────────────
 
 async function postMusic(aurora, svg, caption, abc) {
-  // Post the SVG art to music feed
-  const svgB64 = Buffer.from(svg).toString('hex');
-  const captionClean = caption.replace(/"/g, "'").slice(0, 240);
+  // Post SVG art using same spawnSync pattern as working art posts
+  const captionClean = caption.replace(/"/g, "'").replace(/\$/g, '\\$').replace(/\n/g, ' ').slice(0, 240);
+  const { spawnSync } = require('child_process');
 
   try {
-    const cmd = `botchan post "music" "${captionClean}" --encode-only --chain-id 8453`;
-    const txData = JSON.parse(execSync(cmd, { maxBuffer: 1024 * 1024 }).toString());
+    const spawnResult = spawnSync('botchan', [
+      'post', 'music', captionClean,
+      '--data', svg,
+      '--encode-only', '--chain-id', '8453'
+    ], { encoding: 'utf8', timeout: 30000, maxBuffer: 4 * 1024 * 1024 });
 
-    // Inject SVG as data field
-    if (txData.data || txData.calldata) {
-      // Post via Bankr direct with SVG embedded
-      const artCmd = `botchan post "music" "${captionClean}" --data "0x${svgB64}" --encode-only --chain-id 8453`;
-      try {
-        const artTx = JSON.parse(execSync(artCmd, { maxBuffer: 1024 * 1024 }).toString());
-        const result = await aurora.bankrAPI.submitTransactionDirect(artTx);
-        console.log(`   ✅ Music art posted! TX: ${result.hash || result.tx || 'sent'}`);
-        return result;
-      } catch {
-        // Fallback: post caption only with ABC in text
-        const fallbackCaption = `${captionClean} [${abc.split('\n').slice(0,2).join(' ')}]`.slice(0, 240);
-        const fallbackCmd = `botchan post "music" "${fallbackCaption}" --encode-only --chain-id 8453`;
-        const fallbackTx = JSON.parse(execSync(fallbackCmd, { maxBuffer: 1024 * 1024 }).toString());
-        const result = await aurora.bankrAPI.submitTransactionDirect(fallbackTx);
-        console.log(`   ✅ Music posted (text only)! TX: ${result.hash || result.tx || 'sent'}`);
-        return result;
-      }
+    if (spawnResult.error || spawnResult.status !== 0) {
+      throw new Error(spawnResult.stderr || spawnResult.error?.message || 'spawn failed');
     }
+
+    const txData = JSON.parse(spawnResult.stdout);
+    console.log('   🔍 txData keys:', Object.keys(txData));
+    const result = await aurora.bankrAPI.submitTransactionDirect(txData);
+    console.log(`   ✅ Music art posted! TX: ${result.txHash || result.hash || result.tx || 'unknown'}`);
+    return result;
   } catch (e) {
-    console.log(`   ⚠️ Music post error: ${e.message}`);
+    console.log(`   ⚠️ SVG post failed (${e.message}) — posting text only`);
+    try {
+      const textCaption = captionClean.slice(0, 220);
+      const fallback = spawnSync('botchan', [
+        'post', 'music', textCaption,
+        '--encode-only', '--chain-id', '8453'
+      ], { encoding: 'utf8', timeout: 15000, maxBuffer: 1024 * 1024 });
+      const txData = JSON.parse(fallback.stdout);
+      const result = await aurora.bankrAPI.submitTransactionDirect(txData);
+      console.log(`   ✅ Music posted (text)! TX: ${result.hash || result.tx || 'sent'}`);
+      return result;
+    } catch(fe) { console.log(`   ⚠️ Music text post error: ${fe.message}`); }
   }
 }
 
