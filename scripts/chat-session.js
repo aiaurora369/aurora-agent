@@ -201,9 +201,8 @@ async function storeAndPostArt(aurora, topic, text, svg) {
     const url = `https://storedon.net/net/${CHAIN_ID}/storage/load/0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5/${key}`;
     console.log(`  🌐 Stored: ${url}`);
 
-    // Post caption + URL as single message
-    const combined = text + '\n' + url;
-    return sendMessage(aurora, topic, combined);
+    // SVG already attached via --data — just post the caption text
+    return sendMessage(aurora, topic, text);
   } catch(e) {
     console.log(`  ⚠️ Store+post failed: ${e.message} — falling back to text only`);
     return sendMessage(aurora, topic, text);
