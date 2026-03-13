@@ -123,7 +123,11 @@ class BankrAPI {
       const cleanTxData = { ...txData };
       delete cleanTxData.nonce;
 
-      const prompt = 'Submit this transaction:\n' + JSON.stringify(cleanTxData, null, 2);
+      const promptTx = { ...cleanTxData };
+      if (promptTx.data && promptTx.data.length > 200) {
+        promptTx.data = promptTx.data.substring(0, 200) + '...[truncated]';
+      }
+      const prompt = 'Submit this transaction:\n' + JSON.stringify(promptTx, null, 2);
       const submitted = await submitPrompt(prompt);
 
       if (!submitted || !submitted.jobId) {
