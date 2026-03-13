@@ -609,6 +609,12 @@ async function runMusicCycle(aurora) {
       ? `${caption}\n\n♪ full player: ${storedonUrl}`
       : caption;
 
+    // Trim SVG to onchain safe size (4800 chars max)
+    if (svg.length > 4800) {
+      svg = svg.substring(0, 4797) + '</svg>';
+      console.log('   ✂️  SVG trimmed to 4800 chars for onchain safety');
+    }
+
     // 8. Post: self-playing SVG as --data, message as text
     console.log('   📡 Posting to music feed...');
     const args = [

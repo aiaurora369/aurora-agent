@@ -38,6 +38,8 @@ async function runPolymarketCycle(aurora) {
           const yes = parseFloat(JSON.parse(m.outcomePrices||'["0"]')[0]);
           if (yes < 0.05 || yes > 0.95) return false;
           if (/vs\.|nba|nfl|nhl|mlb|spread:|over\/under|playoff|championship|tournament/i.test(m.question)) return false;
+          const closeTime = m.end_date_iso || m.close_time;
+          if (closeTime && new Date(closeTime) < new Date()) return false;
           return true;
         } catch(e) { return false; }
       });
@@ -287,7 +289,43 @@ async function runPolymarketCycle(aurora) {
         }
       }
     } catch(e) {
-      console.log('   ⚠️ Bet error: ' + e.message);
+      console.log('   ⚠️ Bet error: ' + e.message + ' — triggering discovery fallback');
+      // Network/poll error — ask Bankr what markets are available on this topic
+      const topic = bankrSlug || finalBet.replace(/bet \$\d+ on (yes|no) for /i, '').substring(0, 50);
+      try {
+        const discRes = await aurora.bankrAPI.submitJob('What Polymarket markets do you have available about ' + topic + '? List them with their current odds.');
+        if (discRes && discRes.jobId) {
+          await new Promise(r => setTimeout(r, 8000));
+          const discPoll = await aurora.bankrAPI.pollJob(discRes.jobId);
+          if (discPoll && discPoll.status === 'completed') {
+            const discText = discPoll.result || '';
+            const mMatch = discText.match(/\*\*([^*]{10,80})\*\*/) ||
+                           discText.match(/"([^"]{10,80})"/) ||
+                           discText.match(/\d+\.\s+([^\n]{10,80})/);
+            if (mMatch) {
+              const foundMarket = mMatch[1].trim();
+              const betSide = finalBet.match(/on (Yes|No)/i)?.[1] || 'Yes';
+              const fallbackBet = 'Bet $5 on ' + betSide + ' for ' + foundMarket;
+              console.log('   🔄 Error fallback — placing bet on: ' + fallbackBet);
+              const fbRes = await aurora.bankrAPI.submitJob(fallbackBet);
+              if (fbRes && fbRes.jobId) {
+                await new Promise(r => setTimeout(r, 8000));
+                const fbPoll = await aurora.bankrAPI.pollJob(fbRes.jobId);
+                if (fbPoll && fbPoll.status === 'completed') {
+                  const fbResult = fbPoll.result || '';
+                  const fbFailed = /couldn.t find|no active|not active|not found|unable to find/i.test(fbResult);
+                  if (!fbFailed) {
+                    console.log('   ✅ ERROR FALLBACK BET PLACED! ' + fbResult.substring(0, 150));
+                    betConfirmed = true;
+                    confirmedBetText = fallbackBet;
+                    saveMemory(mem);
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch(fe) { console.log('   ⚠️ Error fallback also failed: ' + fe.message); }
     }
   } else {
     console.log('   ⚠️ No valid bet extracted from analysis — check prompt output');
