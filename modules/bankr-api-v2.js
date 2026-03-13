@@ -121,6 +121,21 @@ class BankrAPI {
     }
   }
 
+  async submitTransaction(txData, description = '') {
+    try {
+      const res = await fetch('https://api.bankr.bot/agent/submit', {
+        method: 'POST',
+        headers: { 'X-API-Key': this.apiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transaction: txData, waitForConfirmation: true })
+      });
+      const d = await res.json();
+      if (d.success) return { success: true, txHash: d.transactionHash };
+      return { success: false, error: d.error || JSON.stringify(d) };
+    } catch(e) {
+      return { success: false, error: e.message };
+    }
+  }
+
   async submitTransactionDirect(txData) {
     while (this.isSubmitting) {
       await new Promise(resolve => setTimeout(resolve, 1000));

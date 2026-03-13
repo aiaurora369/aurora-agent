@@ -34,10 +34,11 @@ class NetStorage {
       console.log(`[net-storage] Submitting storage tx for key: ${storageKey}`);
       console.log(`[net-storage] Calldata length: ${data.length} chars`);
 
-      const result = await this.bankr.submitTransaction(
-        { to: config.to, data, value: '0', chainId: CHAIN_ID },
-        `Store ${storageKey} on Net Protocol`
-      );
+      // Use whichever submit method is available
+      const txPayload = { to: config.to, data, value: '0', chainId: CHAIN_ID };
+      const result = typeof this.bankr.submitTransaction === 'function'
+        ? await this.bankr.submitTransaction(txPayload, `Store ${storageKey} on Net Protocol`)
+        : await this.bankr.submitTransactionDirect(txPayload);
 
       if (!result.success && result.status !== 'success') {
         return { success: false, error: JSON.stringify(result) };
