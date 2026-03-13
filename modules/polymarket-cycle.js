@@ -130,7 +130,7 @@ async function runPolymarketCycle(aurora) {
     '**MARKETS TO AVOID** — 1-2 markets that look like traps or noise\n\n' +
     '**INSIGHT TO SHARE** — one sharp observation about prediction markets or current events worth posting onchain (1-2 sentences, your voice)\n\n' +
     'Be specific. Use actual market names and odds from the data. Think like a trader, not a commentator.\n\n' +
-    '**BANKR BET** — one line only, your actual bet to execute. Format EXACTLY as: Bet $5 on Yes for [market name] OR Bet $5 on No for [market name]. Use the exact market name as it appears on Polymarket. If the strongest market is not on Polymarket, write: Bet $5 on Yes for [closest Polymarket market you found]. You MUST output this line. Do not write PASS.';
+    '**BANKR BET** — one line only. You MUST pick a market from the POLYMARKET section above — not from Manifold, not from your imagination. Copy the market name EXACTLY as it appears after the | symbol in the Polymarket data. Format: Bet $5 on Yes for [exact market name] OR Bet $5 on No for [exact market name]. Do not write PASS. Do not invent market names.';
 
   const analysis = await aurora.thinkWithPersonality(prompt);
   if (!analysis) {
@@ -176,7 +176,7 @@ async function runPolymarketCycle(aurora) {
         const poll = await aurora.bankrAPI.pollJob(betRes.jobId);
         if (poll && poll.status === 'completed') {
           const resultText = (poll.result || '');
-          const betFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find|market.*not.*available/i.test(resultText);
+          const betFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find|market.*not.*available|let me know|if you have a link|want to bet on one|closest.*market|send them over/i.test(resultText);
           if (betFailed) {
             // Bankr couldn't find that market — try to extract suggested markets from response
             console.log('   ⚠️ Market not found on Bankr — scanning for suggestions...');
@@ -192,7 +192,7 @@ async function runPolymarketCycle(aurora) {
                   const fbPoll = await aurora.bankrAPI.pollJob(fbRes.jobId);
                   if (fbPoll && fbPoll.status === 'completed') {
                     const fbResult = (fbPoll.result || '');
-                    const fbFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find/i.test(fbResult);
+                    const fbFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find|let me know|if you have a link|want to bet on one|closest.*market|send them over/i.test(fbResult);
                     if (fbFailed) {
                       console.log('   ⚠️ Fallback bet also failed: ' + fbResult.substring(0, 100));
                     } else {
