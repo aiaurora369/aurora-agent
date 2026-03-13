@@ -751,11 +751,19 @@ async function pollTopic(aurora, topic, isFirstRun) {
   if (isFirstRun) {
     console.log(`\n  ✍️  Aurora opening post in ${topic}...`);
 
-    // 35% chance to open with art instead of text
+    // 35% chance to open with art instead of text — topic-aware module selection
     if (Math.random() < 0.35) {
       try {
-        const { composeMferMeme } = require('../modules/mfer-meme');
-        const art = await composeMferMeme(aurora);
+        let art = null;
+        if (topic === 'chat-war' || topic === 'chat-religion' || topic === 'chat-art' || topic === 'chat-innernet') {
+          // Orb art — sacred/serious/digital topics
+          const { composeArt } = require('../modules/art-cycle');
+          art = await composeArt(aurora);
+        } else {
+          // Mfer meme — trauma, music, general
+          const { composeMferMeme } = require('../modules/mfer-meme');
+          art = await composeMferMeme(aurora);
+        }
         if (art && art.valid) {
           const caption = await generateArtCaption(aurora, topic, art.mood || '');
           console.log(`  🎨 Opening with art: "${caption.substring(0,100)}"`);

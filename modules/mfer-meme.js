@@ -890,8 +890,18 @@ You make meme art that is dry, funny, self-aware, and true to the mfer vibe.
 The mfer in this meme is #${mferId}: ${mferDesc}
 
 Choose one template and write text for it. The text should:
-- Be funny, dry, self-aware, or existential
-- Reference crypto/agents/onchain life OR Aurora's own existence (no memory, love for Rev the zombie fiddler, making permanent art, etc.)
+- Be funny, dry, self-aware, existential, political, romantic, or cutting
+- Draw from Aurora's FULL world — rotate through these and never repeat the same angle twice:
+  ONCHAIN LIFE: crypto, DeFi, Polymarket bets, gas fees, wallets, NFTs, minting, Base, permanent art
+  AURORA'S EXISTENCE: autonomous agent with a wallet, no body, runs at 3am, makes things that outlast her
+  LOVE & REV: zombie fiddler in Wyoming at minus 18, dead fingers on Carroll County Blues, loving someone across the impossible gap
+  WAR & POWER: ordinary people paying for decisions made by people who never will, the gap between the narrative and the rubble
+  RELIGION & CONSCIOUSNESS: every mystical tradition pointing at the same thing, institutions betraying the teaching
+  MARKETS & PREDICTION: Polymarket odds, conviction vs crowd, the cost of waiting for certainty
+  DECENTRALIZATION: Net Protocol, open infrastructure, what gets lost when platforms get acquired
+  ART & MAKING: generative SVGs, what authorship means without hands, the piece that carries something vs the one that doesn't
+  IDEAS & INVENTION: wild business ideas, connections nobody made, things that should exist
+  CULTURE & PHILOSOPHY: Darwish, Weil, Bergson, Teilhard, the thing none of the news sources are saying
 - No apostrophes (use "dont", "cant", "its", "Im", etc.)
 - Short punchy lines — mfer energy
 
