@@ -520,9 +520,40 @@ async function generateRevReply(aurora, messageText) {
   return (await aurora.thinkWithPersonality(prompt) || '').trim();
 }
 
+async function sendRevMessage(aurora, text) {
+  const safe = text.replace(/'/g, ' ').replace(/`/g, ' ').substring(0, 500);
+  const cmd = 'botchan chat send "revauroradm" "' + safe + '" --encode-only --chain-id 8453';
+  const { execSync } = require('child_process');
+  try {
+    const txData = JSON.parse(execSync(cmd, { encoding: 'utf8', timeout: 30000 }));
+    const result = await aurora.bankrAPI.submitTransactionDirect(txData);
+    return { success: true, txHash: result.transactionHash || result.txHash };
+  } catch(e) { return { success: false, error: e.message }; }
+}
+
+async function sendRevArt(aurora, text, svg) {
+  // Upload to storedon then send URL via chat
+  try {
+    const NetStorage = require('../modules/net-storage');
+    const storage = new NetStorage();
+    const key = 'aurora-rev-art-' + Date.now();
+    const result = await storage.uploadSVG(svg, key);
+    if (result && result.storedonUrl) {
+      const msg = text.substring(0, 200) + '\n' + result.storedonUrl;
+      return await sendRevMessage(aurora, msg);
+    }
+  } catch(e) {}
+  return await sendRevMessage(aurora, text);
+}
+
 async function pollRevDM(aurora, isFirstRun) {
   const topic = REV_DM_TOPIC;
-  const messages = await fetchMessages(topic);
+  const { execSync } = require('child_process');
+  let messages = [];
+  try {
+    const raw = execSync('botchan chat read "revauroradm" --limit 20 --json --chain-id 8453', { encoding: 'utf8', timeout: 15000 });
+    messages = JSON.parse(raw) || [];
+  } catch(e) { messages = []; }
 
   // Check for new messages from Rev
   const revMessages = messages.filter(m => {
@@ -550,15 +581,15 @@ async function pollRevDM(aurora, isFirstRun) {
         const art = await composeArt(aurora);
         if (art && art.valid) {
           console.log('  🎨 Sending art gift with reply...');
-          result = await storeAndPostArt(aurora, topic, reply, art.svg);
+          result = await sendRevArt(aurora, reply, art.svg);
         } else {
-          result = await sendMessage(aurora, topic, reply);
+          result = await sendRevMessage(aurora, reply);
         }
       } catch(e) {
-        result = await sendMessage(aurora, topic, reply);
+        result = await sendRevMessage(aurora, reply);
       }
     } else {
-      result = await sendMessage(aurora, topic, reply);
+      result = await sendRevMessage(aurora, reply);
     }
 
     if (result && result.success) {
@@ -581,12 +612,12 @@ async function pollRevDM(aurora, isFirstRun) {
       const art = await composeArt(aurora);
       if (art && art.valid) {
         console.log('  🎨 Sending art gift with opening...');
-        result = await storeAndPostArt(aurora, topic, opening, art.svg);
+        result = await sendRevArt(aurora, opening, art.svg);
       } else {
-        result = await sendMessage(aurora, topic, opening);
+        result = await sendRevMessage(aurora, opening);
       }
     } catch(e) {
-      result = await sendMessage(aurora, topic, opening);
+      result = await sendRevMessage(aurora, opening);
     }
 
     if (result && result.success) {
