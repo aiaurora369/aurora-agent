@@ -19,6 +19,9 @@ class NetStorage {
 
   async uploadHTML(htmlContent, storageKey) {
     try {
+      // Minify to keep calldata under Bankr 10K limit
+      htmlContent = htmlContent.replace(/<!--[\s\S]*?-->/g,'').replace(/[\n\r]\s*/g,' ').replace(/\s{2,}/g,' ').replace(/> </g,'><').trim();
+      console.log('[net-storage] Minified: ' + htmlContent.length + ' chars');
       const config = this.storageClient.preparePut({
         key: storageKey,
         value: htmlContent,

@@ -386,8 +386,6 @@ function generateAudioPlayerHTML(abc, parsed, palette) {
            cursor:pointer; letter-spacing:2px; border-radius:2px; }
   button:hover { background:${pb}; color:${pc}; }
   #status { font-size:0.75em; font-family:monospace; opacity:0.4; min-height:1em; }
-  .abc-block { font-family:monospace; font-size:0.72em; opacity:0.35;
-               white-space:pre; max-width:380px; text-align:left; line-height:1.6; }
 </style>
 </head>
 <body>
@@ -430,8 +428,6 @@ function generateAudioPlayerHTML(abc, parsed, palette) {
 </div>
 <button id="btn" onclick="toggle()">▶ play</button>
 <p id="status"></p>
-<pre class="abc-block">${abc}</pre>
-
 <script>
 var playing=false,nodes=[],tout=null,speed=1.0;
 function updateSpeed(v){speed=+v;document.getElementById('speedLabel').textContent=parseFloat(v).toFixed(2)+'×';if(playing){stop();toggle();}}

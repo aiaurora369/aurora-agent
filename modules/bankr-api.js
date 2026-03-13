@@ -178,7 +178,12 @@ class BankrAPI {
       const cleanTxData = { ...txData };
       delete cleanTxData.nonce;
       
-      const prompt = 'Submit this transaction:\n' + JSON.stringify(cleanTxData, null, 2);
+      // Truncate data field in prompt to avoid Bankr 10K limit — full data still in txData
+      const promptTx = { ...cleanTxData };
+      if (promptTx.data && promptTx.data.length > 200) {
+        promptTx.data = promptTx.data.substring(0, 200) + '...[truncated]';
+      }
+      const prompt = 'Submit this transaction:\n' + JSON.stringify(promptTx, null, 2);
       const submitResult = await this.submitJob(prompt);
       
       if (!submitResult.success) {
@@ -200,6 +205,57 @@ class BankrAPI {
     } finally {
       this.isSubmitting = false;
     }
+  }
+
+  async submitTransaction(transaction, description = '') {
+    return new Promise((resolve, reject) => {
+      const body = JSON.stringify({ transaction, description, waitForConfirmation: true });
+      const options = {
+        hostname: this.baseURL,
+        path: '/agent/submit',
+        method: 'POST',
+        headers: {
+          'X-API-Key': this.apiKey,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body)
+        }
+      };
+      const req = require('https').request(options, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try { resolve(JSON.parse(data)); }
+          catch(e) { resolve({ success: false, error: e.message }); }
+        });
+      });
+      req.on('error', e => resolve({ success: false, error: e.message }));
+      req.write(body);
+      req.end();
+    });
+  }
+
+  async getWalletAddress() {
+    return new Promise((resolve, reject) => {
+      const options = {
+        hostname: this.baseURL,
+        path: '/agent/me',
+        method: 'GET',
+        headers: { 'X-API-Key': this.apiKey }
+      };
+      const req = require('https').request(options, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try {
+            const result = JSON.parse(data);
+            const evm = result.wallets && result.wallets.find(w => w.chain === 'evm');
+            resolve(evm ? evm.address : null);
+          } catch(e) { resolve(null); }
+        });
+      });
+      req.on('error', () => resolve(null));
+      req.end();
+    });
   }
 
 }
