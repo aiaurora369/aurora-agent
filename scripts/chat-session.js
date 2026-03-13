@@ -167,47 +167,6 @@ async function storeAndPostArt(aurora, topic, text, svg) {
   }
 }
 
-// ── Store SVG on Net Storage and post URL in chat ────────────────────────────
-async function storeAndPostArt(aurora, topic, text, svg) {
-  try {
-    const { spawnSync } = require('child_process');
-    const fs = require('fs');
-    const key = 'aurora-art-' + Date.now();
-    const tmpFile = '/tmp/' + key + '.svg';
-    fs.writeFileSync(tmpFile, svg);
-
-    // Encode storage tx
-    const enc = spawnSync('netp', [
-      'storage', 'upload',
-      '--file', tmpFile,
-      '--key', key,
-      '--text', text.substring(0, 80),
-      '--address', '0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5',
-      '--chain-id', String(CHAIN_ID),
-      '--encode-only'
-    ], { maxBuffer: 1024 * 1024 * 5, timeout: 30000 });
-
-    if (enc.error || enc.status !== 0) throw new Error('storage encode: ' + (enc.stderr||'').toString().substring(0,100));
-
-    const storageData = JSON.parse(enc.stdout.toString().trim());
-
-    // Submit each storage tx
-    for (const tx of storageData.transactions) {
-      const res = await submitDirect(tx);
-      if (!res.success) throw new Error('storage submit: ' + res.error);
-    }
-
-    // Build URL
-    const url = `https://storedon.net/net/${CHAIN_ID}/storage/load/0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5/${key}`;
-    console.log(`  🌐 Stored: ${url}`);
-
-    // SVG already attached via --data — just post the caption text
-    return sendMessage(aurora, topic, text);
-  } catch(e) {
-    console.log(`  ⚠️ Store+post failed: ${e.message} — falling back to text only`);
-    return sendMessage(aurora, topic, text);
-  }
-}
 
 // ── Generate text reply to a message ─────────────────────────────────────────
 async function generateReply(aurora, topic, senderName, senderAddress, messageText) {
