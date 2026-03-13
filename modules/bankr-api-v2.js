@@ -94,7 +94,7 @@ class BankrAPI {
 
       let cmd;
       if (artSVG) {
-        cmd = 'botchan post "feed-' + targetFeed + '" "' + content.replace(/"/g, '\\"') + '" --body \'' + artSVG + '\' --chain-id 8453 --encode-only';
+        cmd = 'botchan post "feed-' + targetFeed + '" "' + content.replace(/"/g, '\\"') + '" --data \'' + artSVG + '\' --chain-id 8453 --encode-only';
       } else {
         const escaped = content.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
         cmd = 'botchan post "feed-' + targetFeed + '" "' + escaped + '" --chain-id 8453 --encode-only';

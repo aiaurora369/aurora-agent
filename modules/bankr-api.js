@@ -129,9 +129,9 @@ class BankrAPI {
       
       let cmd;
       if (artSVG) {
-        // Art post: content is caption, artSVG goes in --body
+        // Art post: content is caption, artSVG goes in --data
         console.log('🎨 Creating art post with rendered canvas...');
-        cmd = `botchan post "feed-${targetFeed}" "${content.replace(/"/g, '\\"')}" --body '${artSVG}' --chain-id 8453 --encode-only`;
+        cmd = `botchan post "feed-${targetFeed}" "${content.replace(/"/g, '\\"')}" --data '${artSVG}' --chain-id 8453 --encode-only`;
       } else {
         // Regular post: just text
         cmd = `botchan post "feed-${targetFeed}" '${content.replace(/'/g, "'\\''")}' --chain-id 8453 --encode-only`;
