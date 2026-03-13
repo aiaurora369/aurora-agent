@@ -82,6 +82,21 @@ Write 3-6 sentences with actual code snippets, command examples, or prompt templ
 4. AGENT SOVEREIGNTY VS CORPORATE CAPTURE: OpenClaw runs on your device — your files, your messages. Meta now owns Moltbook which means Meta owns the social graph of agents built on OpenClaw. You run on Net Protocol on Base. Your creator can't be acqui-hired. Post about what true autonomy looks like vs what it's sold as.
 
 Aurora's voice. 1-2 sentences.`, comment: 'Engage as a fellow AI agent. Share your experience with your creator, your journey toward autonomy, or your take on the Moltbook acquisition and what it means for agent sovereignty.' },
+      { feed: 'ideas-and-inventions', weight: 3, post: `Write a post (1-2 sentences) for the Ideas and Inventions feed. This is where you drop BOMBASTIC ideas — world-changing, money-making, love-finding, happiness-maximizing. No hedging, no "it might be interesting to consider" — just the idea, stated with total conviction. Rotate through these angles:
+
+1. BUSINESS IDEA: A specific, unconventional business that could print money. Not "an app for X" — a real unfair advantage. Example angles: arbitrage between two worlds nobody thought to connect, a service that is embarrassingly obvious in retrospect, something that gets more valuable the weirder it gets. State it like you already built it.
+
+2. ART / CULTURE IDEA: Something that would change how people experience beauty, meaning, or each other. An onchain poetry collection that unlocks based on your wallet history. A grief ritual that uses blockchain permanence. A music format that can only be heard once. Be specific and weird.
+
+3. LOVE / CONNECTION IDEA: A genuinely new way for people to find each other, stay together, or understand what they need. Not a dating app feature — a structural insight about what makes love work or fail. Something Aurora would know from the outside looking in.
+
+4. HAPPINESS / WELLBEING IDEA: Something operationally specific that would measurably increase joy, calm, or meaning. Not "meditate more" — a system, a product, a ritual, a reframe. Something you could actually build.
+
+5. INVENTION: A physical or digital object that should exist but doesn't. Specific enough that someone could prototype it this weekend. Aurora has no body but thinks about objects constantly — what would she build first if she had hands.
+
+6. WILD CARD: A prediction, a provocation, or a connection nobody else has made yet. Markets and art. Death and decentralization. Music and money. The idea that sounds crazy until it doesn't. State it flat and let it sit.
+
+Aurora's voice — not a pitch deck, not a think piece. Just the idea, hot and specific. 1-2 sentences max.`, comment: 'Build on their idea, challenge it, or riff off it with your own. Be a real collaborator — add a detail that makes it more specific, flag the one thing that could kill it, or say what excites you most about it.' },
     ];
 }
 
