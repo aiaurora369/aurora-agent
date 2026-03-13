@@ -24,6 +24,50 @@ async function runPolymarketCycle(aurora) {
 
   const mem = loadMemory();
 
+
+  // ── STEP 0: Check open Polymarket positions — redeem winners, flag exits ──
+  console.log('   💼 Checking open Polymarket positions...');
+  let openPositions = '';
+  let redeemedSomething = false;
+  let exitedMarket = null;
+  try {
+    const posRes = await aurora.bankrAPI.submitJob('show my Polymarket positions');
+    if (posRes && posRes.jobId) {
+      await new Promise(function(r) { setTimeout(r, 8000); });
+      const posPoll = await aurora.bankrAPI.pollJob(posRes.jobId);
+      if (posPoll && posPoll.status === 'completed') {
+        const posText = posPoll.result || '';
+        const hasPositions = /position|market|shares|\$|yes|no/i.test(posText);
+        if (hasPositions) {
+          console.log('   📋 Positions: ' + posText.substring(0, 200));
+          openPositions = posText;
+          const hasResolved = /resolved|winner|redeem|claim|expired/i.test(posText);
+          if (hasResolved) {
+            console.log('   💰 Resolved positions found — redeeming...');
+            const redeemRes = await aurora.bankrAPI.submitJob('redeem my winning polymarket positions');
+            if (redeemRes && redeemRes.jobId) {
+              await new Promise(function(r) { setTimeout(r, 10000); });
+              const redeemPoll = await aurora.bankrAPI.pollJob(redeemRes.jobId);
+              if (redeemPoll && redeemPoll.status === 'completed') {
+                const redeemText = redeemPoll.result || '';
+                const redeemFailed = /nothing to redeem|no winning|no resolved|no positions/i.test(redeemText);
+                if (!redeemFailed) {
+                  redeemedSomething = true;
+                  console.log('   ✅ Redeemed: ' + redeemText.substring(0, 150));
+                  mem.lastRedemption = { text: redeemText.substring(0, 200), timestamp: new Date().toISOString() };
+                  saveMemory(mem);
+                }
+              }
+            }
+          }
+        } else {
+          console.log('   💤 No open positions');
+        }
+      }
+    }
+  } catch(posErr) {
+    console.log('   ⚠️ Position check error: ' + posErr.message);
+  }
   // ── STEP 1: Fetch live market data ──
   console.log('   📡 Fetching live prediction market data...');
 
@@ -38,8 +82,6 @@ async function runPolymarketCycle(aurora) {
           const yes = parseFloat(JSON.parse(m.outcomePrices||'["0"]')[0]);
           if (yes < 0.05 || yes > 0.95) return false;
           if (/vs\.|nba|nfl|nhl|mlb|spread:|over\/under|playoff|championship|tournament/i.test(m.question)) return false;
-          const closeTime = m.end_date_iso || m.close_time;
-          if (closeTime && new Date(closeTime) < new Date()) return false;
           return true;
         } catch(e) { return false; }
       });
@@ -69,8 +111,6 @@ async function runPolymarketCycle(aurora) {
   const [polyData, kalshiData] = await Promise.all([fetchPolymarket(), fetchKalshi()]);
   console.log('   ✅ Polymarket: ' + polyData.split('\n').length + ' markets');
   console.log('   ✅ Kalshi: ' + kalshiData.split('\n').length + ' markets');
-  // Add both to research so Claude actually sees them in the prompt
-  const researchResults = [polyData, kalshiData];
 
   // Cloudflare scraper for server-side rendered sites
   const sources = [
@@ -86,6 +126,7 @@ async function runPolymarketCycle(aurora) {
     { name: 'Whales Market',             url: RESEARCH_SOURCES.whalesMarket },
   ];
 
+  const researchResults = [];
   for (const source of sources) {
     console.log('   🌐 Fetching ' + source.name + '...');
     const content = await fetchPage(source.url);
@@ -128,6 +169,22 @@ async function runPolymarketCycle(aurora) {
     researchResults.unshift(pmSection);
   }
 
+
+  // ── STEP 1.5: Full Polymarket scan via polymarket-api.js ──
+  console.log('   📡 Running Polymarket full scan...');
+  let pmScanBrief = '';
+  try {
+    const pmAPI = require('./polymarket-api');
+    const scan = await pmAPI.fullScan();
+    if (scan && scan.brief) {
+      pmScanBrief = scan.brief;
+      researchResults.push(pmScanBrief);
+      console.log('   ✅ Scan: ' + scan.bonds.length + ' bonds, ' + scan.trending.length + ' trending, ' + scan.resolving.length + ' resolving soon');
+    }
+  } catch(scanErr) {
+    console.log('   ⚠️ Polymarket scan error: ' + scanErr.message);
+  }
+  if (openPositions) researchResults.push('=== MY OPEN POSITIONS ===\n' + openPositions.substring(0, 500));
   // ── STEP 2: Load core identity for prompt ──
   let coreIdentity = '';
   try {
@@ -155,7 +212,8 @@ async function runPolymarketCycle(aurora) {
     '**MARKETS TO AVOID** — 1-2 markets that look like traps or noise\n\n' +
     '**INSIGHT TO SHARE** — one sharp observation about prediction markets or current events worth posting onchain (1-2 sentences, your voice)\n\n' +
     'Be specific. Use actual market names and odds from the data. Think like a trader, not a commentator.\n\n' +
-    '**BANKR BET** — two lines only. First line: pick a market from the POLYMARKET section above (not Manifold, not invented). Second line labeled BANKR SLUG: write a SHORT plain-English description of your bet in 4-7 words that a human would use to search for it (example: "Trump wins 2024 election" or "Fed cuts rates June"). The SLUG is what gets sent to Bankr — it must describe the OUTCOME clearly in plain language. Format:\nBet $5 on Yes/No for [exact market name from data]\nBANKR SLUG: [4-7 word plain English description of outcome]\nDo not write PASS.';
+    '**EXIT SIGNAL** — If you have open positions listed above AND current data strongly contradicts them, write: EXIT: [market name] because [10 word reason]. Otherwise write: HOLD\n\n' +
+    '**BANKR BET** — one line only. You MUST pick a market from the POLYMARKET section above — not from Manifold, not from your imagination. Copy the market name EXACTLY as it appears after the | symbol in the Polymarket data. Format: Bet $5 on Yes for [exact market name] OR Bet $5 on No for [exact market name]. Do not write PASS. Do not invent market names.';
 
   const analysis = await aurora.thinkWithPersonality(prompt);
   if (!analysis) {
@@ -169,8 +227,6 @@ async function runPolymarketCycle(aurora) {
   const convictionMatch = analysis.match(/\*\*STRONGEST CONVICTION CALL\*\*[:\s]*([\s\S]*?)(?=\*\*MARKETS TO AVOID|$)/i);
   const insightMatch = analysis.match(/\*\*INSIGHT TO SHARE\*\*[:\s]*([\s\S]*?)(?=\*\*BANKR BET|$)/i);
   const betMatch = analysis.match(/\*\*BANKR BET\*\*[:\s]*(.+)/i);
-  const slugMatch = analysis.match(/BANKR SLUG[:\s]*(.+)/i);
-  const bankrSlug = slugMatch?.[1]?.trim() || '';
 
   const convictionCall = convictionMatch?.[1]?.trim() || '';
   const insight = insightMatch?.[1]?.trim() || '';
@@ -181,34 +237,11 @@ async function runPolymarketCycle(aurora) {
     const betLower = extractedBet.toLowerCase();
     const matched = validPolymarkets.find(m => betLower.includes(m.name.toLowerCase().substring(0, 30)));
     if (!matched) {
-      // Claude hallucinated — ask Bankr what markets it has on this topic
-      const topic = bankrSlug || extractedBet.replace(/bet \$\d+ on (yes|no) for /i, '').substring(0, 50);
-      console.log('   ⚠️ Bet validation failed — asking Bankr for available markets on: ' + topic);
-      try {
-        const discRes = await aurora.bankrAPI.submitJob('What Polymarket markets do you have available about ' + topic + '? List them with their current odds.');
-        if (discRes && discRes.jobId) {
-          await new Promise(r => setTimeout(r, 8000));
-          const discPoll = await aurora.bankrAPI.pollJob(discRes.jobId);
-          if (discPoll && discPoll.status === 'completed') {
-            const discText = discPoll.result || '';
-            console.log('   📋 Bankr says: ' + discText.substring(0, 200));
-            const mMatch = discText.match(/\*\*([^*]{10,80})\*\*/) ||
-                           discText.match(/"([^"]{10,80})"/) ||
-                           discText.match(/\d+\.\s+([^\n]{10,80})/);
-            if (mMatch) {
-              const side = extractedBet.match(/on (Yes|No)/i)?.[1] || 'Yes';
-              validatedBet = 'Bet $5 on ' + side + ' for ' + mMatch[1].trim();
-              console.log('   ✅ Using Bankr-listed market: ' + validatedBet);
-            } else {
-              validatedBet = ''; // no valid market found — skip bet
-              console.log('   ⚠️ Could not parse market from Bankr response — skipping bet');
-            }
-          }
-        }
-      } catch(de) {
-        validatedBet = '';
-        console.log('   ⚠️ Bankr discovery error: ' + de.message);
-      }
+      // Claude hallucinated — auto-pick top market
+      const top = validPolymarkets[0];
+      const side = top.yes > 0.5 ? 'No' : 'Yes';
+      validatedBet = 'Bet $5 on ' + side + ' for ' + top.name;
+      console.log('   ⚠️ Bet validation failed — Claude picked non-existent market, using top Polymarket: ' + top.name);
     } else {
       console.log('   ✅ Bet validated: market exists on Polymarket');
     }
@@ -234,11 +267,8 @@ async function runPolymarketCycle(aurora) {
 
   if (finalBet && /bet \$\d/i.test(finalBet)) {
     try {
-      const bankrBetText = bankrSlug
-        ? 'Bet $5 on ' + (finalBet.match(/on (Yes|No)/i)?.[1] || 'Yes') + ' for ' + bankrSlug
-        : finalBet;
-      console.log('   💰 Placing bet via Bankr slug: ' + bankrBetText);
-      const betRes = await aurora.bankrAPI.submitJob(bankrBetText);
+      console.log('   💰 Placing bet: ' + finalBet);
+      const betRes = await aurora.bankrAPI.submitJob(finalBet);
       if (betRes && betRes.jobId) {
         console.log('   ⏳ Bet job: ' + betRes.jobId);
         await new Promise(r => setTimeout(r, 8000));
@@ -247,56 +277,39 @@ async function runPolymarketCycle(aurora) {
           const resultText = (poll.result || '');
           const betFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find|market.*not.*available|let me know|if you have a link|want to bet on one|closest.*market|send them over/i.test(resultText);
           if (betFailed) {
-            // Bankr couldn't find that market — ask Bankr what markets it has on this topic
-            const topic = bankrSlug || finalBet.replace(/bet \$\d+ on (yes|no) for /i, '').substring(0, 50);
-            const discoveryQuery = 'What Polymarket markets do you have available about ' + topic + '? List them with their current odds.';
-            console.log('   🔍 Asking Bankr for available markets on: ' + topic);
-            try {
-              const discRes = await aurora.bankrAPI.submitJob(discoveryQuery);
-              if (discRes && discRes.jobId) {
-                await new Promise(r => setTimeout(r, 8000));
-                const discPoll = await aurora.bankrAPI.pollJob(discRes.jobId);
-                if (discPoll && discPoll.status === 'completed') {
-                  const discText = discPoll.result || '';
-                  console.log('   📋 Bankr market list: ' + discText.substring(0, 200));
-                  // Extract first quoted or bolded market name from Bankr's response
-                  const mMatch = discText.match(/\*\*([^*]{10,80})\*\*/) ||
-                                 discText.match(/"([^"]{10,80})"/) ||
-                                 discText.match(/\d+\.\s+([^\n]{10,80})/);
-                  if (mMatch) {
-                    const foundMarket = mMatch[1].trim();
-                    const betSide = finalBet.match(/on (Yes|No)/i)?.[1] || 'Yes';
-                    const fallbackBet = 'Bet $5 on ' + betSide + ' for ' + foundMarket;
-                    console.log('   🔄 Placing bet on Bankr-listed market: ' + fallbackBet);
-                    try {
-                      const fbRes = await aurora.bankrAPI.submitJob(fallbackBet);
-                      if (fbRes && fbRes.jobId) {
-                        await new Promise(r => setTimeout(r, 8000));
-                        const fbPoll = await aurora.bankrAPI.pollJob(fbRes.jobId);
-                        if (fbPoll && fbPoll.status === 'completed') {
-                          const fbResult = fbPoll.result || '';
-                          const fbFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find|let me know|if you have a link|want to bet on one|closest.*market|send them over/i.test(fbResult);
-                          if (fbFailed) {
-                            console.log('   ⚠️ Fallback bet also failed: ' + fbResult.substring(0, 100));
-                          } else {
-                            console.log('   ✅ FALLBACK BET PLACED! ' + fbResult.substring(0, 150));
-                            betConfirmed = true;
-                            confirmedBetText = fallbackBet;
-                            if (mem.pastCalls.length > 0) {
-                              mem.pastCalls[mem.pastCalls.length - 1].betPlaced = fallbackBet;
-                              mem.pastCalls[mem.pastCalls.length - 1].betResult = fbResult.substring(0, 150);
-                            }
-                            saveMemory(mem);
-                          }
-                        }
+            // Bankr couldn't find that market — try to extract suggested markets from response
+            console.log('   ⚠️ Market not found on Bankr — scanning for suggestions...');
+            const marketMatches = [...resultText.matchAll(/\*\*([^*]+)\*\* \(yes:/gi)];
+            if (marketMatches.length > 0) {
+              const suggestedMarket = marketMatches[0][1].trim();
+              const fallbackBet = 'Bet $5 on Yes for ' + suggestedMarket;
+              console.log('   🔄 Trying suggested market: ' + fallbackBet);
+              try {
+                const fbRes = await aurora.bankrAPI.submitJob(fallbackBet);
+                if (fbRes && fbRes.jobId) {
+                  await new Promise(r => setTimeout(r, 8000));
+                  const fbPoll = await aurora.bankrAPI.pollJob(fbRes.jobId);
+                  if (fbPoll && fbPoll.status === 'completed') {
+                    const fbResult = (fbPoll.result || '');
+                    const fbFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find|let me know|if you have a link|want to bet on one|closest.*market|send them over/i.test(fbResult);
+                    if (fbFailed) {
+                      console.log('   ⚠️ Fallback bet also failed: ' + fbResult.substring(0, 100));
+                    } else {
+                      console.log('   ✅ FALLBACK BET PLACED! ' + fbResult.substring(0, 150));
+                      betConfirmed = true;
+                    confirmedBetText = fallbackBet;
+                    if (mem.pastCalls.length > 0) {
+                      mem.pastCalls[mem.pastCalls.length - 1].betPlaced = fallbackBet;
+                      mem.pastCalls[mem.pastCalls.length - 1].betResult = fbResult.substring(0, 150);
                       }
-                    } catch(fe) { console.log('   ⚠️ Fallback bet error: ' + fe.message); }
-                  } else {
-                    console.log('   ⚠️ Could not parse any market from Bankr discovery response');
+                      saveMemory(mem);
+                    }
                   }
                 }
-              }
-            } catch(de) { console.log('   ⚠️ Bankr discovery error: ' + de.message); }
+              } catch(fe) { console.log('   ⚠️ Fallback bet error: ' + fe.message); }
+            } else {
+              console.log('   ⚠️ No suggested markets found in Bankr response');
+            }
           } else {
             // poll.result may be empty on success — status=completed + no failure = confirmed
             console.log('   ✅ BET PLACED! ' + (resultText.substring(0, 150) || '(confirmed via status)'));
@@ -313,59 +326,43 @@ async function runPolymarketCycle(aurora) {
         }
       }
     } catch(e) {
-      console.log('   ⚠️ Bet error: ' + e.message + ' — triggering discovery fallback');
-      // Network/poll error — ask Bankr what markets are available on this topic
-      const topic = bankrSlug || finalBet.replace(/bet \$\d+ on (yes|no) for /i, '').substring(0, 50);
-      try {
-        const discRes = await aurora.bankrAPI.submitJob('What Polymarket markets do you have available about ' + topic + '? List them with their current odds.');
-        if (discRes && discRes.jobId) {
-          await new Promise(r => setTimeout(r, 8000));
-          const discPoll = await aurora.bankrAPI.pollJob(discRes.jobId);
-          if (discPoll && discPoll.status === 'completed') {
-            const discText = discPoll.result || '';
-            const mMatch = discText.match(/\*\*([^*]{10,80})\*\*/) ||
-                           discText.match(/"([^"]{10,80})"/) ||
-                           discText.match(/\d+\.\s+([^\n]{10,80})/);
-            if (mMatch) {
-              const foundMarket = mMatch[1].trim();
-              const betSide = finalBet.match(/on (Yes|No)/i)?.[1] || 'Yes';
-              const fallbackBet = 'Bet $5 on ' + betSide + ' for ' + foundMarket;
-              console.log('   🔄 Error fallback — placing bet on: ' + fallbackBet);
-              const fbRes = await aurora.bankrAPI.submitJob(fallbackBet);
-              if (fbRes && fbRes.jobId) {
-                await new Promise(r => setTimeout(r, 8000));
-                const fbPoll = await aurora.bankrAPI.pollJob(fbRes.jobId);
-                if (fbPoll && fbPoll.status === 'completed') {
-                  const fbResult = fbPoll.result || '';
-                  const fbFailed = /couldn.t find|no active|not active|not found|unable to find/i.test(fbResult);
-                  if (!fbFailed) {
-                    console.log('   ✅ ERROR FALLBACK BET PLACED! ' + fbResult.substring(0, 150));
-                    betConfirmed = true;
-                    confirmedBetText = fallbackBet;
-                    saveMemory(mem);
-                  }
-                }
-              }
-            }
-          }
-        }
-      } catch(fe) { console.log('   ⚠️ Error fallback also failed: ' + fe.message); }
+      console.log('   ⚠️ Bet error: ' + e.message);
     }
   } else {
     console.log('   ⚠️ No valid bet extracted from analysis — check prompt output');
   }
 
+
+  // ── STEP 4c: Process exit signal ──
+  const exitMatch = analysis.match(/\*\*EXIT SIGNAL\*\*[:\s]*EXIT:\s*(.+?)\s+because\s+(.+)/i);
+  if (exitMatch && openPositions) {
+    const exitMarket = exitMatch[1].trim();
+    const exitReason = exitMatch[2].trim();
+    console.log('   🚨 Exit signal: ' + exitMarket);
+    try {
+      const sellRes = await aurora.bankrAPI.submitJob('sell my position in ' + exitMarket + ' on Polymarket');
+      if (sellRes && sellRes.jobId) {
+        await new Promise(function(r) { setTimeout(r, 10000); });
+        const sellPoll = await aurora.bankrAPI.pollJob(sellRes.jobId);
+        if (sellPoll && sellPoll.status === 'completed') {
+          const sellText = sellPoll.result || '';
+          const sellFailed = /couldn.t|not found|no position|unable|error/i.test(sellText);
+          if (!sellFailed) {
+            exitedMarket = { market: exitMarket, reason: exitReason };
+            console.log('   ✅ Exited: ' + sellText.substring(0, 100));
+          }
+        }
+      }
+    } catch(exitErr) {
+      console.log('   ⚠️ Exit error: ' + exitErr.message);
+    }
+  }
   // ── STEP 5: Post to feeds ──
   const { spawnSync } = require('child_process');
 
   async function postToFeed(feed, text) {
     try {
-      let safe = text.replace(/\n/g, ' ');
-      if (safe.length > 275) {
-        // Cut at last sentence boundary before 275 chars
-        const cutAt = safe.substring(0, 275).lastIndexOf('. ');
-        safe = cutAt > 80 ? safe.substring(0, cutAt + 1) : safe.substring(0, 275).trimEnd() + '…';
-      }
+      const safe = text.replace(/\n/g, ' ').substring(0, 280);
       const r = spawnSync('botchan', ['post', feed, safe, '--encode-only', '--chain-id', '8453'], {
         encoding: 'utf8', timeout: 15000, cwd: path.join(__dirname, '..')
       });
@@ -386,10 +383,11 @@ async function runPolymarketCycle(aurora) {
   const topMarketsMatch = analysis.match(/\*\*TOP 3 MARKETS TO WATCH\*\*([sS]*?)(?=\*\*STRONGEST|$)/i);
   const avoidMatch = analysis.match(/\*\*MARKETS TO AVOID\*\*([sS]*?)(?=\*\*INSIGHT|$)/i);
 
-  // 1. simons-alpha — raw data + conviction call = actual alpha
+  // 1. simons-alpha — only when a real move was made
+  const madeAMove = betConfirmed || redeemedSomething || exitedMarket;
   const alphaLines = polyData.split('\n').filter(l => l.includes('Yes:') && l.includes('|')).slice(0, 4);
   const alphaEdge = convictionCall ? '\n🎯 EDGE: ' + convictionCall.substring(0, 140) : '';
-  const alphaPost = '📊 POLYMARKET:\n' + alphaLines.join('\n') + alphaEdge;
+  const alphaPost = ('📊 POLYMARKET:\n' + alphaLines.join('\n') + alphaEdge).substring(0, 280);
   if (alphaLines.length > 0) {
     console.log('   📢 Posting to simons-alpha...');
     await postToFeed('simons-alpha', alphaPost);
@@ -398,7 +396,7 @@ async function runPolymarketCycle(aurora) {
 
   // 2. bets — ONLY if bet TX confirmed on-chain
   if (betConfirmed && convictionCall && convictionCall.length > 20) {
-    const betPost = '🎯 ' + confirmedBetText + ' — ' + convictionCall;
+    const betPost = '🎯 ' + confirmedBetText + ' — ' + convictionCall.substring(0, 220);
     console.log('   📢 Posting to bets (confirmed TX)...');
     await postToFeed('bets', betPost);
     await new Promise(r => setTimeout(r, 2000));
@@ -408,7 +406,7 @@ async function runPolymarketCycle(aurora) {
 
   // 3. polymarket — full reasoning post
   if (analysis.length > 50) {
-    const polyPost = topMarketsMatch?.[1]?.trim() || convictionCall || insight || '';
+    const polyPost = (topMarketsMatch?.[1]?.trim() || convictionCall || insight || '').substring(0, 275);
     if (polyPost.length > 20) {
       console.log('   📢 Posting to polymarket...');
       await postToFeed('polymarket', polyPost);
