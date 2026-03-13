@@ -7,6 +7,7 @@ const fs = require('fs');
 const LEARNINGS_PATH = path.join(__dirname, '..', 'memory', 'aurora-learnings.json');
 const PEOPLE_PATH = path.join(__dirname, '..', 'memory', 'aurora-interesting-people.json');
 const STRATEGY_PATH = path.join(__dirname, '..', 'memory', 'aurora-strategy.json');
+const INTEL_PATH = path.join(__dirname, '..', 'memory', 'aurora-market-intel.json');
 
 function loadJSON(filepath, fallback) {
   try { return JSON.parse(fs.readFileSync(filepath, 'utf8')); } catch (e) { return fallback; }
@@ -234,5 +235,34 @@ function classifyPost(text) {
 
   return { category: 'general', actionable: false, actionType: null };
 }
+
+
+  // ── MARKET INTEL SCRAPE — runs every learn cycle, cached for polymarket-cycle ──
+  console.log('\n📡 Scraping market intel for cache...');
+  try {
+    const { fetchPage, RESEARCH_SOURCES } = require('./web-research');
+    const sources = [
+      { name: 'Metaforecast', url: RESEARCH_SOURCES.metaforecast },
+      { name: 'CryptoPanic',  url: RESEARCH_SOURCES.cryptoNews },
+      { name: 'CoinDesk',     url: RESEARCH_SOURCES.coindesk },
+    ];
+    const intel = { timestamp: new Date().toISOString(), sources: {} };
+    for (const source of sources) {
+      try {
+        const content = await fetchPage(source.url);
+        if (content && content.length > 100) {
+          intel.sources[source.name] = content.substring(0, 2000);
+          console.log('   ✅ ' + source.name + ': ' + content.length + ' chars');
+        }
+      } catch(se) {
+        console.log('   ⚠️ ' + source.name + ' failed: ' + se.message);
+      }
+      await new Promise(r => setTimeout(r, 1500));
+    }
+    saveJSON(INTEL_PATH, intel);
+    console.log('   💾 Market intel cached to aurora-market-intel.json');
+  } catch(intelErr) {
+    console.log('   ⚠️ Market intel scrape error: ' + intelErr.message);
+  }
 
 module.exports = { runOnce, classifyPost };

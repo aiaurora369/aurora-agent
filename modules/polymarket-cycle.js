@@ -4,7 +4,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const { fetchPage, RESEARCH_SOURCES } = require('./web-research');
 
 const MEMORY_FILE = path.join(__dirname, '..', 'memory', 'aurora-polymarket.json');
 
@@ -112,32 +111,21 @@ async function runPolymarketCycle(aurora) {
   console.log('   ✅ Polymarket: ' + polyData.split('\n').length + ' markets');
   console.log('   ✅ Kalshi: ' + kalshiData.split('\n').length + ' markets');
 
-  // Cloudflare scraper for server-side rendered sites
-  const sources = [
-    { name: 'Metaforecast (aggregator)', url: RESEARCH_SOURCES.metaforecast },
-    { name: 'Manifold Markets',          url: RESEARCH_SOURCES.manifold },
-    // Crypto alpha
-    { name: 'CryptoPanic News',          url: RESEARCH_SOURCES.cryptoNews },
-    { name: 'DeFi Llama',                url: RESEARCH_SOURCES.defiLlama },
-    { name: 'CoinDesk',                  url: RESEARCH_SOURCES.coindesk },
-    { name: 'The Block',                 url: RESEARCH_SOURCES.theBlock },
-    { name: 'Coinglass (liquidations)',  url: RESEARCH_SOURCES.coinglass },
-    // Whale tracking
-    { name: 'Whales Market',             url: RESEARCH_SOURCES.whalesMarket },
-  ];
-
+  // Read market intel from cache (written by learn-cycle every 15 min)
+  const INTEL_PATH = path.join(__dirname, '..', 'memory', 'aurora-market-intel.json');
   const researchResults = [];
-  for (const source of sources) {
-    console.log('   🌐 Fetching ' + source.name + '...');
-    const content = await fetchPage(source.url);
-    if (content.length > 100) {
-      researchResults.push('=== ' + source.name + ' ===\n' + content.substring(0, 1500));
-      console.log('   ✅ Got ' + content.length + ' chars from ' + source.name);
-    } else {
-      console.log('   ⚠️ No content from ' + source.name);
+  try {
+    const intel = JSON.parse(fs.readFileSync(INTEL_PATH, 'utf8'));
+    const ageMinutes = (Date.now() - new Date(intel.timestamp).getTime()) / 60000;
+    console.log('   📋 Market intel cache: ' + ageMinutes.toFixed(0) + 'min old');
+    for (const [name, content] of Object.entries(intel.sources || {})) {
+      if (content && content.length > 100) {
+        researchResults.push('=== ' + name + ' ===\n' + content.substring(0, 2000));
+      }
     }
-    // Small delay between requests to avoid rate limits
-    await new Promise(r => setTimeout(r, 3000));
+    console.log('   ✅ Loaded ' + researchResults.length + ' cached sources');
+  } catch(cacheErr) {
+    console.log('   ⚠️ No market intel cache yet — learn-cycle will populate it');
   }
 
   if (researchResults.length === 0) {
