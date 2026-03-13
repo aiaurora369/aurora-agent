@@ -382,9 +382,11 @@ const TEMPLATES = {
   <text x="250" y="34" text-anchor="middle" font-size="16" font-weight="900" fill="#e0f0ff" font-family="Arial Black,sans-serif" stroke="#000" stroke-width="3" paint-order="stroke">${t1}</text>`;
       if (t2) svg += `<text x="250" y="54" text-anchor="middle" font-size="16" font-weight="900" fill="#e0f0ff" font-family="Arial Black,sans-serif" stroke="#000" stroke-width="3" paint-order="stroke">${t2}</text>`;
 
-      svg += `<!-- bottom text -->
-  <text x="250" y="${H-28}" text-anchor="middle" font-size="16" font-weight="900" fill="#ffffff" font-family="Arial Black,sans-serif" stroke="#000" stroke-width="3" paint-order="stroke">${b1}</text>`;
-      if (b2) svg += `<text x="250" y="${H-10}" text-anchor="middle" font-size="16" font-weight="900" fill="#ffffff" font-family="Arial Black,sans-serif" stroke="#000" stroke-width="3" paint-order="stroke">${b2}</text>`;
+      const bgH = b2 ? 58 : 36;
+      svg += `<!-- bottom text backing + text -->
+  <rect x="0" y="${H-bgH-6}" width="${W}" height="${bgH+8}" fill="#000000" opacity="0.45"/>
+  <text x="250" y="${H-28}" text-anchor="middle" font-size="16" font-weight="900" fill="#ffffff" font-family="Arial Black,sans-serif" stroke="#000" stroke-width="2" paint-order="stroke">${b1}</text>`;
+      if (b2) svg += `<text x="250" y="${H-10}" text-anchor="middle" font-size="16" font-weight="900" fill="#ffffff" font-family="Arial Black,sans-serif" stroke="#000" stroke-width="2" paint-order="stroke">${b2}</text>`;
 
       svg += `<text x="${W-8}" y="${H-6}" text-anchor="end" font-size="10" fill="#ffffff18">mfer #${mferId}</text>
 </svg>`;
@@ -820,8 +822,19 @@ function injectAuroraLandscape(svg, W, H, animated) {
   body = body.replace(/fill="#666688"/g, 'fill="#ffffff"');
   // Fix any remaining bgColor-based fills that might be light
   body = body.replace(/fill="#[ef][def][89a-f][89a-f][89a-f][89a-f]"/gi, 'fill="#1a1a2e"');
-  // Force any dark text fills to white so they're readable on dark landscape
-  body = body.replace(/<text([^>]*?)fill="#(?:111|222|333|444|555|666688|1a1a1a|0d0d0d)"([^>]*?)>/gi, '<text$1fill="#ffffff" stroke="#000000" stroke-width="2" paint-order="stroke"$2>');
+  // Force ALL text to white with black stroke on dark Aurora landscape
+  // Exception: text inside speech bubbles (fffff0 bg) keeps #111 — those are handled separately
+  body = body.replace(/<text([^>]*?)fill="#([0-9a-f]{3,6})"([^>]*?)>/gi, function(match, pre, hex, post) {
+    // Strip any existing stroke/paint-order to avoid "attribute redefined" XML error
+    pre = pre.replace(/s*stroke(?:-width|-opacity)?="[^"]*"/g, '').replace(/s*paint-order="[^"]*"/g, '');
+    post = post.replace(/s*stroke(?:-width|-opacity)?="[^"]*"/g, '').replace(/s*paint-order="[^"]*"/g, '');
+    // Keep white/light fills as-is
+    if (/^[ef][def][89a-f]/i.test(hex) || /^fff/i.test(hex) || /^ff[cde]/i.test(hex) || /^[89a-f]{3}$/i.test(hex)) return match;
+    // Keep very transparent fills (watermarks)
+    if (post.includes('opacity') || pre.includes('opacity="0.')) return match;
+    // Force everything else to white with stroke
+    return '<text' + pre + 'fill="#ffffff" stroke="#000000" stroke-width="2.5" paint-order="stroke"' + post + '>';
+  });
 
   // Add smoke animation if mfer has cigarette and animated
   if (animated && svg.includes('ff6b35')) {
@@ -971,7 +984,7 @@ async function runMferMeme(aurora) {
                     concept.texts.bottom || concept.texts.approve || 'mfer meme';
 
     console.log(`  💬 Caption: ${caption.substring(0, 60)}`);
-    const animated = Math.random() < 0.5;
+    const animated = Math.random() < 1.0;
     const wMatch = svg.match(/width="(\d+)"/);
     const hMatch = svg.match(/height="(\d+)"/);
     const svgW = wMatch ? parseInt(wMatch[1]) : 500;
@@ -1006,7 +1019,7 @@ async function composeMferMeme(aurora) {
     let svg = renderTemplate(concept.template, concept.texts, concept.mferTraits, mferTraits2);
     if (!svg) return { valid: false };
 
-    const animated = Math.random() < 0.5;
+    const animated = Math.random() < 1.0;
     const W = 500, H = 420; // default canvas size for compose
     const svgFinal = injectAuroraLandscape(svg, W, H, animated);
     const mood = concept.texts.caption || concept.texts.text || concept.texts.me || concept.texts.bottom || 'mfer';

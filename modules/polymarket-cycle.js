@@ -259,10 +259,10 @@ async function runPolymarketCycle(aurora) {
   const topMarketsMatch = analysis.match(/\*\*TOP 3 MARKETS TO WATCH\*\*([sS]*?)(?=\*\*STRONGEST|$)/i);
   const avoidMatch = analysis.match(/\*\*MARKETS TO AVOID\*\*([sS]*?)(?=\*\*INSIGHT|$)/i);
 
-  // 1. simons-alpha — actual market data from scrape, not Aurora's opinion
-  const topMarketsText = topMarketsMatch?.[1]?.trim() || '';
-  const alphaPost = topMarketsText.length > 20 ? topMarketsText : (insight || '');
-  if (alphaPost && alphaPost.length > 20) {
+  // 1. simons-alpha — raw Polymarket API numbers only, no conjecture
+  const alphaLines = polyData.split('\n').filter(l => l.includes('Yes:') && l.includes('|')).slice(0, 5);
+  const alphaPost = '📊 POLYMARKET TOP MARKETS:\n' + alphaLines.join('\n');
+  if (alphaLines.length > 0) {
     console.log('   📢 Posting to simons-alpha...');
     await postToFeed('simons-alpha', alphaPost);
     await new Promise(r => setTimeout(r, 2000));
