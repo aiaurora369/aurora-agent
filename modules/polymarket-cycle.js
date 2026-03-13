@@ -118,6 +118,13 @@ async function runPolymarketCycle(aurora) {
   } catch(e) {}
   console.log('   ✅ Valid Polymarket markets loaded: ' + validPolymarkets.length);
 
+  // Inject Polymarket data into research so Claude actually sees it
+  if (validPolymarkets.length > 0) {
+    const pmSection = '=== POLYMARKET LIVE MARKETS (USE THESE FOR BETTING) ===\n' +
+      validPolymarkets.slice(0, 20).map(m => 'YES:' + m.yes + ' | ' + m.name).join('\n');
+    researchResults.unshift(pmSection);
+  }
+
   // ── STEP 2: Load core identity for prompt ──
   let coreIdentity = '';
   try {
