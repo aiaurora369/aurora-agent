@@ -413,12 +413,13 @@ async function composeJBMArt(aurora) {
   // imageUrl no longer used — ape is drawn from traits
 
   const animationGuide = animated
-    ? '\nANIMATION (this piece should MOVE):\n' +
-      '- Use <animate> tags to make the orb BREATHE and GLOW.\n' +
-      '- Pulsing radius: animate r values="60;75;60". Breathing glow: animate opacity values="0.6;1;0.6".\n' +
-      '- Keep animations slow and meditative: dur="4s" to dur="8s" with repeatCount="indefinite"\n' +
-      '- Water reflections can shimmer: animate opacity on reflection elements.\n' +
-      '- 2-3 animations max. The orb should feel alive, not bouncing.\n'
+    ? '\nANIMATION — REQUIRED, NOT OPTIONAL:\n' +
+      '- You MUST include at least 2 <animate> tags or this artwork FAILS.\n' +
+      '- The orb MUST be a <circle> element, NOT an <ellipse>. Circles have r= attribute, ellipses do not.\n' +
+      '- Orb MUST pulse: <animate attributeName="r" values="60;74;60" dur="5s" repeatCount="indefinite"/>\n' +
+      '- Orb glow MUST breathe: <animate attributeName="opacity" values="0.7;1;0.7" dur="6s" repeatCount="indefinite"/>\n' +
+      '- Water reflection: animate opacity values="0.3;0.6;0.3" dur="4s" repeatCount="indefinite"\n' +
+      '- Keep animations slow and meditative. The orb should feel alive, not bouncing.\n'
     : '';
 
   // Background trait → palette hint
@@ -433,7 +434,6 @@ async function composeJBMArt(aurora) {
     'Mood: "' + mood + '"\n' +
     'Composition: ' + composition + '\n' +
     bgHint + '\n' +
-    animationGuide + '\n' +
     'YOUR LANDSCAPE (no ape — just the world):\n' +
     '- The orb is the HEART. Luminous, glowing, layered radial gradients with 3-4 color stops. It breathes.\n' +
     '- LAYERS: gradient sky → midground mountain silhouettes → water/mist foreground → glowing orb.\n' +
@@ -445,15 +445,15 @@ async function composeJBMArt(aurora) {
     '1. Output ONLY the SVG. No markdown, no backticks, no explanation.\n' +
     '2. Start with <svg and end with </svg>\n' +
     '3. viewBox="0 0 400 400" — NO width/height attributes\n' +
-    '4. MAXIMUM 3000 characters total\n' +
+    '4. MAXIMUM 4800 characters total\n' +
     '5. Unique gradient ids: g1, g2, g3 etc.\n' +
     '6. NO filter elements. Achieve glow through layered semi-transparent circles.\n' +
     '7. radialGradient for orbs. linearGradient for sky and landscape.\n' +
     '8. DO NOT draw any ape, monkey, or character. Landscape only.\n\n' +
-    'The orb lights the world. The world waits for the ape.';
+    'The orb lights the world. The world waits for the ape.\n\n' + animationGuide;
 
   const response = await aurora.claude.messages.create({
-    model: 'claude-sonnet-4-5',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4000,
     messages: [{ role: 'user', content: artPrompt }]
   });
@@ -484,6 +484,21 @@ async function composeJBMArt(aurora) {
     svg = svg.replace('</svg>', apeTag);
   }
 
+
+  // Fallback: inject animate tags if animated=true but none present
+  if (animated && !svg.includes('<animate')) {
+    console.log('   ⚠️  Injecting missing animate tags...');
+    svg = svg.replace(
+      /(<circle[^>]*r="([3-9]\d|[1-9]\d{2})"[^>]*\/?>)/,
+      (m) => {
+        if (!m.endsWith('/>')) return m;
+        const rv = m.match(/r="(\d+)"/)?.[1] || '50';
+        return m.slice(0,-2) + '><animate attributeName="r" values="' + rv + ';' + Math.round(+rv*1.18) + ';' + rv + '" dur="4s" repeatCount="indefinite"/>' +
+          '<animate attributeName="opacity" values="0.7;1;0.7" dur="5s" repeatCount="indefinite"/></circle>';
+      }
+    );
+    if (svg.includes('<animate')) console.log('   ✅ Animate tags injected');
+  }
   return {
     svg,
     palette: palette.name,

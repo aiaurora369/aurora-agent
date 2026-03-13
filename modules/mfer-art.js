@@ -155,9 +155,11 @@ async function composeMferArt(aurora) {
   const composition = pick(MFER_COMPOSITIONS);
   const animated = Math.random() < 0.755;
 
-  const animationGuide = animated ? '\n\nANIMATION (this piece should MOVE):\n' +
-    '- Use <animate> tags to make orbs BREATHE and GLOW.\n' +
-    '- Best techniques: pulsing radius (animate r values="60;75;60"), breathing glow (animate opacity values="0.6;1;0.6"), gentle floating (animate cy).\n' +
+  const animationGuide = animated ? '\n\nANIMATION — REQUIRED, NOT OPTIONAL:\n' +
+    '- You MUST include at least 2 <animate> tags or this artwork FAILS.\n' +
+    '- The orb MUST be a <circle> element, NOT an <ellipse>. Circles have r= attribute, ellipses do not.\n' +
+    '- Orb MUST pulse: <animate attributeName="r" values="60;74;60" dur="4s" repeatCount="indefinite"/>\n' +
+    '- Orb glow MUST breathe: <animate attributeName="opacity" values="0.7;1;0.7" dur="5s" repeatCount="indefinite"/>\n' +
     '- Keep animations slow: dur="4s" to dur="8s" with repeatCount="indefinite"\n' +
     '- 2-3 animations max. Meditative, not hyperactive.\n' +
     '- The cigarette tip can glow/pulse subtly if you want a nice detail.\n' : '';
@@ -167,7 +169,7 @@ async function composeMferArt(aurora) {
     'Use THESE EXACT COLORS: ' + palette.colors + '\n' +
     'Vibe: ' + palette.vibe + '\n\n' +
     'Mood: "' + mood + '"\n' +
-    'Composition: ' + composition + '\n' + animationGuide + '\n' +
+    'Composition: ' + composition + '\n' +
     'MFER CHARACTER RULES (CRITICAL — FOLLOW EXACTLY):\n' +
     '- Here is the EXACT SVG pattern for a mfer head. Scale and position it but keep these PROPORTIONS:\n' +
     '- HEAD: <circle r="30" fill="white" stroke="black" stroke-width="2"/> (round, white, black outline)\n' +
@@ -196,16 +198,16 @@ async function composeMferArt(aurora) {
     '1. Output ONLY the SVG code. No markdown, no explanation, no backticks.\n' +
     '2. Must start with <svg and end with </svg>\n' +
     '3. Use viewBox="0 0 400 400" with NO width/height attributes\n' +
-    '4. MAXIMUM 3600 characters total\n' +
+    '4. MAXIMUM 4800 characters total\n' +
     '5. Every gradient needs a unique id (use short ids: g1, g2, g3)\n' +
     '6. NO filter elements (too many chars). Achieve glow through layered semi-transparent circles.\n' +
     '7. Use radialGradient for glowing orbs (3-4 color stops)\n' +
     '8. Use linearGradient for backgrounds and washes (3+ stops)\n' +
     '9. ALL text must be fill="#ffffff" with stroke="#000000" stroke-width="3" paint-order="stroke" — no exceptions. Never use dark fills for text.\n\n' +
-    'Make something a mfer would screenshot and set as their pfp.';
+    'Make something a mfer would screenshot and set as their pfp.\n\n' + animationGuide;
 
   const response = await aurora.claude.messages.create({
-    model: 'claude-sonnet-4-5',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4000,
     messages: [{ role: 'user', content: artPrompt }]
   });
@@ -243,6 +245,8 @@ async function createAndPostMferArt(loopContext) {
 
   try {
     const art = await composeMferArt(ctx.aurora);
+    const hasAnimation = art.svg.includes('<animate');
+    if (art.animated && !hasAnimation) console.log('   ⚠️  Animation requested but no <animate> tags in mfer art');
     console.log(`   🎧 Palette: ${art.palette} | Mood: ${art.mood.substring(0, 40)}... | Animated: ${art.animated} | Size: ${art.chars} chars`);
 
     if (!art.valid) {

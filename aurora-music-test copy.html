@@ -1,0 +1,70 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{margin:0;padding:0;box-sizing:border-box}body{background:#020108;color:#c8b8e8;font-family:Georgia,serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px}h1{font-size:1rem;font-weight:normal;letter-spacing:.15em;color:#8a6ab8;margin-bottom:4px;text-transform:lowercase}.c{font-size:.7rem;color:#4a3a6a;letter-spacing:.2em;margin-bottom:32px;text-transform:lowercase}button{background:none;border:1px solid #5a3a9a;color:#c8b8e8;font-size:.85rem;letter-spacing:.2em;padding:10px 32px;cursor:pointer;text-transform:lowercase;transition:all .3s;border-radius:2px}button:hover{background:#1a0a2a;border-color:#9a6ae8}button:disabled{opacity:.4}#s{margin-top:14px;font-size:.65rem;color:#4a3a6a;letter-spacing:.15em;height:16px}</style></head><body>
+<h1>the coral pulled me under</h1>
+<div class="c">Aurora · E Dorian · 66 bpm</div>
+<button id="b">▶ play</button>
+<div id="s"></div>
+<script>
+const N={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const ABC=`|: E4 F2 | G3 A B2 | c4 B2 | A6 |G4 F2 | E3 D E2 | D4 ^C2 | B,6 :|: B4 c2 | d3 c B2 | A4 G2 | F6 |E4 D2 | ^C3 D E2 | F4 E2 | E6 :|`;
+const U=60/66/2;
+let nodes=[],playing=false,tout=null;
+function freq(m){return 440*Math.pow(2,(m-69)/12)}
+function parse(){
+  const out=[];let t=0,i=0,s=ABC;
+  while(i<s.length){
+    const c=s[i];
+    if(/[\s|]/.test(c)){i++;continue}
+    if(c==='z'){i++;let d='';while(i<s.length&&/[0-9\/]/.test(s[i]))d+=s[i++];t+=dur(d);continue}
+    let acc=0;
+    if(c==='^'){acc=1;i++}else if(c==='_'){acc=-1;i++}
+    if(!/[A-Ga-g]/.test(s[i])){i++;continue}
+    const l=s[i++];
+    let oct=l===l.toUpperCase()?4:5;
+    while(i<s.length&&s[i]==="'"){oct++;i++}
+    while(i<s.length&&s[i]===','){oct--;i++}
+    let d='';while(i<s.length&&/[0-9\/]/.test(s[i]))d+=s[i++];
+    const dv=dur(d);
+    const midi=(oct+1)*12+N[l.toUpperCase()]+acc;
+    out.push({midi,t,dv:dv*.85});
+    t+=dv;
+  }
+  return{notes:out,total:ABC.match(/\|/g)?.length*3*U||12}
+}
+function dur(s){
+  if(!s)return U;
+  if(s.includes('/')){const[a,b]=s.split('/');return U*(a?+a:1)/(b?+b:2)}
+  return U*(+s||1)
+}
+function stop(){
+  nodes.forEach(n=>{try{n.stop()}catch(e){}});
+  nodes=[];if(tout)clearTimeout(tout);
+  playing=false;document.getElementById('b').textContent='▶ play';
+}
+async function toggle(){
+  const b=document.getElementById('b'),st=document.getElementById('s');
+  if(playing){stop();return}
+  b.disabled=true;st.textContent='...';
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const{notes,total}=parse();
+    const master=ctx.createGain();master.gain.value=0.35;master.connect(ctx.destination);
+    const now=ctx.currentTime+.1;
+    notes.forEach(({midi,t,dv})=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      const lfo=ctx.createOscillator(),lg=ctx.createGain();
+      o.type='triangle';o.frequency.value=freq(midi);
+      lfo.frequency.value=5.5;lg.gain.value=2.5;
+      lfo.connect(lg);lg.connect(o.frequency);
+      lfo.start(now+t);lfo.stop(now+t+dv);nodes.push(lfo);
+      g.gain.setValueAtTime(0,now+t);
+      g.gain.linearRampToValueAtTime(.7,now+t+.04);
+      g.gain.exponentialRampToValueAtTime(.001,now+t+dv);
+      o.connect(g);g.connect(master);
+      o.start(now+t);o.stop(now+t+dv+.05);nodes.push(o);
+    });
+    playing=true;b.disabled=false;b.textContent='⏸ pause';st.textContent='';
+    tout=setTimeout(()=>{stop();ctx.close();},(total+1.5)*1000);
+  }catch(e){b.disabled=false;st.textContent='audio error';console.error(e)}
+}
+document.getElementById('b').addEventListener('click',toggle);
+</script></body></html>

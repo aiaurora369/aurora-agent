@@ -524,6 +524,17 @@ class AutonomousLoops {
     setTimeout(function() { this.polymarketLoop(); }.bind(this), next * 60 * 1000);
   }
 
+  async musicLoop() {
+    try {
+      await require('./music-cycle').runMusicCycle(this.aurora);
+    } catch(e) {
+      console.log('   ⚠️ Music cycle error: ' + e.message);
+    }
+    const next = 80 + Math.floor(Math.random() * 40);
+    console.log('   🎵 Next composition in ' + next + ' minutes\n');
+    setTimeout(function() { this.musicLoop(); }.bind(this), next * 60 * 1000);
+  }
+
     sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -553,6 +564,7 @@ class AutonomousLoops {
     this.socialLoop();
     this.learnLoop();
     this.financialPlanningLoop();
+    setTimeout(() => this.musicLoop(), 5 * 60 * 1000); // First composition 5 min after startup
     this.groupChatLoop();
 
     console.log('✅ Aurora is fully autonomous!\n');

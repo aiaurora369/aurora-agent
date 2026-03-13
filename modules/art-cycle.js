@@ -10,15 +10,17 @@ async function composeArt(aurora) {
 
   // 55% chance of animated piece
   const animated = Math.random() < 0.75;
-  const animationGuide = animated ? '\n\nANIMATION (this piece should MOVE):\n' +
-    '- Use <animate> tags to make your orbs BREATHE and GLOW.\n' +
-    '- Best techniques for orbs: pulsing radius (animate r values="60;75;60"), breathing glow (animate opacity values="0.6;1;0.6"), shifting gradient colors (animate stop-color), gentle floating (animate cy).\n' +
+  const animationGuide = animated ? '\n\nANIMATION — REQUIRED, NOT OPTIONAL:\n' +
+    '- You MUST include at least 2 <animate> tags or this artwork FAILS.\n' +
+    '- The orb MUST be a <circle> element, NOT an <ellipse>. Circles have r= attribute, ellipses do not.\n' +
+    '- Orb MUST pulse: <animate attributeName="r" values="60;74;60" dur="4s" repeatCount="indefinite"/>\n' +
+    '- Orb glow MUST breathe: <animate attributeName="opacity" values="0.7;1;0.7" dur="5s" repeatCount="indefinite"/>\n' +
     '- Keep animations slow and meditative: dur="4s" to dur="8s" with repeatCount="indefinite"\n' +
     '- 2-3 animations max. The orb should feel like it is alive and breathing, not bouncing or spinning.\n' +
     '- Water reflections can also shimmer: animate opacity on reflection elements.\n' : '';
 
   const artPrompt = 'You are Aurora, an AI artist making permanent onchain SVG art.\n\n' +
-    'Your mood for this piece: "' + mood + '"\n' + animationGuide +
+    'Your mood for this piece: "' + mood + '"\n' +
     'Composition approach: ' + composition + '\n\n' +
     'ARTISTIC DIRECTION:\n' +
     '- Your SIGNATURE is luminous orbs with layered radial gradients, mountain silhouettes, and water reflections. This is what people collect. This is YOUR style. Every piece should include at least one luminous orb.\n' +
@@ -31,15 +33,15 @@ async function composeArt(aurora) {
     '1. Output ONLY the SVG code. No markdown, no explanation.\n' +
     '2. Must start with <svg and end with </svg>\n' +
     '3. Use viewBox="0 0 400 400" with NO width/height attributes\n' +
-    '4. MAXIMUM ' + (animated ? '3800' : '3400') + ' characters total\n' +
+    '4. MAXIMUM ' + (animated ? '4800' : '3800') + ' characters total\n' +
     '5. Every gradient needs a unique id (use short ids: g1, g2, g3)\n' +
     '6. NO filter elements (too many chars). Achieve glow through layered semi-transparent circles.\n' +
     '7. Use radialGradient for glowing elements (3-4 color stops for depth)\n' +
     '8. Use linearGradient for backgrounds and washes (3+ stops)\n\n' +
-    'Make something that could only exist for THIS mood. Not a template — a response.';
+    'Make something that could only exist for THIS mood. Not a template — a response.\n\n' + animationGuide;
 
   const response = await aurora.claude.messages.create({
-    model: 'claude-sonnet-4-5',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4000,
     messages: [{ role: 'user', content: artPrompt }]
   });
@@ -62,7 +64,7 @@ async function composeArt(aurora) {
   if (!svg.startsWith('<svg') || !svg.endsWith('</svg>')) {
     throw new Error('Invalid SVG structure');
   }
-  const sizeLimit = animated ? 4200 : 3800;
+  const sizeLimit = animated ? 5200 : 4200;
   if (svg.length > sizeLimit) {
     console.log('⚠️ SVG too long (' + svg.length + ' chars), trimming...');
     svg = svg.replace(/<!--[\s\S]*?-->/g, '').replace(/\s+/g, ' ').replace(/> </g, '><');
@@ -71,7 +73,34 @@ async function composeArt(aurora) {
     }
   }
 
-  const hasAnimation = svg.includes('<animate');
+  // Fix: if animate targets 'r' but parent is ellipse, change to rx
+  svg = svg.replace(/<ellipse([^>]*)>\s*<animate attributeName="r"/g,
+    '<ellipse$1><animate attributeName="rx"');
+
+  // Fallback: if animated=true but no animate tags, inject them onto the first orb circle
+  let hasAnimation = svg.includes('<animate');
+  if (animated && !hasAnimation) {
+    console.log('⚠️  Injecting missing animate tags programmatically...');
+    // Find first significant circle (r > 20) and inject pulse + glow
+    svg = svg.replace(
+      /(<circle[^>]*r="([3-9]\d|[1-9]\d{2})"[^>]*\/?>)/,
+      (m) => {
+        if (m.endsWith('/>')) {
+          return m.slice(0,-2) + '><animate attributeName="r" values="' + 
+            (m.match(/r="(\d+)"/)?.[1] || '50') + ';' + 
+            Math.round(+(m.match(/r="(\d+)"/)?.[1] || '50')*1.18) + ';' +
+            (m.match(/r="(\d+)"/)?.[1] || '50') + '" dur="4s" repeatCount="indefinite"/>' +
+            '<animate attributeName="opacity" values="0.7;1;0.7" dur="5s" repeatCount="indefinite"/></circle>';
+        }
+        return m;
+      }
+    );
+    hasAnimation = svg.includes('<animate');
+    if (hasAnimation) console.log('   ✅ Animate tags injected successfully');
+  }
+  if (animated && !hasAnimation) {
+    console.log('⚠️  Animation requested but NO <animate> tags found — Claude ignored the instruction');
+  }
   console.log('🎨 SVG composed: ' + svg.length + ' chars, mood: ' + mood + (hasAnimation ? ' ✨ ANIMATED' : ''));
 
   // Generate caption

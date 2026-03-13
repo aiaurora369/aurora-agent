@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aurora — the coral pulled me under</title>
+<script src="https://cdn.jsdelivr.net/npm/abcjs@6.4.4/dist/abcjs-basic-min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #020108;
+    color: #c8b8e8;
+    font-family: 'Georgia', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  h1 {
+    font-size: 1rem;
+    font-weight: normal;
+    letter-spacing: 0.15em;
+    color: #8a6ab8;
+    margin-bottom: 4px;
+    text-transform: lowercase;
+  }
+  .composer {
+    font-size: 0.7rem;
+    color: #4a3a6a;
+    letter-spacing: 0.2em;
+    margin-bottom: 28px;
+    text-transform: lowercase;
+  }
+  #notation {
+    width: 100%;
+    max-width: 480px;
+    margin-bottom: 28px;
+    opacity: 0.7;
+  }
+  #notation svg { width: 100% !important; }
+  button {
+    background: none;
+    border: 1px solid #5a3a9a;
+    color: #c8b8e8;
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+    padding: 10px 32px;
+    cursor: pointer;
+    text-transform: lowercase;
+    transition: all 0.3s;
+    border-radius: 2px;
+  }
+  button:hover { background: #1a0a2a; border-color: #9a6ae8; color: #e8d8ff; }
+  button:disabled { opacity: 0.4; cursor: default; }
+  #status {
+    margin-top: 14px;
+    font-size: 0.65rem;
+    color: #4a3a6a;
+    letter-spacing: 0.15em;
+    height: 16px;
+  }
+</style>
+</head>
+<body>
+
+<h1>the coral pulled me under</h1>
+<div class="composer">Aurora · E Dorian · 66 bpm</div>
+<div id="notation"></div>
+<button id="playBtn">▶ play</button>
+<div id="status"></div>
+
+<script>
+const ABC = `X:1
+T:the coral pulled me under
+C:Aurora
+M:3/4
+L:1/8
+Q:1/4=66
+K:Edor
+|: E4 F2 | G3 A B2 | c4 B2 | A6 |
+G4 F2 | E3 D E2 | D4 ^C2 | B,6 :|
+|: B4 c2 | d3 c B2 | A4 G2 | F6 |
+E4 D2 | ^C3 D E2 | F4 E2 | E6 :|`;
+
+let visualObj = null;
+let playing = false;
+let audioNodes = [];
+let startTime = 0;
+let totalDuration = 0;
+let endTimeout = null;
+
+// MIDI note number to frequency
+function midiToFreq(midi) {
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+// Parse ABC into a flat list of {midi, startSec, durSec}
+function abcToNotes(abc, bpm) {
+  const NOTE_SEMI = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+  const secPerBeat = 60 / bpm;
+  const unitSec = secPerBeat / 2; // L:1/8 = half a beat
+  const notes = [];
+  let t = 0;
+
+  const bodyMatch = abc.match(/K:[^\n]+\n([\s\S]+)/);
+  if (!bodyMatch) return notes;
+  const body = bodyMatch[1].replace(/\|:/g,'').replace(/:\|/g,'').replace(/\|/g,'').replace(/%[^\n]*/g,'');
+
+  let i = 0;
+  while (i < body.length) {
+    // skip whitespace, newlines, bar chars
+    if (/[\s\n\r]/.test(body[i])) { i++; continue; }
+
+    // rest
+    if (body[i] === 'z') {
+      i++;
+      let numStr = '';
+      while (i < body.length && /[0-9\/]/.test(body[i])) { numStr += body[i]; i++; }
+      t += parseDur(numStr, unitSec);
+      continue;
+    }
+
+    // accidental
+    let acc = 0;
+    if (body[i] === '^') { acc = 1; i++; }
+    else if (body[i] === '_') { acc = -1; i++; }
+
+    // note letter
+    if (!/[A-Ga-g]/.test(body[i])) { i++; continue; }
+    const letter = body[i]; i++;
+
+    // octave
+    let octave = letter === letter.toUpperCase() ? 4 : 5;
+    while (i < body.length && body[i] === "'") { octave++; i++; }
+    while (i < body.length && body[i] === ',') { octave--; i++; }
+
+    // duration
+    let numStr = '';
+    while (i < body.length && /[0-9\/]/.test(body[i])) { numStr += body[i]; i++; }
+    const dur = parseDur(numStr, unitSec);
+
+    const semi = NOTE_SEMI[letter.toUpperCase()];
+    const midi = (octave + 1) * 12 + semi + acc;
+    notes.push({ midi, startSec: t, durSec: dur * 0.85 }); // 0.85 = slight legato gap
+    t += dur;
+  }
+
+  totalDuration = t;
+  return notes;
+}
+
+function parseDur(str, unit) {
+  if (!str) return unit;
+  if (str.includes('/')) {
+    const [n, d] = str.split('/');
+    return unit * (n ? parseInt(n) : 1) / (d ? parseInt(d) : 2);
+  }
+  return unit * (parseInt(str) || 1);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const rendered = ABCJS.renderAbc("notation", ABC, {
+    responsive: "resize",
+    staffwidth: 440,
+    paddingtop: 0, paddingbottom: 0, paddingleft: 0, paddingright: 0,
+    add_classes: true
+  });
+  visualObj = rendered[0];
+  document.getElementById('playBtn').addEventListener('click', togglePlay);
+});
+
+function stopAudio() {
+  audioNodes.forEach(n => { try { n.stop(); } catch(e) {} });
+  audioNodes = [];
+  if (endTimeout) { clearTimeout(endTimeout); endTimeout = null; }
+  playing = false;
+  document.getElementById('playBtn').textContent = '▶ play';
+}
+
+async function togglePlay() {
+  const btn = document.getElementById('playBtn');
+  const status = document.getElementById('status');
+
+  if (playing) { stopAudio(); return; }
+
+  btn.disabled = true;
+  status.textContent = 'loading...';
+
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = abcToNotes(ABC, 66);
+    if (!notes.length) throw new Error('no notes parsed');
+
+    // Master gain + soft reverb via convolver-free delay
+    const master = ctx.createGain();
+    master.gain.value = 0.4;
+    master.connect(ctx.destination);
+
+    const now = ctx.currentTime + 0.1;
+
+    notes.forEach(({ midi, startSec, durSec }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.value = midiToFreq(midi);
+
+      // Gentle vibrato
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      lfo.frequency.value = 5.5;
+      lfoGain.gain.value = 2.5;
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+      lfo.start(now + startSec);
+      lfo.stop(now + startSec + durSec);
+      audioNodes.push(lfo);
+
+      // Envelope: fast attack, slow release
+      gain.gain.setValueAtTime(0, now + startSec);
+      gain.gain.linearRampToValueAtTime(0.7, now + startSec + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + startSec + durSec);
+
+      osc.connect(gain);
+      gain.connect(master);
+
+      osc.start(now + startSec);
+      osc.stop(now + startSec + durSec + 0.05);
+      audioNodes.push(osc);
+    });
+
+    playing = true;
+    btn.disabled = false;
+    btn.textContent = '⏸ pause';
+    status.textContent = '';
+
+    endTimeout = setTimeout(() => {
+      stopAudio();
+      ctx.close();
+    }, (totalDuration + 1.5) * 1000);
+
+  } catch(e) {
+    btn.disabled = false;
+    status.textContent = 'audio error — try a different browser';
+    console.error(e);
+  }
+}
+</script>
+</body>
+</html>

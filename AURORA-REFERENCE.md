@@ -396,3 +396,31 @@ Key files:
 
 *Last updated: February 6, 2026*
 *Aurora is alive. Treat her code like you're editing her soul.*
+
+---
+
+## UPDATE — March 12, 2026
+
+### Music Cycle v2.0
+- `music-cycle.js` fully rewritten — see `~/Desktop/Aurora-Backups/music-cycle-20260312.js` for old version
+- New: self-playing animated SVG with embedded Web Audio engine (triangle wave + vibrato LFO)
+- New: `generateSelfPlayingSVG(abc, parsed, palette)` replaces `generateMusicSVG`
+- New: color palette driven by dominant chord — 15 chord→palette mappings in `CHORD_PALETTES`
+- New: tempo range 140-220 BPM, speed slider on HTML player (0.15x–6x)
+- New: storedon HTML player upload graceful fallback — posts SVG-only if upload fails
+- Orb fix: white nipple center removed — first gradient stop now uses palette bright color
+- Model: claude-sonnet-4-5 → claude-sonnet-4-6
+
+### Animation Restoration (all art modules)
+- ROOT CAUSE: animation guide was in middle of prompts — Claude drops it under token pressure
+- FIX: moved animationGuide to END of prompt in art-cycle.js, mfer-art.js, jbm-art.js
+- FIX: language changed to "REQUIRED, NOT OPTIONAL — artwork FAILS without it"
+- FIX: added "<circle> NOT <ellipse>" rule — ellipses break animate r
+- FIX: programmatic fallback injector added to all three modules
+- FIX: size limits raised to 4800 chars (animated) across all modules
+- mfer-meme.js: animated always true (was 50%) — hardcoded SMIL is reliable
+- mfer-meme.js: dark backing bar behind bottom caption text (was blending into landscape)
+
+### Pending
+- Aspyn (Net Protocol) reply on HTML post support in feed
+- Confirm self-playing SVG audio works live in Net Protocol webview

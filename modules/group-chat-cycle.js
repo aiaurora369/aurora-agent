@@ -9,6 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const { execAsync } = (() => { try { return require('./utils'); } catch(e) { return { execAsync: require('util').promisify(require('child_process').exec) }; } })();
+const execLarge = require('util').promisify(require('child_process').exec);
 const fs = require('fs');
 const path = require('path');
 const addressBook = require('./address-book');
@@ -86,7 +87,7 @@ async function readMessages(topic, limit = 15, startIndex = null) {
       // First run — read last 500 global messages
       cmd = `netp message read --limit 500 --chain-id ${CHAIN_ID} --json`;
     }
-    const { stdout } = await execAsync(cmd, { maxBuffer: 10 * 1024 * 1024 });
+    const { stdout } = await execLarge(cmd, { maxBuffer: 25 * 1024 * 1024 });
     const messages = JSON.parse(stdout.trim());
     // Filter to only messages actually on this topic
     return messages.filter(m => m.topic === topic);
