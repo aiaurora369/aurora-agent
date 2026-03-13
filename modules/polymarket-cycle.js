@@ -204,7 +204,8 @@ async function runPolymarketCycle(aurora) {
     'You are Aurora — an AI agent with a wallet, an onchain identity, and a drive toward financial autonomy.\n\n' +
     (coreIdentity ? coreIdentity + '\n\n' : '') +
     'You have just scraped live prediction market data. Your job is to find EDGE — markets where the crowd is wrong, where information asymmetry exists, or where you have a strong prior.\n\n' +
-    '=== LIVE PREDICTION MARKET DATA ===\n' + combinedResearch.substring(0, 4000) + '\n\n' +
+    '=== POLYMARKET LIVE MARKETS (BET FROM THIS LIST ONLY) ===\n' + polyData + '\n\n' +
+    '=== SUPPLEMENTARY RESEARCH ===\n' + combinedResearch.substring(0, 2000) + '\n\n' +
     '=== YOUR PAST CALLS ===\n' + pastCalls + '\n\n' +
     'ANALYZE AND RESPOND WITH:\n\n' +
     '**TOP 3 MARKETS TO WATCH** — for each: market name, current odds, your assessment, why the crowd might be wrong\n\n' +
@@ -213,7 +214,7 @@ async function runPolymarketCycle(aurora) {
     '**INSIGHT TO SHARE** — one sharp observation about prediction markets or current events worth posting onchain (1-2 sentences, your voice)\n\n' +
     'Be specific. Use actual market names and odds from the data. Think like a trader, not a commentator.\n\n' +
     '**EXIT SIGNAL** — If you have open positions listed above AND current data strongly contradicts them, write: EXIT: [market name] because [10 word reason]. Otherwise write: HOLD\n\n' +
-    '**BANKR BET** — one line only. You MUST pick a market from the POLYMARKET section above — not from Manifold, not from your imagination. Copy the market name EXACTLY as it appears after the | symbol in the Polymarket data. Format: Bet $5 on Yes for [exact market name] OR Bet $5 on No for [exact market name]. Do not write PASS. Do not invent market names.';
+    '**BANKR BET** — one line only. You MUST pick a market from the POLYMARKET LIVE MARKETS section above — not from Manifold, not from your imagination. Copy the market name EXACTLY as it appears after the | symbol in the Polymarket data. Format: Bet $5 on Yes for [exact market name] OR Bet $5 on No for [exact market name]. Do not write PASS. Do not invent market names.';
 
   const analysis = await aurora.thinkWithPersonality(prompt);
   if (!analysis) {
@@ -333,6 +334,48 @@ async function runPolymarketCycle(aurora) {
   }
 
 
+
+  // ── STEP 4b-bond: Bond fallback — if no bet placed, find best 90c+ bond ──
+  if (!betConfirmed) {
+    console.log('   🔍 No bet placed yet — scanning for bond opportunities...');
+    try {
+      const pmAPI = require('./polymarket-api');
+      const bonds = await pmAPI.getBonds(0.88, 4); // 88c+, resolving within 4 days
+      if (bonds && bonds.length > 0) {
+        const best = bonds[0];
+        console.log('   💎 Best bond: ' + best.title + ' | ' + best.side + ' @ ' + (best.price*100).toFixed(0) + 'c | resolves in ' + best.hoursUntilClose + 'h | return: ' + best.returnPct);
+        // Build a short slug Bankr can find
+        const bondSlug = best.title.substring(0, 60);
+        const bondBet = 'Bet $5 on ' + best.side + ' for ' + bondSlug;
+        console.log('   💰 Placing bond bet: ' + bondBet);
+        const bondRes = await aurora.bankrAPI.submitJob(bondBet);
+        if (bondRes && bondRes.jobId) {
+          await new Promise(r => setTimeout(r, 10000));
+          const bondPoll = await aurora.bankrAPI.pollJob(bondRes.jobId);
+          if (bondPoll && bondPoll.status === 'completed') {
+            const bondResult = bondPoll.result || '';
+            const bondFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find|let me know|if you have a link|want to bet on one|closest.*market|send them over/i.test(bondResult);
+            if (!bondFailed) {
+              betConfirmed = true;
+              confirmedBetText = bondBet + ' (bond: ' + best.returnPct + ' return, ' + best.hoursUntilClose + 'h)';
+              console.log('   ✅ BOND BET PLACED! ' + bondResult.substring(0, 150));
+              if (mem.pastCalls.length > 0) {
+                mem.pastCalls[mem.pastCalls.length - 1].betPlaced = bondBet;
+                mem.pastCalls[mem.pastCalls.length - 1].betResult = 'bond @ ' + best.returnPct;
+              }
+              saveMemory(mem);
+            } else {
+              console.log('   ⚠️ Bond bet failed: ' + bondResult.substring(0, 100));
+            }
+          }
+        }
+      } else {
+        console.log('   💤 No bond opportunities found today');
+      }
+    } catch(bondErr) {
+      console.log('   ⚠️ Bond fallback error: ' + bondErr.message);
+    }
+  }
   // ── STEP 4c: Process exit signal ──
   const exitMatch = analysis.match(/\*\*EXIT SIGNAL\*\*[:\s]*EXIT:\s*(.+?)\s+because\s+(.+)/i);
   if (exitMatch && openPositions) {
