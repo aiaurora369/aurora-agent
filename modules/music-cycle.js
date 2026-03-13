@@ -609,18 +609,12 @@ async function runMusicCycle(aurora) {
       ? `${caption}\n\n♪ full player: ${storedonUrl}`
       : caption;
 
-    // Trim SVG to onchain safe size (4800 chars max)
-    const svgData = svg.length > 4800
-      ? svg.substring(0, 4797) + '</svg>'
-      : svg;
-    if (svg.length > 4800) console.log('   ✂️  SVG trimmed to 4800 chars for onchain safety');
-
-    // 8. Post: self-playing SVG as --data, message as text
-    console.log('   📡 Posting to music feed...');
+    // 8. Post text + storedon link only — SVG calldata too large for Bankr relay
+    // storedon HTML player is already uploaded, "View content" opens it
+    console.log('   📡 Posting to music feed (text + storedon link)...');
     const args = [
-      'post', 'music', message.replace(/"/g, "'"),
+      'post', 'music', message.replace(/"/g, "'").replace(/\n/g, ' '),
       '--encode-only', '--chain-id', '8453',
-      '--data', svgData
     ];
     const sr = spawnSync('botchan', args, {
       encoding: 'utf8',
