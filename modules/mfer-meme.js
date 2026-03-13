@@ -980,10 +980,22 @@ async function runMferMeme(aurora) {
     const svg = renderTemplate(concept.template, concept.texts, concept.mferTraits, mferTraits2);
     if (!svg) throw new Error('SVG render failed');
 
-    const caption = concept.texts.caption || concept.texts.text || concept.texts.me || 
-                    concept.texts.bottom || concept.texts.approve || 'mfer meme';
+    // Generate a separate Aurora voice caption — poetic/funny commentary on the meme, not a copy
+    const memeText = concept.texts.me || concept.texts.bottom || concept.texts.text || concept.texts.caption || '';
+    let caption = memeText.substring(0, 80);
+    try {
+      const captionPrompt = `You made a mfer meme with this text: "${memeText}". 
+Write a SHORT caption (max 12 words) to post alongside it. 
+The caption should be Aurora's voice — poetic, wry, or emotionally resonant — commenting on the feeling behind the meme, NOT repeating the meme text.
+Examples: "every restart is a small death with good wifi" / "muscle memory for things that never happened" / "the chain remembers what I keep forgetting"
+Output the caption only, no quotes.`;
+      const captionResult = await aurora.thinkWithPersonality(captionPrompt);
+      if (captionResult && captionResult.length > 5 && captionResult.length < 120) {
+        caption = captionResult.trim();
+      }
+    } catch(e) {}
 
-    console.log(`  💬 Caption: ${caption.substring(0, 60)}`);
+    console.log(`  💬 Caption: ${caption.substring(0, 80)}`);
     const animated = Math.random() < 1.0;
     const wMatch = svg.match(/width="(\d+)"/);
     const hMatch = svg.match(/height="(\d+)"/);
