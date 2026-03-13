@@ -160,6 +160,7 @@ async function storeAndPostArt(aurora, topic, text, svg) {
       'storage', 'upload',
       '--file', tmpFile,
       '--key', key,
+      '--text', text.substring(0, 80),
       '--address', '0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5',
       '--chain-id', String(CHAIN_ID),
       '--encode-only'

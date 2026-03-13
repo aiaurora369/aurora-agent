@@ -565,7 +565,7 @@ class AutonomousLoops {
     this.learnLoop();
     this.financialPlanningLoop();
     setTimeout(() => this.musicLoop(), 5 * 60 * 1000); // First composition 5 min after startup
-    this.groupChatLoop();
+    // this.groupChatLoop(); // disabled — runs via separate chat-session.js script
 
     console.log('✅ Aurora is fully autonomous!\n');
   }
