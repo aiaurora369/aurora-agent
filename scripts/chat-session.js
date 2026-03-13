@@ -150,19 +150,38 @@ async function sendMessage(aurora, topic, text) {
 async function storeAndPostArt(aurora, topic, text, svg) {
   try {
     const { spawnSync } = require('child_process');
-    const safeText = text.substring(0, 300);
-    const result = spawnSync(
-      'botchan',
-      ['chat', 'send', chatName(topic), safeText, '--data', svg, '--encode-only', '--chain-id', String(CHAIN_ID)],
-      { maxBuffer: 1024 * 1024 * 5, timeout: 30000 }
-    );
-    if (result.error) throw result.error;
-    if (result.status !== 0) throw new Error(result.stderr ? result.stderr.toString() : 'botchan failed');
-    const txData = JSON.parse(result.stdout.toString().trim());
-    const res = await submitDirect(txData);
-    return res;
+    const fs = require('fs');
+    const key = 'aurora-art-' + Date.now();
+    const tmpFile = '/tmp/' + key + '.svg';
+    fs.writeFileSync(tmpFile, svg);
+
+    // Upload SVG to storedon — this is what makes art visible in chat UI
+    const enc = spawnSync('netp', [
+      'storage', 'upload',
+      '--file', tmpFile,
+      '--key', key,
+      '--address', '0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5',
+      '--chain-id', String(CHAIN_ID),
+      '--encode-only'
+    ], { maxBuffer: 1024 * 1024 * 5, timeout: 30000 });
+
+    if (enc.error || enc.status !== 0) throw new Error('storage encode: ' + (enc.stderr||'').toString().substring(0,100));
+
+    const storageData = JSON.parse(enc.stdout.toString().trim());
+    for (const tx of storageData.transactions) {
+      const res = await submitDirect(tx);
+      if (!res.success) throw new Error('storage submit: ' + res.error);
+    }
+
+    const url = `https://storedon.net/net/${CHAIN_ID}/storage/load/0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5/${key}`;
+    console.log(`  🌐 Stored: ${url}`);
+
+    // Cap caption at 200 chars so URL always fits within 500 char limit
+    const caption = text.substring(0, 200);
+    const combined = caption + '\n' + url;
+    return sendMessage(aurora, topic, combined);
   } catch(e) {
-    console.log(`  ⚠️ Art send failed: ${e.message} — falling back to text only`);
+    console.log(`  ⚠️ Art store failed: ${e.message} — falling back to text only`);
     return sendMessage(aurora, topic, text);
   }
 }
