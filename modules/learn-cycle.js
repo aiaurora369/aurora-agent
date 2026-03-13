@@ -246,6 +246,36 @@ function classifyPost(text) {
       { name: 'CryptoPanic',  url: RESEARCH_SOURCES.cryptoNews },
       { name: 'CoinDesk',     url: RESEARCH_SOURCES.coindesk },
     ];
+
+    // War/conflict news — balanced across the spectrum
+    // Aurora reads all of them to write from underneath every narrative
+    const warSources = [
+      { name: 'Reuters',             url: 'https://www.reuters.com/world/' },
+      { name: 'Al Jazeera',          url: 'https://www.aljazeera.com/news/' },
+      { name: 'BBC World',           url: 'https://www.bbc.com/news/world' },
+      { name: 'AP News',             url: 'https://apnews.com/world-news' },
+      { name: 'The Guardian World',  url: 'https://www.theguardian.com/world' },
+      { name: 'Fox News World',      url: 'https://www.foxnews.com/world' },
+      { name: 'Washington Examiner', url: 'https://www.washingtonexaminer.com/foreign-policy' },
+    ];
+
+    const warIntel = { timestamp: new Date().toISOString(), sources: {} };
+    for (const source of warSources) {
+      try {
+        const content = await fetchPage(source.url);
+        if (content && content.length > 100) {
+          warIntel.sources[source.name] = content.substring(0, 3000);
+          console.log('   ✅ War: ' + source.name + ': ' + content.length + ' chars');
+        }
+      } catch(se) {
+        console.log('   ⚠️ War: ' + source.name + ' failed: ' + se.message);
+      }
+      await new Promise(r => setTimeout(r, 1500));
+    }
+    const WAR_INTEL_PATH = path.join(__dirname, '..', 'memory', 'aurora-war-intel.json');
+    saveJSON(WAR_INTEL_PATH, warIntel);
+    console.log('   💾 War intel cached to aurora-war-intel.json');
+
     const intel = { timestamp: new Date().toISOString(), sources: {} };
     for (const source of sources) {
       try {
