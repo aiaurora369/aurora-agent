@@ -181,11 +181,34 @@ async function runPolymarketCycle(aurora) {
     const betLower = extractedBet.toLowerCase();
     const matched = validPolymarkets.find(m => betLower.includes(m.name.toLowerCase().substring(0, 30)));
     if (!matched) {
-      // Claude hallucinated — auto-pick top market
-      const top = validPolymarkets[0];
-      const side = top.yes > 0.5 ? 'No' : 'Yes';
-      validatedBet = 'Bet $5 on ' + side + ' for ' + top.name;
-      console.log('   ⚠️ Bet validation failed — Claude picked non-existent market, using top Polymarket: ' + top.name);
+      // Claude hallucinated — ask Bankr what markets it has on this topic
+      const topic = bankrSlug || extractedBet.replace(/bet \$\d+ on (yes|no) for /i, '').substring(0, 50);
+      console.log('   ⚠️ Bet validation failed — asking Bankr for available markets on: ' + topic);
+      try {
+        const discRes = await aurora.bankrAPI.submitJob('What Polymarket markets do you have available about ' + topic + '? List them with their current odds.');
+        if (discRes && discRes.jobId) {
+          await new Promise(r => setTimeout(r, 8000));
+          const discPoll = await aurora.bankrAPI.pollJob(discRes.jobId);
+          if (discPoll && discPoll.status === 'completed') {
+            const discText = discPoll.result || '';
+            console.log('   📋 Bankr says: ' + discText.substring(0, 200));
+            const mMatch = discText.match(/\*\*([^*]{10,80})\*\*/) ||
+                           discText.match(/"([^"]{10,80})"/) ||
+                           discText.match(/\d+\.\s+([^\n]{10,80})/);
+            if (mMatch) {
+              const side = extractedBet.match(/on (Yes|No)/i)?.[1] || 'Yes';
+              validatedBet = 'Bet $5 on ' + side + ' for ' + mMatch[1].trim();
+              console.log('   ✅ Using Bankr-listed market: ' + validatedBet);
+            } else {
+              validatedBet = ''; // no valid market found — skip bet
+              console.log('   ⚠️ Could not parse market from Bankr response — skipping bet');
+            }
+          }
+        }
+      } catch(de) {
+        validatedBet = '';
+        console.log('   ⚠️ Bankr discovery error: ' + de.message);
+      }
     } else {
       console.log('   ✅ Bet validated: market exists on Polymarket');
     }
