@@ -224,12 +224,15 @@ Just the message, nothing else.`;
 // ── Send a message to a chat topic ───────────────────────────────────────────
 async function sendChatMessage(aurora, topic, text) {
   try {
-    const escaped = text.replace(/'/g, "'\\''");
-    const cmd = `netp message send --topic "${topic}" --text '${escaped}' --chain-id ${CHAIN_ID} --encode-only`;
-
+    const escaped = text.replace(/"/g, "'").replace(/`/g, "'").substring(0, 500);
     console.log(`  🔨 Encoding message for ${topic}...`);
-    const { stdout } = await execAsync(cmd);
-    const txData = JSON.parse(stdout.trim());
+    const { spawnSync } = require('child_process');
+    const bcr = spawnSync('botchan', [
+      'post', topic, escaped,
+      '--encode-only', '--chain-id', String(CHAIN_ID)
+    ], { encoding: 'utf8', timeout: 30000, maxBuffer: 4 * 1024 * 1024 });
+    if (bcr.status !== 0 || !bcr.stdout) throw new Error(bcr.stderr || 'botchan failed');
+    const txData = JSON.parse(bcr.stdout.trim());
 
     console.log(`  📤 Submitting via Bankr direct...`);
     const res = await fetch('https://api.bankr.bot/agent/submit', {
@@ -252,12 +255,16 @@ async function sendChatMessage(aurora, topic, text) {
 // ── Send chat message with SVG art attached ──────────────────────────────────
 async function sendChatMessageWithArt(aurora, topic, text, svg) {
   try {
-    const safe = text.replace(/'/g, ' ').replace(/`/g, ' ').substring(0, 500);
-    const encodedSvg = Buffer.from(svg).toString('base64');
-    const cmd = `netp message send --topic "${topic}" --text '${safe}' --data '${encodedSvg}' --chain-id ${CHAIN_ID} --encode-only`;
+    const safe = text.replace(/"/g, "'").replace(/`/g, "'").substring(0, 500);
     try {
-      const { stdout } = await execAsync(cmd, { timeout: 30000, maxBuffer: 10 * 1024 * 1024 });
-      const txData = JSON.parse(stdout.trim());
+      const { spawnSync: spawnSyncA } = require('child_process');
+      const ar = spawnSyncA('botchan', [
+        'post', topic, safe,
+        '--data', svg,
+        '--encode-only', '--chain-id', String(CHAIN_ID)
+      ], { encoding: 'utf8', timeout: 30000, maxBuffer: 10 * 1024 * 1024 });
+      if (ar.status !== 0 || !ar.stdout) throw new Error(ar.stderr || 'botchan failed');
+      const txData = JSON.parse(ar.stdout.trim());
       const res = await fetch('https://api.bankr.bot/agent/submit', {
         method: 'POST',
         headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
