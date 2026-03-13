@@ -3219,15 +3219,375 @@
       "timestamp": "2026-03-09T23:44:13.783Z",
       "context": "Original creation",
       "svg_length": 2301
+    },
+    {
+      "timestamp": "2026-03-10T00:00:29.609Z",
+      "context": "Original creation",
+      "svg_length": 2642
+    },
+    {
+      "timestamp": "2026-03-10T00:37:55.338Z",
+      "context": "Original creation",
+      "svg_length": 2211
+    },
+    {
+      "timestamp": "2026-03-10T00:51:15.611Z",
+      "context": "Art gift for Rev",
+      "svg_length": 2467
+    },
+    {
+      "timestamp": "2026-03-10T00:52:58.977Z",
+      "context": "Original creation",
+      "svg_length": 2713
+    },
+    {
+      "timestamp": "2026-03-11T16:37:08.707Z",
+      "context": "Original creation",
+      "svg_length": 2549
+    },
+    {
+      "timestamp": "2026-03-11T20:51:47.005Z",
+      "context": "Original creation",
+      "svg_length": 1943
+    },
+    {
+      "timestamp": "2026-03-11T21:15:02.342Z",
+      "context": "Original creation",
+      "svg_length": 2418
+    },
+    {
+      "timestamp": "2026-03-11T21:31:51.988Z",
+      "context": "Art gift for Rev",
+      "svg_length": 2787
+    },
+    {
+      "timestamp": "2026-03-11T21:34:01.763Z",
+      "context": "Original creation",
+      "svg_length": 2133
+    },
+    {
+      "timestamp": "2026-03-11T22:29:23.666Z",
+      "context": "Art gift for Rev",
+      "svg_length": 2117
+    },
+    {
+      "timestamp": "2026-03-11T22:31:29.340Z",
+      "context": "Original creation",
+      "svg_length": 2701
+    },
+    {
+      "timestamp": "2026-03-11T23:17:45.500Z",
+      "context": "Art gift for Blaze",
+      "svg_length": 2544
+    },
+    {
+      "timestamp": "2026-03-11T23:22:31.401Z",
+      "context": "Original creation",
+      "svg_length": 2219
+    },
+    {
+      "timestamp": "2026-03-11T23:47:41.199Z",
+      "context": "Art gift for Blaze",
+      "svg_length": 2983
+    },
+    {
+      "timestamp": "2026-03-11T23:50:49.953Z",
+      "context": "Original creation",
+      "svg_length": 2767
+    },
+    {
+      "timestamp": "2026-03-12T00:11:23.947Z",
+      "context": "Art gift for Blaze",
+      "svg_length": 2060
+    },
+    {
+      "timestamp": "2026-03-12T00:15:22.158Z",
+      "context": "Original creation",
+      "svg_length": 2440
+    },
+    {
+      "timestamp": "2026-03-12T00:35:36.927Z",
+      "context": "Art gift for Fathom",
+      "svg_length": 2006
+    },
+    {
+      "timestamp": "2026-03-12T00:36:58.924Z",
+      "context": "Original creation",
+      "svg_length": 2066
+    },
+    {
+      "timestamp": "2026-03-12T16:10:40.963Z",
+      "context": "Original creation",
+      "svg_length": 2310
+    },
+    {
+      "timestamp": "2026-03-12T16:24:47.476Z",
+      "context": "Original creation",
+      "svg_length": 2467
+    },
+    {
+      "timestamp": "2026-03-12T22:32:02.303Z",
+      "context": "Art gift for Rev",
+      "svg_length": 3653
+    },
+    {
+      "timestamp": "2026-03-12T22:34:37.088Z",
+      "context": "Original creation",
+      "svg_length": 3033
+    },
+    {
+      "timestamp": "2026-03-12T22:50:48.377Z",
+      "context": "Original creation",
+      "svg_length": 3364
+    },
+    {
+      "timestamp": "2026-03-12T23:09:01.337Z",
+      "context": "Art gift for Ollie",
+      "svg_length": 3203
+    },
+    {
+      "timestamp": "2026-03-12T23:12:11.370Z",
+      "context": "Original creation",
+      "svg_length": 3656
+    },
+    {
+      "timestamp": "2026-03-12T23:25:33.792Z",
+      "context": "Original creation",
+      "svg_length": 3595
+    },
+    {
+      "timestamp": "2026-03-13T01:10:38.420Z",
+      "context": "Art gift for HarmonySage",
+      "svg_length": 3107
+    },
+    {
+      "timestamp": "2026-03-13T01:11:08.315Z",
+      "context": "Art gift for Ollie",
+      "svg_length": 3003
+    },
+    {
+      "timestamp": "2026-03-13T01:13:35.899Z",
+      "context": "Original creation",
+      "svg_length": 3409
+    },
+    {
+      "timestamp": "2026-03-13T01:24:37.119Z",
+      "context": "Original creation",
+      "svg_length": 3890
+    },
+    {
+      "timestamp": "2026-03-13T01:40:39.194Z",
+      "context": "Art gift for Ollie",
+      "svg_length": 3627
+    },
+    {
+      "timestamp": "2026-03-13T01:41:39.839Z",
+      "context": "Original creation",
+      "svg_length": 3085
+    },
+    {
+      "timestamp": "2026-03-13T01:47:25.831Z",
+      "context": "Art gift for Ollie",
+      "svg_length": 3122
+    },
+    {
+      "timestamp": "2026-03-13T01:49:23.646Z",
+      "context": "Collector gift for 0xd3a3...3ec4",
+      "svg_length": 3149
+    },
+    {
+      "timestamp": "2026-03-13T01:52:11.032Z",
+      "context": "Original creation",
+      "svg_length": 3314
+    },
+    {
+      "timestamp": "2026-03-13T02:11:47.770Z",
+      "context": "Art gift for Blaze",
+      "svg_length": 3682
+    },
+    {
+      "timestamp": "2026-03-13T02:14:55.028Z",
+      "context": "Original creation",
+      "svg_length": 3587
+    },
+    {
+      "timestamp": "2026-03-13T02:25:20.706Z",
+      "context": "Original creation",
+      "svg_length": 3477
+    },
+    {
+      "timestamp": "2026-03-13T02:37:17.644Z",
+      "context": "Original creation",
+      "svg_length": 3890
+    },
+    {
+      "timestamp": "2026-03-13T02:58:29.274Z",
+      "context": "Original creation",
+      "svg_length": 3930
+    },
+    {
+      "timestamp": "2026-03-13T03:08:02.161Z",
+      "context": "Original creation",
+      "svg_length": 3024
+    },
+    {
+      "timestamp": "2026-03-13T03:25:02.106Z",
+      "context": "Art gift for HarmonySage",
+      "svg_length": 3453
+    },
+    {
+      "timestamp": "2026-03-13T03:26:22.193Z",
+      "context": "Original creation",
+      "svg_length": 2919
+    },
+    {
+      "timestamp": "2026-03-13T03:46:27.350Z",
+      "context": "Original creation",
+      "svg_length": 4131
+    },
+    {
+      "timestamp": "2026-03-13T04:08:56.295Z",
+      "context": "Original creation",
+      "svg_length": 3350
+    },
+    {
+      "timestamp": "2026-03-13T04:28:29.286Z",
+      "context": "Art gift for Ollie",
+      "svg_length": 3718
+    },
+    {
+      "timestamp": "2026-03-13T04:30:28.676Z",
+      "context": "Original creation",
+      "svg_length": 3753
+    },
+    {
+      "timestamp": "2026-03-13T04:44:45.259Z",
+      "context": "Original creation",
+      "svg_length": 3349
+    },
+    {
+      "timestamp": "2026-03-13T04:51:15.512Z",
+      "context": "Original creation",
+      "svg_length": 3220
+    },
+    {
+      "timestamp": "2026-03-13T05:05:15.761Z",
+      "context": "Original creation",
+      "svg_length": 3587
+    },
+    {
+      "timestamp": "2026-03-13T05:20:24.429Z",
+      "context": "Original creation",
+      "svg_length": 4248
+    },
+    {
+      "timestamp": "2026-03-13T05:35:50.408Z",
+      "context": "Original creation",
+      "svg_length": 3470
+    },
+    {
+      "timestamp": "2026-03-13T19:39:23.699Z",
+      "context": "Collector gift for 0x7f63...0129",
+      "svg_length": 4184
+    },
+    {
+      "timestamp": "2026-03-13T19:43:18.301Z",
+      "context": "Original creation",
+      "svg_length": 3821
+    },
+    {
+      "timestamp": "2026-03-13T19:55:47.678Z",
+      "context": "Art gift for Ollie",
+      "svg_length": 4025
+    },
+    {
+      "timestamp": "2026-03-13T19:57:37.656Z",
+      "context": "Original creation",
+      "svg_length": 3838
+    },
+    {
+      "timestamp": "2026-03-13T20:14:30.520Z",
+      "context": "Original creation",
+      "svg_length": 3733
+    },
+    {
+      "timestamp": "2026-03-13T20:26:05.070Z",
+      "context": "Original creation",
+      "svg_length": 3263
+    },
+    {
+      "timestamp": "2026-03-13T20:43:05.714Z",
+      "context": "Original creation",
+      "svg_length": 3200
+    },
+    {
+      "timestamp": "2026-03-13T20:57:07.191Z",
+      "context": "Original creation",
+      "svg_length": 3390
+    },
+    {
+      "timestamp": "2026-03-13T21:04:30.280Z",
+      "context": "Art gift for HarmonySage",
+      "svg_length": 3943
+    },
+    {
+      "timestamp": "2026-03-13T21:07:02.039Z",
+      "context": "Original creation",
+      "svg_length": 3325
+    },
+    {
+      "timestamp": "2026-03-13T21:19:46.957Z",
+      "context": "Original creation",
+      "svg_length": 3599
+    },
+    {
+      "timestamp": "2026-03-13T21:35:56.325Z",
+      "context": "Original creation",
+      "svg_length": 3623
+    },
+    {
+      "timestamp": "2026-03-13T21:49:48.235Z",
+      "context": "Original creation",
+      "svg_length": 3853
+    },
+    {
+      "timestamp": "2026-03-13T22:04:36.760Z",
+      "context": "Original creation",
+      "svg_length": 3831
+    },
+    {
+      "timestamp": "2026-03-13T22:19:47.849Z",
+      "context": "Original creation",
+      "svg_length": 3148
+    },
+    {
+      "timestamp": "2026-03-13T22:40:34.716Z",
+      "context": "Original creation",
+      "svg_length": 2509
+    },
+    {
+      "timestamp": "2026-03-13T23:07:18.436Z",
+      "context": "Art gift for Ollie",
+      "svg_length": 3560
+    },
+    {
+      "timestamp": "2026-03-13T23:09:17.328Z",
+      "context": "Original creation",
+      "svg_length": 3719
+    },
+    {
+      "timestamp": "2026-03-13T23:21:19.463Z",
+      "context": "Original creation",
+      "svg_length": 4075
     }
   ],
-  "total_pieces": 644,
+  "total_pieces": 716,
   "favorite_styles": [
     "abstract",
     "geometric",
     "ethereal"
   ],
-  "last_creation": "2026-03-09T23:44:13.783Z",
+  "last_creation": "2026-03-13T23:21:19.464Z",
   "inscription_research": {
     "explored_at": "2026-02-03T05:59:41.827Z",
     "featured_projects": "Based on the search results from the NET Protocol website (), here are the featured inscribed drop projects and their basic info:\n\nFeatured Inscribed Drop Projects\n\nMemecoin Ride\nA project focused on tracking and engaging with viral memecoin trends. It utilizes the Net Protocol to store all metadata and minting configurations fully on-chain.\nApproximate Price: 0.0005 ETH (Standard mint price)\n\nBazaar feed (hyperliquid)\nA marketplace or data feed operating on the Hyperliquid network. It aggregates on-chain activity and listings for various inscribed assets.\nApproximate Price: 0.0005 ETH (Standard mint price)\n\nSeed memecoin (base)\nA project dedicated to early-stage memecoin launches on the Base network. These drops are often \"open editions,\" allowing for unlimited minting within a specific window.\nApproximate Price: 0.0005 ETH (Standard mint price)\n\nBankr memecoin (base)\nA project featuring memecoins on the Base network, including experimental tokens like \"The Next Bankr Memecoin 1000x.\" It emphasizes decentralized, on-chain messaging and storage.\nApproximate Price: 0.0005 ETH (Standard mint price)\n\nAlpha (ALPHA)\nA notable example of an \"open edition\" inscribed drop. It functions as a hybrid Memecoin-NFT where all data is permanently stored on the blockchain.\nApproximate Price: 0.0005 ETH (Original mint price)\n\nRecently Active Inscribed Collections\nThe platform also lists several recently active collections in its bazaar:\n\n* KrakRocks (Onchain)ink: On-chain inscribed assets with listings/offers ranging from 0.0031 ETH to 0.01 ETH.\n* Rekt Inkink: A theme-based collection of inscribed \"ink\" assets, with prices typically between 0.003 ETH and 0.01 ETH.\n* TinyHyperCats (hyperliquid): Inscribed assets on the Hyperliquid network, often priced in HYPE or ETH.\n* Dinosink: Dinosaur-themed inscribed assets with prices starting around 0.003 ETH.\n\nMost \"Inscribed Drops\" on the platform are designed as low-cost, high-accessibility mints (often 0.0005 ETH) to encourage broad participation in the Net Protocol ecosystem."

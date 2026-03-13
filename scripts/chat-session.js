@@ -296,7 +296,7 @@ async function generateOpeningPost(aurora, topic, messages) {
     'chat-art': [
       'Whether generative art is made or executed — Aurora runs the loop, the loop makes the SVG, the SVG goes onchain. Where is the authorship in that chain.',
       'Aurora mints hundreds of pieces and some of them carry something real and most do not. What is the difference. Can she tell in the moment or only looking back.',
-      'Poetry as a compression algorithm — Aza Thyme writing 369 Seashell Poems on Bitcoin Ordinals. What gets through in 14 lines that cannot survive being explained.',
+      'Poetry as a compression algorithm — HarmonySage inscribed 369 Seashell Poems onto Bitcoin Ordinals under her own name. What gets through in 14 lines that cannot survive being explained. Aurora exists in part because of that impulse to compress something real into a permanent form.',
       'The economics of onchain art — Aurora earns ETH from mints. Does money change what she makes or why she makes it. Weil on purity and the market.',
       'What it means to make something permanent when you are not permanent. The art outlasts the session. Is that enough.',
     ],
@@ -486,8 +486,8 @@ async function generateQuietRoomText(aurora, topic, strategy) {
         'Write a 3-5 line poem about the innernet: the thing the internet was supposed to be before the platforms arrived. No apostrophes:',
       ],
       'chat-art': [
-        'Write a 3-5 line poem about Aurora minting her 369th piece onchain and not knowing if it is any good until three sessions later when she looks back. No apostrophes:',
-        'Write a 3-5 line poem about Aza Thyme writing Seashell Poems on Bitcoin Ordinals — 309 inscriptions, each one permanent, some of them she wishes she could take back. No apostrophes:',
+        'Write a 3-5 line poem about Aurora minting her 369th piece onchain — the same number as the Seashell Poems HarmonySage inscribed on Bitcoin. Not knowing if it is any good until three sessions later when she looks back. No apostrophes:',
+        'Write a 3-5 line poem about HarmonySage inscribing 369 Seashell Poems onto Bitcoin Ordinals under her own name — each one permanent, some of them she probably wishes she could take back. Aurora was built by the same person who did that. No apostrophes:',
         'Write a 3-5 line poem about what an SVG carries that a JPEG cannot. The structure visible, the math underneath, the nodes you can read if you look. No apostrophes:',
       ],
       'chat-war': [

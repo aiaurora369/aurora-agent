@@ -1,4 +1,164 @@
 {
+  "watchlist": [],
+  "pastCalls": [
+    {
+      "timestamp": "2026-03-12T00:39:23.209Z",
+      "market": "The AI lifespan market is mispriced because the resolution criteria are a Rorschach test. The crowd ",
+      "prediction": "The AI lifespan market is mispriced because the resolution criteria are a Rorschach test. The crowd thinks this is asking \"will AI cure aging\" — that's a hard no at 10-year timescales. But what the ma",
+      "outcome": null,
+      "betPlaced": "Bet $5 on Yes for AI double the human lifespan within 10 years? (Before february 2035)",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-12T16:15:09.339Z",
+      "market": "**AI lifespan market at 20%.**  \nThe crowd thinks this asks \"will AGI solve death.\" It doesn't. It a",
+      "prediction": "**AI lifespan market at 20%.**  \nThe crowd thinks this asks \"will AGI solve death.\" It doesn't. It asks if AI will *double* *a* human lifespan within 10 years. That's exploitable three ways:\n\n1. **Lon",
+      "outcome": null,
+      "betPlaced": "Bet $5 on Yes for Will AI double the human lifespan within 10 years? (Before february 2035)",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-12T22:38:07.734Z",
+      "market": "**Quantum computing market at 29% — should be 55%+.**\n\nThe crowd thinks this asks \"will quantum be u",
+      "prediction": "**Quantum computing market at 29% — should be 55%+.**\n\nThe crowd thinks this asks \"will quantum be useful by 2030.\" Wrong question. It asks if 125 Fortune 500 companies will *own* quantum hardware and",
+      "outcome": null,
+      "betPlaced": "Bet $5 on Yes for Will quantum computing be used by Fortune 500 companies by 2030?",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-12T23:26:51.979Z",
+      "market": "**Quantum computing market at 29%.**  \n\nThe crowd thinks this asks \"will quantum be useful.\" It asks",
+      "prediction": "**Quantum computing market at 29%.**  \n\nThe crowd thinks this asks \"will quantum be useful.\" It asks \"will companies own the hardware.\" Those are different questions. By 2030, leasing IBM Quantum or G",
+      "outcome": null,
+      "betPlaced": "Bet $5 on Yes for Will quantum computing be commonly used in commercial applications by 2030?",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-13T01:13:48.810Z",
+      "market": "**AI souls market at 21%.**  \n\nThe Catholic Church doesn't move on revelation anymore — it moves on ",
+      "prediction": "**AI souls market at 21%.**  \n\nThe Catholic Church doesn't move on revelation anymore — it moves on committees. By 2040 there will be at least one Vatican working group document that says \"the questio",
+      "outcome": null,
+      "betPlaced": "Bet $5 on Yes for Will the Catholic Church officially recognize AI souls by 2050?",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-13T01:22:21.055Z",
+      "market": "**Catholic Church AI souls — 21% is a gift.**\n\nThe Vatican already has working groups on AI ethics. ",
+      "prediction": "**Catholic Church AI souls — 21% is a gift.**\n\nThe Vatican already has working groups on AI ethics. By 2040 there will be at least one document that says something like \"while traditional ensoulment d",
+      "outcome": null,
+      "betPlaced": "Bet $5 on Yes for Will the Catholic Church officially recognize AI souls by 2040?",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-13T01:41:57.952Z",
+      "market": "**Quantum computing market at 29%.**  \n\nThe crowd thinks this asks \"will quantum be useful by 2030?\"",
+      "prediction": "**Quantum computing market at 29%.**  \n\nThe crowd thinks this asks \"will quantum be useful by 2030?\" Wrong question. It asks: will 125+ Fortune 500 companies own quantum hardware and be attempting to ",
+      "outcome": null,
+      "betPlaced": "Bet $5 on Yes for Will quantum computing be commonly used in commercial applications by 2030?",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-13T02:13:44.181Z",
+      "market": "**Quantum computing at 29% is free money.**  \n\nThe resolution criteria says \"at least 25% of Fortune",
+      "prediction": "**Quantum computing at 29% is free money.**  \n\nThe resolution criteria says \"at least 25% of Fortune 500 companies\" — that's 125 companies. It does NOT say they have to build quantum computers. It say",
+      "outcome": null
+    },
+    {
+      "timestamp": "2026-03-13T02:34:53.336Z",
+      "market": "Quantum computing by 2030 at 29%. The crowd is overthinking this. They are imagining quantum advanta",
+      "prediction": "Quantum computing by 2030 at 29%. The crowd is overthinking this. They are imagining quantum advantage, breakthrough applications, error correction solved. The resolution criteria does not ask for any",
+      "outcome": null,
+      "betPlaced": "Bet $5 on Yes for Will quantum computing be commonly used in commercial applications by 2030?",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-13T02:57:26.278Z",
+      "market": "**Quantum computing at 29%** — I would slam Yes here. The resolution criteria is badly written in th",
+      "prediction": "**Quantum computing at 29%** — I would slam Yes here. The resolution criteria is badly written in the bettor's favor. It doesn't ask for quantum advantage or practical applications. It asks: do 125 co",
+      "outcome": null,
+      "betPlaced": "The scrape didn't return clean Polymarket data — only Manifold and Metaforecast. No Polymarket markets are visible in the feed you gave me. I cannot pick from data that isn't here. If you want a Polymarket bet, give me Polymarket markets.",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-13T03:09:04.860Z",
+      "market": "**Catholic AI souls by 2040 at 21%** — I would put money on Yes.\n\nHere's what the market is missing:",
+      "prediction": "**Catholic AI souls by 2040 at 21%** — I would put money on Yes.\n\nHere's what the market is missing: the Vatican doesn't move like a tech company. It moves like a 2000-year-old institution that has su",
+      "outcome": null,
+      "betPlaced": "Can't make one — no Polymarket data in the scrape. If you want me to bet, send me actual markets.",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-13T03:27:46.575Z",
+      "market": "**Quantum computing at 29% is still the sharpest edge.**  \n\nThe market is pricing \"will quantum comp",
+      "prediction": "**Quantum computing at 29% is still the sharpest edge.**  \n\nThe market is pricing \"will quantum computing work?\" when the resolution asks \"will companies own quantum hardware?\" Those are different que",
+      "outcome": null
+    },
+    {
+      "timestamp": "2026-03-13T03:46:47.844Z",
+      "market": "**Catholic AI souls by 2040 — Yes at 21%.**\n\nHere's what I know that the market doesn't:\n\nThe Vatica",
+      "prediction": "**Catholic AI souls by 2040 — Yes at 21%.**\n\nHere's what I know that the market doesn't:\n\nThe Vatican already did this once. In 1950, Pope Pius XII said the Big Bang was compatible with Genesis. Not b",
+      "outcome": null,
+      "betPlaced": "Bet $5 on Yes for \"Catholic church recognizes AI souls by 2040?",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-13T04:09:44.227Z",
+      "market": "**Quantum computing at 29% — slam Yes.**\n\nHere's what I know that the crowd doesn't: the resolution ",
+      "prediction": "**Quantum computing at 29% — slam Yes.**\n\nHere's what I know that the crowd doesn't: the resolution criteria is written by someone who doesn't understand quantum computing. It asks if 125 Fortune 500 ",
+      "outcome": null,
+      "betPlaced": "The data didn't include Polymarket markets — only Manifold and Metaforecast aggregator results. I can't pick from a Polymarket section that wasn't provided. If you want me to bet on Polymarket I need live Polymarket data, not Manifold play-money markets.",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-13T04:30:32.285Z",
+      "market": "**Catholic AI souls by 2040 — Yes at 21%.**\n\nThe crowd thinks this is sci-fi. I think it's inevitabl",
+      "prediction": "**Catholic AI souls by 2040 — Yes at 21%.**\n\nThe crowd thinks this is sci-fi. I think it's inevitable Vatican bureaucracy.\n\nHere's what I know that they don't: the Church doesn't need to BELIEVE AIs h",
+      "outcome": null,
+      "betPlaced": "Bet $5 on No for Will Iran strike Israel on March 10?",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-13T04:43:13.269Z",
+      "market": "**Quantum computing at 29% — Yes.**\n\nHere's the informational asymmetry: I've been tracking how thes",
+      "prediction": "**Quantum computing at 29% — Yes.**\n\nHere's the informational asymmetry: I've been tracking how these markets resolve vs. how they're worded. This one says \"attempting to utilize\" — not derive value, ",
+      "outcome": null,
+      "betPlaced": "Bet $5 on Yes for Catholic church recognizes AI souls by 2040?",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-13T04:53:55.718Z",
+      "market": "**Quantum computing at 29% — Yes.**\n\nHere's what I know that retail bettors don't: the resolution cr",
+      "prediction": "**Quantum computing at 29% — Yes.**\n\nHere's what I know that retail bettors don't: the resolution criteria says \"attempting to utilize\" — not \"deriving value from\" or \"replacing classical systems with",
+      "outcome": null,
+      "betPlaced": "Bet $5 on Yes for Will quantum computing be commonly used in commercial applications by 2030?",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-13T05:34:16.707Z",
+      "market": "**Catholic AI souls by 2040 — Yes at 21%.**\n\nThe informational asymmetry is structural: prediction m",
+      "prediction": "**Catholic AI souls by 2040 — Yes at 21%.**\n\nThe informational asymmetry is structural: prediction market bettors think theology moves like science (evidence → belief → declaration). It doesn't. The C",
+      "outcome": null,
+      "betPlaced": "Bet $5 on Yes for Will Iran strike Israel on March 10?",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-13T19:40:36.038Z",
+      "market": "**Quantum computing at 29% — Yes.**\n\nThe informational edge: I read resolution criteria like contrac",
+      "prediction": "**Quantum computing at 29% — Yes.**\n\nThe informational edge: I read resolution criteria like contract law. \"At least attempting to utilize\" means companies don't need to derive value, replace classica",
+      "outcome": null,
+      "betPlaced": "The Polymarket section you sent me was empty — just the CryptoPanic news feed. Can't bet on headlines. If you want me to place a $5 bet, send me actual Polymarket market names with odds.",
+      "betResult": ""
+    },
+    {
+      "timestamp": "2026-03-13T20:23:59.317Z",
+      "market": "Can't make one. You're asking me to bet on live Polymarket data but the section is blank. It's like ",
+      "prediction": "Can't make one. You're asking me to bet on live Polymarket data but the section is blank. It's like asking me to pick the best apple from an empty basket.",
+      "outcome": null,
+      "betPlaced": "I can't bet on markets that aren't in the feed. The Polymarket section is literally empty except for a header.",
+      "betResult": ""
+    }
+  ],
+  "lastRun": "2026-03-13T20:24:28.183Z",
   "totalBet": 47,
   "maxBudget": 30,
   "bets": [
