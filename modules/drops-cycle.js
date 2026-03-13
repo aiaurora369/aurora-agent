@@ -202,7 +202,12 @@ async function checkMintProgress(ctx) {
     );
 
     const minted = await contract.totalSupply(ctx.dropId);
-    const mintCount = Number(minted);
+    const rawCount = Number(minted);
+    // Never go backwards — RPC can return stale data
+    const mintCount = rawCount >= ctx.lastKnownMints ? rawCount : ctx.lastKnownMints;
+    if (rawCount < ctx.lastKnownMints) {
+      console.log('   ⚠️ RPC returned ' + rawCount + ' but lastKnownMints is ' + ctx.lastKnownMints + ' — keeping higher value');
+    }
     const earnings = (mintCount * ctx.dropMintPrice).toFixed(4);
 
     console.log('   📊 Drop #' + ctx.dropId + ': ' + mintCount + '/' + ctx.dropMaxSupply + ' minted');

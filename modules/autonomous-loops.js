@@ -32,7 +32,7 @@ class AutonomousLoops {
     this.dropMintUrl = 'https://www.netprotocol.app/app/inscribed-drops/mint/base/190';
     this.dropMintPrice = 0.005;
     this.dropMaxSupply = 50;
-    this.lastKnownMints = 35;
+    this.lastKnownMints = 35; // confirmed Mar 12 2026
     this.lastMilestone = 20;
 
     // Collector rotation

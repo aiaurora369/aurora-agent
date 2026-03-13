@@ -69,6 +69,8 @@ async function runPolymarketCycle(aurora) {
   const [polyData, kalshiData] = await Promise.all([fetchPolymarket(), fetchKalshi()]);
   console.log('   ✅ Polymarket: ' + polyData.split('\n').length + ' markets');
   console.log('   ✅ Kalshi: ' + kalshiData.split('\n').length + ' markets');
+  // Add both to research so Claude actually sees them in the prompt
+  const researchResults = [polyData, kalshiData];
 
   // Cloudflare scraper for server-side rendered sites
   const sources = [
@@ -84,7 +86,6 @@ async function runPolymarketCycle(aurora) {
     { name: 'Whales Market',             url: RESEARCH_SOURCES.whalesMarket },
   ];
 
-  const researchResults = [];
   for (const source of sources) {
     console.log('   🌐 Fetching ' + source.name + '...');
     const content = await fetchPage(source.url);
