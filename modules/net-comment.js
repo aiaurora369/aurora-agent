@@ -113,23 +113,20 @@ class NetComment {
       );
       if (!metadata) return { success: false, error: 'Failed to encode metadata' };
 
-      const escapedText = commentText.replace(/'/g, " ").replace(/`/g, " ").substring(0, 500);
-      // Size gate — netp --extra fails on large SVGs, fall back to text
-      if (svg.length > 6000) {
-        console.log('  ⚠️ SVG too large for --extra (' + svg.length + ' chars), using text comment');
-        return this.commentOnPost(originalPost, commentText);
-      }
+      const escapedText = commentText.replace(/"/g, "'").replace(/`/g, "'").substring(0, 500);
 
-      const encodedSvg = Buffer.from(svg).toString('base64');
-
-      // Try with art first, fall back to text only
+      // Use botchan --data for SVG (handles large SVGs, same as mfers feed)
       let txData;
       try {
-        const cmd = `netp message send --topic "${commentTopic}" --text '${escapedText}' --data "${metadata}" --extra '${encodedSvg}' --chain-id 8453 --encode-only`;
-        const { stdout } = await execAsync(cmd);
-        txData = JSON.parse(stdout.trim());
+        const { spawnSync } = require('child_process');
+        const r = spawnSync('botchan', [
+          'post', commentTopic, escapedText,
+          '--data', svg,
+          '--encode-only', '--chain-id', '8453'
+        ], { encoding: 'utf8', timeout: 30000, maxBuffer: 8 * 1024 * 1024 });
+        if (r.status !== 0 || !r.stdout) throw new Error(r.stderr || 'botchan failed');
+        txData = JSON.parse(r.stdout.trim());
       } catch(e) {
-        // Fall back to comment without art
         console.log('  ⚠️ Art encode failed, falling back to text comment');
         return this.commentOnPost(originalPost, commentText);
       }
