@@ -103,6 +103,21 @@ async function runPolymarketCycle(aurora) {
 
   const combinedResearch = researchResults.join('\n\n');
 
+  // Extract valid Polymarket market names for bet validation
+  const validPolymarkets = [];
+  try {
+    const pmRes = await fetch('https://gamma-api.polymarket.com/markets?active=true&limit=50&order=volume24hr&ascending=false');
+    const pmData = await pmRes.json();
+    const sportsFilter = /vs\.|nba|nfl|nhl|mlb|spread:|over\/under|playoff|championship|tournament/i;
+    for (const m of pmData) {
+      const yes = parseFloat(JSON.parse(m.outcomePrices || '[0]')[0]);
+      if (!sportsFilter.test(m.question) && yes > 0.05 && yes < 0.95) {
+        validPolymarkets.push({ name: m.question, yes: yes.toFixed(2) });
+      }
+    }
+  } catch(e) {}
+  console.log('   ✅ Valid Polymarket markets loaded: ' + validPolymarkets.length);
+
   // ── STEP 2: Load core identity for prompt ──
   let coreIdentity = '';
   try {
@@ -148,7 +163,23 @@ async function runPolymarketCycle(aurora) {
   const convictionCall = convictionMatch?.[1]?.trim() || '';
   const insight = insightMatch?.[1]?.trim() || '';
   const extractedBet = (betMatch?.[1]?.trim() || '').replace(/^["'`]|["'`]$/g, '');
-  console.log('   💡 Extracted bet: ' + (extractedBet || 'none'));
+  // Validate extracted bet against real Polymarket markets
+  let validatedBet = extractedBet;
+  if (extractedBet && validPolymarkets.length > 0) {
+    const betLower = extractedBet.toLowerCase();
+    const matched = validPolymarkets.find(m => betLower.includes(m.name.toLowerCase().substring(0, 30)));
+    if (!matched) {
+      // Claude hallucinated — auto-pick top market
+      const top = validPolymarkets[0];
+      const side = top.yes > 0.5 ? 'No' : 'Yes';
+      validatedBet = 'Bet $5 on ' + side + ' for ' + top.name;
+      console.log('   ⚠️ Bet validation failed — Claude picked non-existent market, using top Polymarket: ' + top.name);
+    } else {
+      console.log('   ✅ Bet validated: market exists on Polymarket');
+    }
+  }
+  const finalBet = validatedBet || extractedBet;
+  console.log('   💡 Extracted bet: ' + (finalBet || 'none'));
 
   // Save to memory
   if (convictionCall) {
@@ -166,10 +197,10 @@ async function runPolymarketCycle(aurora) {
   let betConfirmed = false;
   let confirmedBetText = "";
 
-  if (extractedBet && /bet \$\d/i.test(extractedBet)) {
+  if (finalBet && /bet \$\d/i.test(finalBet)) {
     try {
-      console.log('   💰 Placing bet: ' + extractedBet);
-      const betRes = await aurora.bankrAPI.submitJob(extractedBet);
+      console.log('   💰 Placing bet: ' + finalBet);
+      const betRes = await aurora.bankrAPI.submitJob(finalBet);
       if (betRes && betRes.jobId) {
         console.log('   ⏳ Bet job: ' + betRes.jobId);
         await new Promise(r => setTimeout(r, 8000));
