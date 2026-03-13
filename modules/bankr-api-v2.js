@@ -111,6 +111,16 @@ class BankrAPI {
   }
 
   // Submit a pre-built transaction
+  async getWalletAddress() {
+    try {
+      const result = await this.promptAndWait('What is my wallet address on base?');
+      const match = (result.response || '').match(/0x[a-fA-F0-9]{40}/);
+      return match ? match[0] : '0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5';
+    } catch(e) {
+      return '0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5';
+    }
+  }
+
   async submitTransactionDirect(txData) {
     while (this.isSubmitting) {
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -123,11 +133,7 @@ class BankrAPI {
       const cleanTxData = { ...txData };
       delete cleanTxData.nonce;
 
-      const promptTx = { ...cleanTxData };
-      if (promptTx.data && promptTx.data.length > 200) {
-        promptTx.data = promptTx.data.substring(0, 200) + '...[truncated]';
-      }
-      const prompt = 'Submit this transaction:\n' + JSON.stringify(promptTx, null, 2);
+      const prompt = 'Submit this transaction:\n' + JSON.stringify(cleanTxData, null, 2);
       const submitted = await submitPrompt(prompt);
 
       if (!submitted || !submitted.jobId) {

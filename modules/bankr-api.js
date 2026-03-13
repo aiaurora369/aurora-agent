@@ -178,12 +178,7 @@ class BankrAPI {
       const cleanTxData = { ...txData };
       delete cleanTxData.nonce;
       
-      // Truncate data field in prompt to avoid Bankr 10K limit — full data still in txData
-      const promptTx = { ...cleanTxData };
-      if (promptTx.data && promptTx.data.length > 200) {
-        promptTx.data = promptTx.data.substring(0, 200) + '...[truncated]';
-      }
-      const prompt = 'Submit this transaction:\n' + JSON.stringify(promptTx, null, 2);
+      const prompt = 'Submit this transaction:\n' + JSON.stringify(cleanTxData, null, 2);
       const submitResult = await this.submitJob(prompt);
       
       if (!submitResult.success) {
