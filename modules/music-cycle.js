@@ -610,17 +610,17 @@ async function runMusicCycle(aurora) {
       : caption;
 
     // Trim SVG to onchain safe size (4800 chars max)
-    if (svg.length > 4800) {
-      svg = svg.substring(0, 4797) + '</svg>';
-      console.log('   ✂️  SVG trimmed to 4800 chars for onchain safety');
-    }
+    const svgData = svg.length > 4800
+      ? svg.substring(0, 4797) + '</svg>'
+      : svg;
+    if (svg.length > 4800) console.log('   ✂️  SVG trimmed to 4800 chars for onchain safety');
 
     // 8. Post: self-playing SVG as --data, message as text
     console.log('   📡 Posting to music feed...');
     const args = [
       'post', 'music', message.replace(/"/g, "'"),
       '--encode-only', '--chain-id', '8453',
-      '--data', svg
+      '--data', svgData
     ];
     const sr = spawnSync('botchan', args, {
       encoding: 'utf8',
