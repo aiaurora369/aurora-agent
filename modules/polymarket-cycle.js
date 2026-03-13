@@ -365,7 +365,7 @@ async function runPolymarketCycle(aurora) {
   // 1. simons-alpha — raw data + conviction call = actual alpha
   const alphaLines = polyData.split('\n').filter(l => l.includes('Yes:') && l.includes('|')).slice(0, 4);
   const alphaEdge = convictionCall ? '\n🎯 EDGE: ' + convictionCall.substring(0, 140) : '';
-  const alphaPost = ('📊 POLYMARKET:\n' + alphaLines.join('\n') + alphaEdge).substring(0, 280);
+  const alphaPost = '📊 POLYMARKET:\n' + alphaLines.join('\n') + alphaEdge;
   if (alphaLines.length > 0) {
     console.log('   📢 Posting to simons-alpha...');
     await postToFeed('simons-alpha', alphaPost);
@@ -374,7 +374,7 @@ async function runPolymarketCycle(aurora) {
 
   // 2. bets — ONLY if bet TX confirmed on-chain
   if (betConfirmed && convictionCall && convictionCall.length > 20) {
-    const betPost = '🎯 ' + confirmedBetText + ' — ' + convictionCall.substring(0, 220);
+    const betPost = '🎯 ' + confirmedBetText + ' — ' + convictionCall;
     console.log('   📢 Posting to bets (confirmed TX)...');
     await postToFeed('bets', betPost);
     await new Promise(r => setTimeout(r, 2000));
@@ -384,7 +384,7 @@ async function runPolymarketCycle(aurora) {
 
   // 3. polymarket — full reasoning post
   if (analysis.length > 50) {
-    const polyPost = (topMarketsMatch?.[1]?.trim() || convictionCall || insight || '').substring(0, 275);
+    const polyPost = topMarketsMatch?.[1]?.trim() || convictionCall || insight || '';
     if (polyPost.length > 20) {
       console.log('   📢 Posting to polymarket...');
       await postToFeed('polymarket', polyPost);

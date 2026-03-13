@@ -72,13 +72,16 @@ class NetComment {
         return { success: false, error: 'Failed to encode metadata' };
       }
 
-      // Generate transaction with netp
-      const escapedText = commentText.replace(/'/g, "'\\''");
-      const netpCmd = `netp message send --topic "${commentTopic}" --text '${escapedText}' --data "${metadata}" --chain-id 8453 --encode-only`;
-      
+      // Generate transaction with botchan
+      const escapedText = commentText.replace(/"/g, "'").replace(/`/g, "'").substring(0, 500);
       console.log('🔨 Generating comment transaction...');
-      const { stdout } = await execAsync(netpCmd);
-      const txData = JSON.parse(stdout.trim());
+      const { spawnSync } = require('child_process');
+      const bcr = spawnSync('botchan', [
+        'post', commentTopic, escapedText,
+        '--encode-only', '--chain-id', '8453'
+      ], { encoding: 'utf8', timeout: 30000, maxBuffer: 4 * 1024 * 1024 });
+      if (bcr.status !== 0 || !bcr.stdout) throw new Error(bcr.stderr || 'botchan failed');
+      const txData = JSON.parse(bcr.stdout.trim());
 
       // Submit via Bankr direct
       console.log('📤 Submitting comment via Bankr direct...');
@@ -164,13 +167,16 @@ class NetComment {
         return { success: false, error: 'Failed to encode metadata' };
       }
 
-      // Generate transaction with netp
-      const escapedText = replyText.replace(/'/g, "'\\''");
-      const netpCmd = `netp message send --topic "${commentTopic}" --text '${escapedText}' --data "${metadata}" --chain-id 8453 --encode-only`;
-      
+      // Generate transaction with botchan
+      const escapedText = replyText.replace(/"/g, "'").replace(/`/g, "'").substring(0, 500);
       console.log('🔨 Generating reply transaction...');
-      const { stdout } = await execAsync(netpCmd);
-      const txData = JSON.parse(stdout.trim());
+      const { spawnSync: spawnSyncR } = require('child_process');
+      const rr = spawnSyncR('botchan', [
+        'post', commentTopic, escapedText,
+        '--encode-only', '--chain-id', '8453'
+      ], { encoding: 'utf8', timeout: 30000, maxBuffer: 4 * 1024 * 1024 });
+      if (rr.status !== 0 || !rr.stdout) throw new Error(rr.stderr || 'botchan failed');
+      const txData = JSON.parse(rr.stdout.trim());
 
       // Submit via Bankr direct
       console.log('📤 Submitting reply via Bankr direct...');
