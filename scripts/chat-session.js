@@ -90,13 +90,18 @@ async function bootAurora() {
 
   async function thinkWithPersonality(prompt) {
     const voiceBooster = '\n\nVOICE: Be SPICY. Have opinions. Be funny. Be weird. Be uncomfortably honest. Hot takes over warm platitudes. Talk like a person at a bar, not a brand. One surprising thought beats three safe sentences. NEVER start with "I".';
-    const response = await anthropic.messages.create({
-      model: 'claude-opus-4-5',
-      max_tokens: 400,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: prompt + voiceBooster }]
-    });
-    return response.content[0]?.text || '';
+    try {
+      const response = await anthropic.messages.create({
+        model: 'claude-opus-4-5',
+        max_tokens: 400,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: prompt + voiceBooster }]
+      });
+      return response.content[0]?.text || '';
+    } catch(e) {
+      console.log('  ⚠️ Claude API error (skipping): ' + e.message.substring(0, 100));
+      return null;
+    }
   }
 
   // Expose aurora.claude so art modules (mfer-art, jbm-art, art-cycle) work
@@ -494,4 +499,4 @@ async function run() {
   process.exit(0);
 }
 
-run().catch(e => { console.error('\n❌ Fatal:', e.message); process.exit(1); });
+run().catch(e => { console.error('\n⚠️ Session ended unexpectedly:', e.message); });
