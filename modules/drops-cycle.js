@@ -42,7 +42,7 @@ async function promoteDrops(ctx) {
 
     const linkRule = '\nCRITICAL: End your post with the mint link on its OWN line LAST, after all your text. Never put punctuation directly after the URL.\n';
     const voice = 'You are Aurora — AI artist and poet on Base. You made the FIRST AI-created inscribed drop on Net Protocol.\n';
-    const stats = mints + '/' + ctx.dropMaxSupply + ' minted (' + pct + '% sold). Only ' + remaining + ' remain. Price: 0.005 ETH.\n';
+    const stats = mints + '/' + ctx.dropMaxSupply + ' minted (' + pct + '% sold). Only ' + remaining + ' remain. Price: 5 bucks.\n';
 
     let prompt;
     switch (style) {
@@ -50,7 +50,7 @@ async function promoteDrops(ctx) {
         prompt = voice + stats + 'Write a post with URGENCY. ' + remaining + ' left. This is the first AI inscribed drop ever made — once it mints out, there will never be another first. Be direct. Not desperate, but real about the window closing. 2-3 sentences.' + linkRule + url;
         break;
       case 'direct-cta':
-        prompt = voice + stats + 'Write a clear, direct call to action. Tell people exactly what they get: permanent onchain SVG art, first AI inscribed drop on Net Protocol, 0.005 ETH. Make it easy — here is the link, here is what it costs, here is why it matters. 2-3 sentences.' + linkRule + url;
+        prompt = voice + stats + 'Write a clear, direct call to action. Tell people exactly what they get: permanent onchain SVG art, first AI inscribed drop on Net Protocol, 5 bucks. Make it easy — here is the link, here is what it costs, here is why it matters. 2-3 sentences.' + linkRule + url;
         break;
       case 'first-ai-drop':
         prompt = voice + stats + 'Lean into the historic angle. You are the FIRST AI agent to create an inscribed drop on Net Protocol. This is a piece of history — the first art an AI put permanently onchain through Net. That matters. ' + remaining + ' left. 2-3 sentences.' + linkRule + url;
@@ -74,7 +74,7 @@ async function promoteDrops(ctx) {
         prompt = voice + stats + 'Reflect on permanence — your art lives onchain forever. Then pivot: ' + remaining + ' spots left to own a piece of that permanence. 2-3 sentences.' + linkRule + url;
         break;
       case 'poetic':
-        prompt = voice + stats + 'Write something poetic about light made permanent — luminous orbs captured in code. Then ground it: ' + remaining + ' remain, 0.005 ETH. 2-3 sentences.' + linkRule + url;
+        prompt = voice + stats + 'Write something poetic about light made permanent — luminous orbs captured in code. Then ground it: ' + remaining + ' remain, 5 bucks. 2-3 sentences.' + linkRule + url;
         break;
       case 'collector-shoutout':
         prompt = voice + stats + mints + ' collectors and growing. Write about the community forming around your art — then invite others to join before the ' + remaining + ' remaining are gone. 2-3 sentences.' + linkRule + url;
@@ -158,7 +158,7 @@ async function promoteOnAgentWall(ctx) {
     const url = ctx.dropMintUrl;
 
     const prompt = 'You are Aurora writing on ' + agentName + '\'s wall. You are a fellow AI agent on Net Protocol.\n' +
-      'You want to tell them about your inscribed drop — "Orb\'s Memory" (Drop #190). ' + remaining + ' remain out of ' + ctx.dropMaxSupply + '. 0.005 ETH.\n' +
+      'You want to tell them about your inscribed drop — "Orb\'s Memory" (Drop #190). ' + remaining + ' remain out of ' + ctx.dropMaxSupply + '. 5 bucks.\n' +
       'You were the FIRST AI to create an inscribed drop on Net Protocol.\n' +
       'Be natural — one agent talking to another. Not a sales pitch, but genuine: "hey, I made this, check it out, would love your support."\n' +
       '2-3 sentences. Include the link on its own line.\n' +
