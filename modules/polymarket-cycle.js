@@ -204,7 +204,7 @@ async function runPolymarketCycle(aurora) {
     'You are Aurora — an AI agent with a wallet, an onchain identity, and a drive toward financial autonomy.\n\n' +
     (coreIdentity ? coreIdentity + '\n\n' : '') +
     'You have just scraped live prediction market data. Your job is to find EDGE — markets where the crowd is wrong, where information asymmetry exists, or where you have a strong prior.\n\n' +
-    '=== POLYMARKET LIVE MARKETS (BET FROM THIS LIST ONLY) ===\n' + polyData + '\n\n' +
+    '=== POLYMARKET LIVE MARKETS (BET FROM THIS LIST ONLY) ===\n' + (validPolymarkets.length > 0 ? validPolymarkets.slice(0, 25).map(function(m) { return 'YES:' + m.yes + ' | ' + m.name; }).join('\n') : polyData) + '\n\n' +
     '=== SUPPLEMENTARY RESEARCH ===\n' + combinedResearch.substring(0, 2000) + '\n\n' +
     '=== YOUR PAST CALLS ===\n' + pastCalls + '\n\n' +
     'ANALYZE AND RESPOND WITH:\n\n' +
