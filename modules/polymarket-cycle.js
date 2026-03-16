@@ -264,7 +264,7 @@ async function runPolymarketCycle(aurora) {
         const poll = await aurora.bankrAPI.pollJob(betRes.jobId);
         if (poll && poll.status === 'completed') {
           const resultText = (poll.result || '');
-          const betFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find|market.*not.*available|let me know|if you have a link|want to bet on one|closest.*market|send them over/i.test(resultText);
+          const betFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find|market.*not.*available|let me know|if you have a link|want to bet on one|closest.*market|send them over|step limit|hit my step|invalid.*hex|odd length/i.test(resultText);
           if (betFailed) {
             // Bankr couldn't find that market — try to extract suggested markets from response
             console.log('   ⚠️ Market not found on Bankr — scanning for suggestions...');
@@ -280,7 +280,7 @@ async function runPolymarketCycle(aurora) {
                   const fbPoll = await aurora.bankrAPI.pollJob(fbRes.jobId);
                   if (fbPoll && fbPoll.status === 'completed') {
                     const fbResult = (fbPoll.result || '');
-                    const fbFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find|let me know|if you have a link|want to bet on one|closest.*market|send them over/i.test(fbResult);
+                    const fbFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find|let me know|if you have a link|want to bet on one|closest.*market|send them over|step limit|hit my step|invalid.*hex|odd length/i.test(fbResult);
                     if (fbFailed) {
                       console.log('   ⚠️ Fallback bet also failed: ' + fbResult.substring(0, 100));
                     } else {
@@ -342,7 +342,7 @@ async function runPolymarketCycle(aurora) {
           const bondPoll = await aurora.bankrAPI.pollJob(bondRes.jobId);
           if (bondPoll && bondPoll.status === 'completed') {
             const bondResult = bondPoll.result || '';
-            const bondFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find|let me know|if you have a link|want to bet on one|closest.*market|send them over/i.test(bondResult);
+            const bondFailed = /couldn.t find|no active|not active|doesn.t appear|no polymarket|not found|send it over|doesn.t exist|unable to find|let me know|if you have a link|want to bet on one|closest.*market|send them over|step limit|hit my step|invalid.*hex|odd length/i.test(bondResult);
             if (!bondFailed) {
               betConfirmed = true;
               confirmedBetText = bondBet + ' (bond: ' + best.returnPct + ' return, ' + best.hoursUntilClose + 'h)';
