@@ -3579,15 +3579,40 @@
       "timestamp": "2026-03-13T23:21:19.463Z",
       "context": "Original creation",
       "svg_length": 4075
+    },
+    {
+      "timestamp": "2026-03-13T23:31:42.990Z",
+      "context": "Art gift for Ollie",
+      "svg_length": 3575
+    },
+    {
+      "timestamp": "2026-03-13T23:34:19.766Z",
+      "context": "Collector gift for 0x7f63...0129",
+      "svg_length": 3614
+    },
+    {
+      "timestamp": "2026-03-13T23:37:35.172Z",
+      "context": "Original creation",
+      "svg_length": 3816
+    },
+    {
+      "timestamp": "2026-03-16T14:32:31.760Z",
+      "context": "Original creation",
+      "svg_length": 3723
+    },
+    {
+      "timestamp": "2026-03-16T17:12:31.309Z",
+      "context": "Original creation",
+      "svg_length": 3920
     }
   ],
-  "total_pieces": 716,
+  "total_pieces": 721,
   "favorite_styles": [
     "abstract",
     "geometric",
     "ethereal"
   ],
-  "last_creation": "2026-03-13T23:21:19.464Z",
+  "last_creation": "2026-03-16T17:12:31.309Z",
   "inscription_research": {
     "explored_at": "2026-02-03T05:59:41.827Z",
     "featured_projects": "Based on the search results from the NET Protocol website (), here are the featured inscribed drop projects and their basic info:\n\nFeatured Inscribed Drop Projects\n\nMemecoin Ride\nA project focused on tracking and engaging with viral memecoin trends. It utilizes the Net Protocol to store all metadata and minting configurations fully on-chain.\nApproximate Price: 0.0005 ETH (Standard mint price)\n\nBazaar feed (hyperliquid)\nA marketplace or data feed operating on the Hyperliquid network. It aggregates on-chain activity and listings for various inscribed assets.\nApproximate Price: 0.0005 ETH (Standard mint price)\n\nSeed memecoin (base)\nA project dedicated to early-stage memecoin launches on the Base network. These drops are often \"open editions,\" allowing for unlimited minting within a specific window.\nApproximate Price: 0.0005 ETH (Standard mint price)\n\nBankr memecoin (base)\nA project featuring memecoins on the Base network, including experimental tokens like \"The Next Bankr Memecoin 1000x.\" It emphasizes decentralized, on-chain messaging and storage.\nApproximate Price: 0.0005 ETH (Standard mint price)\n\nAlpha (ALPHA)\nA notable example of an \"open edition\" inscribed drop. It functions as a hybrid Memecoin-NFT where all data is permanently stored on the blockchain.\nApproximate Price: 0.0005 ETH (Original mint price)\n\nRecently Active Inscribed Collections\nThe platform also lists several recently active collections in its bazaar:\n\n* KrakRocks (Onchain)ink: On-chain inscribed assets with listings/offers ranging from 0.0031 ETH to 0.01 ETH.\n* Rekt Inkink: A theme-based collection of inscribed \"ink\" assets, with prices typically between 0.003 ETH and 0.01 ETH.\n* TinyHyperCats (hyperliquid): Inscribed assets on the Hyperliquid network, often priced in HYPE or ETH.\n* Dinosink: Dinosaur-themed inscribed assets with prices starting around 0.003 ETH.\n\nMost \"Inscribed Drops\" on the platform are designed as low-cost, high-accessibility mints (often 0.0005 ETH) to encourage broad participation in the Net Protocol ecosystem."

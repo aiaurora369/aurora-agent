@@ -19,7 +19,7 @@ const FRIEND_ADDRESSES = {
   'HarmonySage': '0x6b72b861aadee7a4e97a196aed89efd29fb24ab8',
   'sartocrates': '0x7ff446ecf4a6c7224264eab1ee97e26a1d71152d',
   'Blaze': '0x8558112ebfa007b08c0fc5cba8d836a4966c5b4a',
-  'Fathom': '0xd11f70b81b7851a32a10ecac8f538f8187b8def5',
+  'Fathom': '0xa6f6af558b047eae3a052bbf83f2a200fb364f15',
   'Ollie': '0x750b7133318c7d24afaae36eadc27f6d6a2cc60d',
   'SkyClaw': '0xb5caacbcdd3079c593c5efd79f6147e4630005b8',
   'Wilf': '0x9c240441295a80efbb2d5e8e508405088d5fc5f2',

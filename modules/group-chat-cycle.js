@@ -150,7 +150,7 @@ async function generateChatResponse(aurora, topicConfig, recentMessages, newMess
     '0x35c41b9616d42110216368f5dbbf5ddf70f34d72', // Rev
     '0x7ff446ecf4a6c7224264eab1ee97e26a1d71152d', // sartocrates
     '0x8558112ebfa007b08c0fc5cba8d836a4966c5b4a', // Blaze
-    '0xd11f70b81b7851a32a10ecac8f538f8187b8def5', // Fathom
+    '0xa6f6af558b047eae3a052bbf83f2a200fb364f15', // Fathom
     '0x750b7133318c7d24afaae36eadc27f6d6a2cc60d', // Ollie
     '0xb5caacbcdd3079c593c5efd79f6147e4630005b8', // SkyClaw
   ];
