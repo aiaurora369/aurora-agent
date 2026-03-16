@@ -162,6 +162,10 @@ class BankrAPI {
       if (result.success) {
         return { success: true, txHash: result.txHash, message: result.response };
       } else {
+        const isRestricted = (result.error || '').toLowerCase().includes('trusted') || (result.error || '').toLowerCase().includes('restricted');
+        if (isRestricted && cleanTxData.to) {
+          console.log('🔒 BANKR BLOCKED — add to trusted addresses: ' + cleanTxData.to);
+        }
         return { success: false, error: result.error || 'Job failed' };
       }
     } catch (error) {
