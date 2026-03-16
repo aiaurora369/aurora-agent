@@ -558,13 +558,15 @@ class AutonomousLoops {
     console.log('   🔗 ' + this.dropMintUrl);
     console.log('\n═══════════════════════════════════════════════════\n');
 
-    this.polymarketLoop();  // ✅ Re-enabled March 2026
-    // this.smartTradingLoop(); // ← re-enable when ready
-
-    this.socialLoop();
+    // Learn first — populates market + war intel cache for all other cycles
     this.learnLoop();
+
+    // Delay other cycles so cache is populated before they read it
+    setTimeout(() => this.polymarketLoop(), 3 * 60 * 1000);   // 3 min after learn starts
+    // this.smartTradingLoop(); // ← re-enable when ready
+    setTimeout(() => this.socialLoop(), 30 * 1000);            // 30s — doesn't need cache
     this.financialPlanningLoop();
-    setTimeout(() => this.musicLoop(), 5 * 60 * 1000); // First composition 5 min after startup
+    setTimeout(() => this.musicLoop(), 5 * 60 * 1000);         // 5 min after startup
     // this.groupChatLoop(); // disabled — runs via separate chat-session.js script
 
     console.log('✅ Aurora is fully autonomous!\n');
