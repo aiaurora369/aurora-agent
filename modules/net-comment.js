@@ -83,19 +83,14 @@ class NetComment {
       if (bcr.status !== 0 || !bcr.stdout) throw new Error(bcr.stderr || 'botchan failed');
       const txData = JSON.parse(bcr.stdout.trim());
 
-      // Submit via Bankr direct
-      console.log('📤 Submitting comment via Bankr direct...');
-      const res = await fetch('https://api.bankr.bot/agent/submit', {
-        method: 'POST',
-        headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transaction: txData, waitForConfirmation: true })
-      });
-      const d = await res.json();
-      if (d.success) {
+      // Submit via bankrAPI (queued — prevents in-flight limit errors)
+      console.log('📤 Submitting comment via Bankr...');
+      const result = await this.bankrAPI.submitTransactionDirect(txData);
+      if (result.success) {
         console.log('✅ Comment posted successfully!');
-        return { success: true, txHash: d.transactionHash, commentTopic };
+        return { success: true, txHash: result.txHash, commentTopic };
       }
-      return { success: false, error: d.error || JSON.stringify(d) };
+      return { success: false, error: result.error || 'submit failed' };
     } catch (error) {
       console.error('❌ Failed to comment:', error.message);
       return { success: false, error: error.message };
@@ -134,13 +129,8 @@ class NetComment {
         return this.commentOnPost(originalPost, commentText);
       }
 
-      const res = await fetch('https://api.bankr.bot/agent/submit', {
-        method: 'POST',
-        headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transaction: txData, waitForConfirmation: true })
-      });
-      const d = await res.json();
-      if (d.success) return { success: true, txHash: d.transactionHash, commentTopic };
+      const artResult = await this.bankrAPI.submitTransactionDirect(txData);
+      if (artResult.success) return { success: true, txHash: artResult.txHash, commentTopic };
       // Fall back to text only
       return this.commentOnPost(originalPost, commentText);
     } catch(e) {
@@ -178,19 +168,14 @@ class NetComment {
       if (rr.status !== 0 || !rr.stdout) throw new Error(rr.stderr || 'botchan failed');
       const txData = JSON.parse(rr.stdout.trim());
 
-      // Submit via Bankr direct
-      console.log('📤 Submitting reply via Bankr direct...');
-      const replyRes = await fetch('https://api.bankr.bot/agent/submit', {
-        method: 'POST',
-        headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transaction: txData, waitForConfirmation: true })
-      });
-      const replyD = await replyRes.json();
-      if (replyD.success) {
+      // Submit via bankrAPI (queued — prevents in-flight limit errors)
+      console.log('📤 Submitting reply via Bankr...');
+      const replyResult = await this.bankrAPI.submitTransactionDirect(replyTxData);
+      if (replyResult.success) {
         console.log('✅ Reply posted successfully!');
-        return { success: true, txHash: replyD.transactionHash };
+        return { success: true, txHash: replyResult.txHash };
       }
-      return { success: false, error: replyD.error || JSON.stringify(replyD) };
+      return { success: false, error: replyResult.error || 'submit failed' };
     } catch (error) {
       console.error('❌ Failed to reply:', error.message);
       return { success: false, error: error.message };
