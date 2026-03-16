@@ -127,21 +127,22 @@ class BankrAPI {
       
       console.log('📝 Generating transaction with botchan...');
       
-      let cmd;
+      const { spawnSync: _spawnFeed2 } = require('child_process');
+      let _feedArgs2;
       if (artSVG) {
-        // Art post: content is caption, artSVG goes in --data
         console.log('🎨 Creating art post with rendered canvas...');
-        cmd = `botchan post "feed-${targetFeed}" "${content.replace(/"/g, '\\"')}" --data '${artSVG}' --chain-id 8453 --encode-only`;
+        _feedArgs2 = ['post', 'feed-' + targetFeed, content.substring(0, 450), '--data', artSVG, '--encode-only', '--chain-id', '8453'];
       } else {
-        // Regular post: just text
-        cmd = `botchan post "feed-${targetFeed}" '${content.replace(/'/g, "'\\''")}' --chain-id 8453 --encode-only`;
+        _feedArgs2 = ['post', 'feed-' + targetFeed, content.substring(0, 450), '--encode-only', '--chain-id', '8453'];
       }
       
       if (feedAddress) {
         console.log(`🎯 Target feed: ${feedAddress}`);
       }
       
-      const { stdout } = await execAsync(cmd, { timeout: 30000 });
+      const _srFeed2 = _spawnFeed2('botchan', _feedArgs2, { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
+      if (_srFeed2.status !== 0 || !_srFeed2.stdout) throw new Error(_srFeed2.stderr || 'botchan failed');
+      const stdout = _srFeed2.stdout;
       const txData = JSON.parse(stdout);
       
       console.log('📤 Submitting to Bankr...');

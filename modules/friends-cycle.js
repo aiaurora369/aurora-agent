@@ -284,9 +284,10 @@ async function postToFriendWall(name, friend, ctx) {
 
   try {
     const feed = 'feed-' + friend.address.toLowerCase();
-    const escaped = post.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
-    const cmd = 'botchan post "' + feed + '" "' + escaped + '" --encode-only --chain-id 8453';
-    const txOutput = execSync(cmd, { timeout: 30000 }).toString();
+    const { spawnSync: _spawnWall } = require('child_process');
+    const _srWall = _spawnWall('botchan', ['post', feed, post.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
+    if (_srWall.status !== 0 || !_srWall.stdout) throw new Error(_srWall.stderr || 'botchan failed');
+    const txOutput = _srWall.stdout;
     const txData = JSON.parse(txOutput);
     const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
 

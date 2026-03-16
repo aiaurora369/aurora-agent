@@ -92,15 +92,16 @@ class BankrAPI {
       const { feedAddress, artSVG } = options;
       const targetFeed = feedAddress || (Math.random() < 0.5 ? 'general' : '0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5');
 
-      let cmd;
+      const { spawnSync: _spawnFeed } = require('child_process');
+      let _feedArgs;
       if (artSVG) {
-        cmd = 'botchan post "feed-' + targetFeed + '" "' + content.replace(/"/g, '\\"') + '" --data \'' + artSVG + '\' --chain-id 8453 --encode-only';
+        _feedArgs = ['post', 'feed-' + targetFeed, content.substring(0, 450), '--data', artSVG, '--encode-only', '--chain-id', '8453'];
       } else {
-        const escaped = content.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
-        cmd = 'botchan post "feed-' + targetFeed + '" "' + escaped + '" --chain-id 8453 --encode-only';
+        _feedArgs = ['post', 'feed-' + targetFeed, content.substring(0, 450), '--encode-only', '--chain-id', '8453'];
       }
-
-      const { stdout } = await execAsync(cmd, { timeout: 30000 });
+      const _srFeed = _spawnFeed('botchan', _feedArgs, { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
+      if (_srFeed.status !== 0 || !_srFeed.stdout) throw new Error(_srFeed.stderr || 'botchan failed');
+      const stdout = _srFeed.stdout;
       const txData = JSON.parse(stdout);
 
       return await this.submitTransactionDirect(txData);

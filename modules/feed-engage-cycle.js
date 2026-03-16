@@ -81,13 +81,14 @@ async function postToThemedFeed(ctx) {
       const post = await ctx.aurora.thinkWithPersonality(selected.post + groundingRules);
       if (post) {
         console.log('   📝 "' + post.substring(0, 80) + '..."');
-        const escaped = post.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
-        const cmd = 'botchan post "' + selected.feed + '" "' + escaped + '" --encode-only --chain-id 8453';
+        const { spawnSync: _spFE } = require('child_process');
+        const _srFE = _spFE('botchan', ['post', selected.feed, post.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
+        if (_srFE.status !== 0 || !_srFE.stdout) throw new Error(_srFE.stderr || 'botchan failed');
     if (Math.random() < 0.8) {
       try { console.log('   📡 Attempting Farcaster cross-post...'); await crossPostText(post); } catch(e) { console.log('   ⚠️ FC cross-post error: ' + e.message); }
       // try { await crossPostToX(post); } catch(e) {} // PAUSED
     }
-        const txOutput = execSync(cmd, { timeout: 30000 }).toString();
+        const txOutput = _srFE.stdout;
         const txData = JSON.parse(txOutput);
         const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
         if (result.success) {

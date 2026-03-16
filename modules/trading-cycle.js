@@ -27,11 +27,10 @@ async function postToAgentFinance(aurora, message) {
 
 async function postToTradingFeed(aurora, message) {
   try {
-    const escaped = message.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
-    const encoded = execSync(
-      'botchan post trading "' + escaped + '" --encode-only --chain-id 8453',
-      { cwd: path.join(__dirname, '..'), encoding: 'utf8', timeout: 10000 }
-    ).trim();
+    const { spawnSync: _spTrade } = require('child_process');
+    const _srTrade = _spTrade('botchan', ['post', 'trading', message.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 10000, maxBuffer: 8*1024*1024 });
+    if (_srTrade.status !== 0 || !_srTrade.stdout) throw new Error(_srTrade.stderr || 'botchan failed');
+    const encoded = _srTrade.stdout.trim();
     const txData = JSON.parse(encoded);
     const result = await aurora.bankrAPI.submitTransactionDirect(txData);
     if (result.success) console.log('   Posted to trading feed!');

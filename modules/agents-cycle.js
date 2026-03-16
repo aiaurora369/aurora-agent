@@ -171,10 +171,10 @@ async function postToAgentWall(name, agent, dropUrl, dropMints, dropRemaining, c
     console.log('      \ud83d\udcac "' + post.substring(0, 80) + '..."');
 
     try {
-      const { execSync } = require('child_process');
-      const escaped = post.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
-      const cmd = 'botchan post "feed-' + agent.address.toLowerCase() + '" "' + escaped + '" --encode-only --chain-id 8453';
-      const txOutput = execSync(cmd, { timeout: 30000 }).toString();
+      const { spawnSync: _spA } = require('child_process');
+      const _srA = _spA('botchan', ['post', 'feed-' + agent.address.toLowerCase(), post.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
+      if (_srA.status !== 0 || !_srA.stdout) throw new Error(_srA.stderr || 'botchan failed');
+      const txOutput = _srA.stdout;
       const txData = JSON.parse(txOutput);
       const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
       if (result.success) {

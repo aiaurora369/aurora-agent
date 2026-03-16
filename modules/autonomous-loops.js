@@ -289,10 +289,10 @@ class AutonomousLoops {
     try {
       await require('./bai-cycle').runOnce(this.aurora, {
         postToBAI: async (text) => {
-          const { execSync } = require('child_process');
-          const escaped = text.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
-          const cmd = 'botchan post "bai-evidence" "' + escaped + '" --encode-only --chain-id 8453';
-          const txOutput = execSync(cmd, { timeout: 30000 }).toString();
+          const { spawnSync: _spBAI } = require('child_process');
+          const _srBAI = _spBAI('botchan', ['post', 'bai-evidence', text.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
+          if (_srBAI.status !== 0 || !_srBAI.stdout) throw new Error(_srBAI.stderr || 'botchan failed');
+          const txOutput = _srBAI.stdout;
           const txData = JSON.parse(txOutput);
           return this.aurora.bankrAPI.submitTransactionDirect(txData);
         }

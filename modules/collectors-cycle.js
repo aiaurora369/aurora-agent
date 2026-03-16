@@ -63,8 +63,9 @@ async function runOnce(ctx) {
           if (thanks) {
             console.log('      \ud83d\udcac "' + thanks.substring(0, 70) + '..."');
             const feed = 'feed-' + addr;
-            const escapedThanks = thanks.replace(/"/g, '\\"').replace(/\$/g, '\\$');
-            const postCmd = 'botchan post "' + feed + '" "' + escapedThanks + '" --encode-only --chain-id 8453';
+            const { spawnSync: _spT } = require('child_process');
+            const _srT = _spT('botchan', ['post', feed, thanks.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
+            if (_srT.status !== 0 || !_srT.stdout) throw new Error(_srT.stderr || 'botchan failed');
             try {
               const txOutput = execSync(postCmd, { timeout: 30000 }).toString();
               const txData = JSON.parse(txOutput);
@@ -292,9 +293,11 @@ async function sendCollectorPoem(displayName, addr, theirPosts, ctx) {
     try {
       const { execSync } = require('child_process');
       const feed = 'feed-' + addr;
-      const escaped = poem.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/[\r\n]+/g, ' / ');
-      const cmd = 'botchan post "' + feed + '" "' + escaped + '" --encode-only --chain-id 8453';
-      const txOutput = execSync(cmd, { timeout: 30000 }).toString();
+      const { spawnSync: _spP } = require('child_process');
+      const cleanPoem = poem.replace(/[\r\n]+/g, ' / ').substring(0, 450);
+      const _srP = _spP('botchan', ['post', feed, cleanPoem, '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
+      if (_srP.status !== 0 || !_srP.stdout) throw new Error(_srP.stderr || 'botchan failed');
+      const txOutput = _srP.stdout;
       const txData = JSON.parse(txOutput);
       const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
 

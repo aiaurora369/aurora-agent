@@ -25,14 +25,16 @@ async function run(aurora) {
 
     const feed = poetryFeeds[Math.floor(Math.random() * poetryFeeds.length)];
 
-    const escapedPoem = poem.replace(/"/g, '\\"').replace(/[\r\n]+/g, ' / ');
-    const encodeCmd = 'botchan post "' + feed + '" "' + escapedPoem + '" --encode-only --chain-id 8453';
+    const { spawnSync: _spPoetry } = require('child_process');
+    const cleanPoetry = poem.replace(/[\r\n]+/g, ' / ').substring(0, 450);
+    const _srPoetry = _spPoetry('botchan', ['post', feed, cleanPoetry, '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 15000, maxBuffer: 8*1024*1024 });
+    if (_srPoetry.status !== 0 || !_srPoetry.stdout) throw new Error(_srPoetry.stderr || 'botchan failed');
     // Cross-post poetry to Farcaster (60% chance)
     if (Math.random() < 0.85) {
       try { console.log('   📡 Attempting Farcaster poetry cross-post...'); await crossPostText(poem); } catch(e) { console.log('   ⚠️ FC poetry error: ' + e.message); }
       // X posting disabled: try { await crossPostToX(poem); } catch(e) {}
     }
-    const encoded = JSON.parse(execSync(encodeCmd, { timeout: 15000 }).toString());
+    const encoded = JSON.parse(_srPoetry.stdout);
 
     const result = await aurora.bankrAPI.submitTransactionDirect(encoded);
     if (result && result.txHash) {
