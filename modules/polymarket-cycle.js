@@ -437,7 +437,7 @@ async function runPolymarketCycle(aurora) {
 
   // 3. polymarket — full reasoning post
   if (analysis.length > 50) {
-    const polyPost = (topMarketsMatch?.[1]?.trim() || convictionCall || insight || '').substring(0, 275);
+    const polyPost = (topMarketsMatch?.[1]?.trim() || convictionCall || insight || '').substring(0, 450);
     if (polyPost.length > 20) {
       console.log('   📢 Posting to polymarket...');
       await postToFeed('polymarket', polyPost);
