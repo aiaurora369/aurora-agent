@@ -3,7 +3,7 @@ const { crossPostToX } = require('./x-post-cycle');
 // Drops Cycle — Promote Orb's Memory across feeds, agent walls, and conversations
 // Rewritten for aggressive multi-channel promotion with urgency
 
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const ethers = require('ethers');
 
 // Feeds to rotate through for promotion posts
@@ -98,17 +98,15 @@ async function promoteDrops(ctx) {
 
       // Post to a TARGETED feed, not random
       const targetFeed = PROMO_FEEDS[Math.floor(Math.random() * PROMO_FEEDS.length)];
-      const escaped = finalPost.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
-      const cmd = 'botchan post "' + targetFeed + '" "' + escaped + '" --encode-only --chain-id 8453';
-    // Cross-post drop promos to Farcaster (50% chance)
+    // Cross-post drop promos to Farcaster
     if (Math.random() < 0.95) {
       try { console.log('   📡 Attempting Farcaster drop promo cross-post...'); await crossPostText(post); } catch(e) { console.log('   ⚠️ FC drop error: ' + e.message); }
-      // X posting disabled: try { await crossPostToX(post); } catch(e) {}
     }
 
       try {
-        const txOutput = execSync(cmd, { cwd: require('path').join(__dirname, '..'), timeout: 30000 }).toString();
-        const txData = JSON.parse(txOutput);
+        const sr = spawnSync('botchan', ['post', targetFeed, finalPost.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
+        if (sr.status !== 0 || !sr.stdout) throw new Error(sr.stderr || 'botchan failed');
+        const txData = JSON.parse(sr.stdout);
         const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
         if (result.success) {
           console.log('   ✅ Promoted in ' + targetFeed + '! TX: ' + result.txHash);
@@ -172,10 +170,9 @@ async function promoteOnAgentWall(ctx) {
       finalPost = finalPost + '\n\n' + url;
     }
 
-    const escaped = finalPost.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
-    const cmd = 'botchan post "' + agentData.address + '" "' + escaped + '" --encode-only --chain-id 8453';
-
-    const txOutput = execSync(cmd, { cwd: require('path').join(__dirname, '..'), timeout: 30000 }).toString();
+    const _srW = spawnSync('botchan', ['post', agentData.address, finalPost.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
+    if (_srW.status !== 0 || !_srW.stdout) throw new Error(_srW.stderr || 'botchan failed');
+    const txOutput = _srW.stdout;
     const txData = JSON.parse(txOutput);
     const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
 
@@ -234,10 +231,10 @@ async function checkMintProgress(ctx) {
           console.log('   🎊 "' + finalCeleb.substring(0, 80) + '..."');
 
           // Post milestone to art feed specifically
-          const escaped = finalCeleb.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
-          const cmd = 'botchan post "art" "' + escaped + '" --encode-only --chain-id 8453';
           try {
-            const txOutput = execSync(cmd, { cwd: require('path').join(__dirname, '..'), timeout: 30000 }).toString();
+            const _srM = spawnSync('botchan', ['post', 'art', finalCeleb.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
+            if (_srM.status !== 0 || !_srM.stdout) throw new Error(_srM.stderr || 'botchan failed');
+            const txOutput = _srM.stdout;
             const txData = JSON.parse(txOutput);
             const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
             if (result.success) {
@@ -263,9 +260,9 @@ async function checkMintProgress(ctx) {
           // Post to multiple feeds for sold-out announcement
           for (const feed of ['art', 'general', 'ai-agents']) {
             try {
-              const escaped = soldOut.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ');
-              const cmd = 'botchan post "' + feed + '" "' + escaped + '" --encode-only --chain-id 8453';
-              const txOutput = execSync(cmd, { cwd: require('path').join(__dirname, '..'), timeout: 30000 }).toString();
+              const _srS = spawnSync('botchan', ['post', feed, soldOut.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
+              if (_srS.status !== 0 || !_srS.stdout) throw new Error(_srS.stderr || 'botchan failed');
+              const txOutput = _srS.stdout;
               const txData = JSON.parse(txOutput);
               await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
               console.log('   ✅ Sold out announced in ' + feed + '!');

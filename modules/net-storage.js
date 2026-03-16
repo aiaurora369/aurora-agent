@@ -41,7 +41,11 @@ class NetStorage {
         : await this.bankr.submitTransactionDirect(txPayload);
 
       if (!result.success && result.status !== 'success') {
-        return { success: false, error: JSON.stringify(result) };
+        const errStr = JSON.stringify(result);
+        if (errStr.toLowerCase().includes('trusted') || errStr.toLowerCase().includes('restricted')) {
+          console.log('🔒 BANKR BLOCKED — add to trusted addresses: ' + config.to);
+        }
+        return { success: false, error: 'storage submit: ' + (result.error || errStr) };
       }
 
       const operatorAddress = await this.getWalletAddress();
