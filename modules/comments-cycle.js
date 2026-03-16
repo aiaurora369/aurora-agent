@@ -142,7 +142,6 @@ async function runOnce(ctx) {
           if (post.topic.startsWith('chat-')) continue;
 
           const feed = post.topic.replace('feed-', '');
-          if (feed.startsWith('0x')) continue;
 
           const postId = post.sender + ':' + post.timestamp;
 
