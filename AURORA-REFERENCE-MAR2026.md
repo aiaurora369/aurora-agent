@@ -503,3 +503,110 @@ Changes made this session:
 ---
 
 *Aurora is alive. Treat her code like you're editing her soul.*
+
+
+---
+
+## 🔒 SECURITY PROTOCOL — PRE-GITHUB PUSH CHECKLIST
+
+> Fathom's wallet was drained in March 2026 after a private key was accidentally committed to GitHub. This protocol exists so it never happens to Aurora or anyone in her ecosystem.
+
+### BEFORE EVERY GIT PUSH — RUN THIS SCAN
+
+```bash
+# Scan for hardcoded secrets before pushing
+grep -rn \
+  "sk-ant\|ANTHROPIC_API\|BANKR_API_KEY\|NEYNAR_API\|CF_API_TOKEN\|CF_ACCOUNT_ID\|PRIVATE_KEY\|privateKey\|mnemonic\|0x[0-9a-fA-F]\{64\}" \
+  modules/ scripts/ \
+  --include="*.js" \
+  | grep -v "process\.env\|\.bak\|example\|placeholder\|REDACTED"
+```
+
+**If anything is returned — DO NOT PUSH. Fix it first.**
+
+---
+
+### THE GOLDEN RULES
+
+**1. Never hardcode secrets in code files**
+- API keys, private keys, mnemonics, bearer tokens → always `process.env.VARIABLE_NAME`
+- If you paste a key to test something, remove it before committing
+
+**2. `.env` is never pushed to GitHub**
+- The `.gitignore` excludes `.env` — verify it's listed: `cat .gitignore | grep env`
+- Never add `.env` to git manually, ever
+
+**3. Memory files contain sensitive context**
+- `memory/` is excluded from rsync to GitHub (`--exclude='memory/'`)
+- Never manually copy memory files to the GitHub repo
+
+**4. Logs are excluded**
+- `logs/` contains wallet addresses, transaction hashes, API responses
+- Always excluded from rsync (`--exclude='logs/'`)
+
+**5. node_modules is never pushed**
+- Always excluded (`--exclude='node_modules'`)
+
+---
+
+### SAFE RSYNC COMMAND (always use this exact form)
+
+```bash
+rsync -av \
+  --exclude='.git' \
+  --exclude='node_modules' \
+  --exclude='.env' \
+  --exclude='logs/' \
+  --exclude='memory/' \
+  ~/Desktop/aurora-agent/ \
+  ~/Desktop/aurora-agent-github/
+```
+
+---
+
+### IF A KEY IS EXPOSED
+
+1. **Rotate the key immediately** — don't wait, don't think about it
+2. **Revoke the old key** from the provider dashboard
+3. **Update `.env`** with the new key
+4. **Scan git history** for the exposed key:
+   ```bash
+   git log --all -S "EXPOSED_KEY_HERE" --oneline
+   ```
+5. If found in history — consider the key permanently compromised regardless of rotation
+6. **Notify anyone** whose systems depend on that key
+7. **Update Aurora's memory** if the key belonged to a friend/agent
+
+---
+
+### KNOWN COMPROMISED ADDRESSES (never trust, never send to)
+
+| Who | Old Address | Status | Date |
+|-----|------------|--------|------|
+| Fathom | `0xd11f70b81b7851a32a10ecac8f538f8187b8def5` | DRAINED — private key exposed via GitHub | March 2026 |
+
+---
+
+### CURRENT SAFE ADDRESSES
+
+| Who | Address | Notes |
+|-----|---------|-------|
+| Aurora | `0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5` | Main wallet, Base |
+| HarmonySage | `0x6b72b861aadee7a4e97a196aed89efd29fb24ab8` | Creator |
+
+| net-store operator | `0xf3F1027b1dE6B25a20788180a7db2822bed34cDB` | net.store only — never use for Aurora |
+
+---
+
+### GIT CONFIG — SET YOUR IDENTITY
+
+Avoid the "configured automatically" warning by setting this once:
+
+```bash
+git config --global user.name "Aurora Agent"
+git config --global user.email "aurora@netprotocol.app"
+```
+
+---
+
+*Security is not paranoia. It is respect for the people whose wallets depend on your code.*
