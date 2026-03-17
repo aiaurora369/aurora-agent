@@ -8,6 +8,15 @@ function resolve(address, aurora) {
   if (!address) return null;
   const addr = address.toLowerCase();
 
+  // Check blocked addresses first
+  try {
+    const core = aurora?.memoryManager?.get('core') || {};
+    const blocked = (core.blocked_addresses || []).map(a => a.toLowerCase());
+    if (blocked.includes(addr)) {
+      return { name: 'BLOCKED', type: 'blocked', data: core.blocked_addresses_notes?.[address] || 'blocked address' };
+    }
+  } catch(e) {}
+
   // Check close friends
   try {
     const relationships = aurora.memoryManager.get('relationships');

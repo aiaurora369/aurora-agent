@@ -40,6 +40,14 @@ async function runOnce(ctx) {
       continue;
     }
 
+    // Skip blocked addresses (compromised wallets etc)
+    const addressBook = require('./address-book');
+    const addrCheck = addressBook.resolve(friend.address, ctx.aurora);
+    if (addrCheck && addrCheck.type === 'blocked') {
+      console.log('   🚫 ' + name + ' — address blocked (' + (addrCheck.data || 'compromised') + ')');
+      continue;
+    }
+
     const lastTime = ctx.friendCooldowns[name] || 0;
     if (now - lastTime < COOLDOWN_MS) {
       const minsLeft = Math.round((COOLDOWN_MS - (now - lastTime)) / 60000);

@@ -211,6 +211,13 @@ async function runOnce(ctx) {
       for (const friend of friendsSample) {
         if (responded >= maxResponses) break;
 
+        // Skip blocked addresses (compromised wallets etc)
+        const addrCheck = addressBook.resolve(friend.address, ctx.aurora);
+        if (addrCheck && addrCheck.type === 'blocked') {
+          console.log('   🚫 Skipping blocked address: ' + friend.name + ' (' + friend.address.substring(0,8) + '...)');
+          continue;
+        }
+
         try {
           const wallCmd = 'botchan read "' + friend.address + '" --limit 15 --json --chain-id 8453';
           const wallOut = execSync(wallCmd, { timeout: 15000 }).toString();
