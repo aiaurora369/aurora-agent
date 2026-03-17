@@ -585,13 +585,19 @@ const TEMPLATES = {
   <line x1="100" y1="302" x2="100" y2="345" stroke="#2a1f12" stroke-width="8" stroke-linecap="round"/>
   <line x1="400" y1="302" x2="400" y2="345" stroke="#2a1f12" stroke-width="8" stroke-linecap="round"/>`;
 
-      // mfer sitting at table
-      svg += drawMfer(mfer, 175, 210, 0.66, 'sitting');
+      // mfer sitting at table — forceDark=true so mfer is always visible on dark bg
+      svg += drawMfer(mfer, 175, 210, 0.66, 'sitting', true);
 
-      // sign on table
-      const txt = (texts.text || 'change my mind').substring(0, 55);
+      // sign on table — word wrapped
+      const txt = (texts.text || 'change my mind').substring(0, 120);
+      const words = txt.split(' ');
       const lines = [];
-      for (let i = 0; i < txt.length; i += 20) lines.push(txt.substring(i, i+20));
+      let line = '';
+      for (const w of words) {
+        if ((line + ' ' + w).trim().length > 18) { lines.push(line.trim()); line = w; }
+        else line = (line + ' ' + w).trim();
+      }
+      if (line) lines.push(line.trim());
 
       svg += `<rect x="240" y="225" width="195" height="${30 + lines.length * 22}" rx="5" fill="#fffff0" stroke="#ccc" stroke-width="2"/>`;
       lines.forEach((l, i) => {
