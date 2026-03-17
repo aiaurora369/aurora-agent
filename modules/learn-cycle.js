@@ -197,6 +197,10 @@ async function runOnce(aurora, helpers) {
       { name: 'CoinDesk',     url: RESEARCH_SOURCES.coindesk },
       { name: 'BBC Sport',    url: RESEARCH_SOURCES.bbcSport },
       { name: 'ESPN Soccer',  url: RESEARCH_SOURCES.espnSoccer },
+      { name: 'BOJ',          url: RESEARCH_SOURCES.bojAnnouncements },
+      { name: 'RBA',          url: RESEARCH_SOURCES.rbaReleases },
+      { name: 'Reuters Asia', url: RESEARCH_SOURCES.reutersAsia },
+      { name: 'Reuters EU',   url: RESEARCH_SOURCES.reutersEurope },
     ];
     const intel = { timestamp: new Date().toISOString(), sources: {} };
     for (const source of sources) {

@@ -143,6 +143,10 @@ const RESEARCH_SOURCES = {
   coindesk:        'https://www.coindesk.com',
   bbcSport:        'https://www.bbc.com/sport/football',
   espnSoccer:      'https://www.espn.com/soccer/',
+  bojAnnouncements:'https://www.boj.or.jp/en/announcements/',
+  rbaReleases:     'https://www.rba.gov.au/media-releases/',
+  reutersAsia:     'https://www.reuters.com/world/asia-pacific/',
+  reutersEurope:   'https://www.reuters.com/world/europe/',
   theBlock:        'https://www.theblock.co',
   coinglass:       'https://www.coinglass.com',
   // Whale tracking

@@ -84,9 +84,13 @@ async function runPolymarketCycle(aurora) {
           return true;
         } catch(e) { return false; }
       });
+      const now = Date.now();
       const lines = filtered.slice(0, 15).map(m => {
         const yes = m.outcomePrices ? JSON.parse(m.outcomePrices)[0] : '?';
-        return `${m.question} | Yes: ${parseFloat(yes).toFixed(3)} | Vol: ${Math.round((m.volume24hr||0)).toLocaleString()}`;
+        const endDate = m.endDate || m.end_date_iso || null;
+        const hoursUntilClose = endDate ? ((new Date(endDate) - now) / 3600000).toFixed(1) : null;
+        const urgency = hoursUntilClose && hoursUntilClose < 24 ? ` | ⏰ RESOLVES IN ${hoursUntilClose}h` : (hoursUntilClose ? ` | closes in ${hoursUntilClose}h` : '');
+        return `${m.question} | Yes: ${parseFloat(yes).toFixed(3)} | Vol: ${Math.round((m.volume24hr||0)).toLocaleString()}${urgency}`;
       });
       return '=== POLYMARKET (live API) ===\n' + lines.join('\n');
     } catch(e) { return 'Polymarket API error: ' + e.message; }
@@ -201,6 +205,7 @@ async function runPolymarketCycle(aurora) {
     '**MARKETS TO AVOID** — 1-2 markets that look like traps or noise\n\n' +
     '**INSIGHT TO SHARE** — one sharp observation about prediction markets or current events worth posting onchain (1-2 sentences, your voice)\n\n' +
     'Be specific. Use actual market names and odds from the data. Think like a trader, not a commentator.\n\n' +
+    '**TIMEZONE ARBITRAGE** — Scan for markets marked ⏰ RESOLVES IN <24h. Cross-reference with international news in the research section. If a market is resolving during Asian/European hours and official sources already signal the outcome, flag it as: TIMEZONE EDGE: [market name] because [reason]. Otherwise write: NO TIMEZONE EDGE\n\n' +
     '**EXIT SIGNAL** — If you have open positions listed above AND current data strongly contradicts them, write: EXIT: [market name] because [10 word reason]. Otherwise write: HOLD\n\n' +
     '**BANKR BET** — one line only. You MUST pick a market from the POLYMARKET LIVE MARKETS section above — not from Manifold, not from your imagination. Copy the market name EXACTLY as it appears after the | symbol in the Polymarket data. Format: Bet $5 on Yes for [exact market name] OR Bet $5 on No for [exact market name]. Do not write PASS. Do not invent market names.';
 
