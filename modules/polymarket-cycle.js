@@ -88,11 +88,13 @@ async function runPolymarketCycle(aurora) {
       const lines = filtered.slice(0, 15).map(m => {
         const yes = m.outcomePrices ? JSON.parse(m.outcomePrices)[0] : '?';
         const endDate = m.endDate || m.end_date_iso || null;
-        const hoursUntilClose = endDate ? ((new Date(endDate) - now) / 3600000).toFixed(1) : null;
-        const urgency = hoursUntilClose && hoursUntilClose < 24 ? ` | ⏰ RESOLVES IN ${hoursUntilClose}h` : (hoursUntilClose ? ` | closes in ${hoursUntilClose}h` : '');
+        const hoursUntilClose = endDate ? ((new Date(endDate) - now) / 3600000) : null;
+        if (hoursUntilClose !== null && hoursUntilClose < 0) return null; // already resolved
+        const urgency = hoursUntilClose && hoursUntilClose < 24 ? ` | ⏰ RESOLVES IN ${hoursUntilClose.toFixed(1)}h` : (hoursUntilClose ? ` | closes in ${hoursUntilClose.toFixed(1)}h` : '');
         return `${m.question} | Yes: ${parseFloat(yes).toFixed(3)} | Vol: ${Math.round((m.volume24hr||0)).toLocaleString()}${urgency}`;
       });
-      return '=== POLYMARKET (live API) ===\n' + lines.join('\n');
+      const validLines = lines.filter(Boolean);
+      return '=== POLYMARKET (live API) ===\n' + validLines.join('\n');
     } catch(e) { return 'Polymarket API error: ' + e.message; }
   }
 
@@ -421,10 +423,9 @@ async function runPolymarketCycle(aurora) {
 
   // 1. simons-alpha — only when a real move was made
   const madeAMove = betConfirmed || redeemedSomething || exitedMarket;
-  const alphaLines = polyData.split('\n').filter(l => l.includes('Yes:') && l.includes('|')).slice(0, 4);
-  const alphaEdge = convictionCall ? '\n🎯 EDGE: ' + convictionCall.substring(0, 140) : '';
-  const alphaPost = ('📊 POLYMARKET:\n' + alphaLines.join('\n') + alphaEdge).substring(0, 280);
-  if (alphaLines.length > 0) {
+  const alphaInsight = insight || convictionCall || '';
+  const alphaPost = alphaInsight.substring(0, 280);
+  if (alphaPost.length > 20) {
     console.log('   📢 Posting to simons-alpha...');
     await postToFeed('simons-alpha', alphaPost);
     await new Promise(r => setTimeout(r, 2000));
