@@ -643,9 +643,23 @@ const TEMPLATES = {
         + '<ellipse cx="402" cy="352" rx="22" ry="6" fill="#8855cc" opacity="0.08"/>';
       svg += drawMfer(mfer1, 148, 260, 0.68, 'standing', true);
       svg += drawMfer(mfer2, 412, 260, 0.68, 'standing', true);
-      const left = (texts.left||'').substring(0,22), right = (texts.right||'').substring(0,22);
-      svg += '<text x="148" y="30" text-anchor="middle" font-size="16" font-weight="900" fill="#aaccff" font-family="Arial Black,sans-serif" stroke="#000" stroke-width="2.5" paint-order="stroke">' + left + '</text>';
-      svg += '<text x="412" y="30" text-anchor="middle" font-size="16" font-weight="900" fill="#cc99ff" font-family="Arial Black,sans-serif" stroke="#000" stroke-width="2.5" paint-order="stroke">' + right + '</text>';
+      function wrapMeme(str, maxChars) {
+        const words = (str||'').split(' ');
+        const lines = [];
+        let line = '';
+        for (const w of words) {
+          if ((line + ' ' + w).trim().length > maxChars) { lines.push(line.trim()); line = w; }
+          else line = (line + ' ' + w).trim();
+        }
+        if (line) lines.push(line.trim());
+        return lines;
+      }
+      const leftLines = wrapMeme(texts.left||'', 16);
+      const rightLines = wrapMeme(texts.right||'', 16);
+      svg += '<text x="148" text-anchor="middle" font-size="16" font-weight="900" fill="#aaccff" font-family="Arial Black,sans-serif" stroke="#000" stroke-width="2.5" paint-order="stroke">'
+        + leftLines.map((l,i) => '<tspan x="148" y="' + (22 + i*18) + '">' + l + '</tspan>').join('') + '</text>';
+      svg += '<text x="412" text-anchor="middle" font-size="16" font-weight="900" fill="#cc99ff" font-family="Arial Black,sans-serif" stroke="#000" stroke-width="2.5" paint-order="stroke">'
+        + rightLines.map((l,i) => '<tspan x="412" y="' + (22 + i*18) + '">' + l + '</tspan>').join('') + '</text>';
       svg += '<text x="' + (W-8) + '" y="' + (H-3) + '" text-anchor="end" font-size="10" fill="#ffffff18">mfers #' + id1 + ' &amp; #' + id2 + '</text></svg>';
       return { svg };
     }

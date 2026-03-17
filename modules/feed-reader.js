@@ -36,7 +36,7 @@ class FeedReader {
 
   async readGeneralFeed(limit = 30) {
     try {
-      const cmd = `netp message read --topic "feed" --chain-id 8453 --limit ${limit} --json`;
+      const cmd = `netp message read --topic "feed-general" --chain-id 8453 --limit ${limit} --json`;
       const { stdout } = await execAsync(cmd, { timeout: 30000, maxBuffer: 1024 * 1024 });
       
       if (!stdout.trim()) return [];
@@ -46,7 +46,7 @@ class FeedReader {
       return messages.map(msg => ({
         sender: msg.sender,
         timestamp: msg.timestamp,
-        topic: 'feed', // Full base feed - sees all activity
+        topic: 'feed-general', // Full base feed - sees all activity
         text: msg.text || '',
         data: msg.data || null
       }));
