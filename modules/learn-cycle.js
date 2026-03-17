@@ -195,6 +195,8 @@ async function runOnce(aurora, helpers) {
       { name: 'Metaforecast', url: RESEARCH_SOURCES.metaforecast },
       { name: 'CryptoPanic',  url: RESEARCH_SOURCES.cryptoNews },
       { name: 'CoinDesk',     url: RESEARCH_SOURCES.coindesk },
+      { name: 'BBC Sport',    url: RESEARCH_SOURCES.bbcSport },
+      { name: 'ESPN Soccer',  url: RESEARCH_SOURCES.espnSoccer },
     ];
     const intel = { timestamp: new Date().toISOString(), sources: {} };
     for (const source of sources) {

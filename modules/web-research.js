@@ -141,6 +141,8 @@ const RESEARCH_SOURCES = {
   cryptoNews:      'https://cryptopanic.com',
   defiLlama:       'https://defillama.com',
   coindesk:        'https://www.coindesk.com',
+  bbcSport:        'https://www.bbc.com/sport/football',
+  espnSoccer:      'https://www.espn.com/soccer/',
   theBlock:        'https://www.theblock.co',
   coinglass:       'https://www.coinglass.com',
   // Whale tracking
