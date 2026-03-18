@@ -32,7 +32,10 @@ async function run(aurora) {
     // Cross-post poetry to Farcaster (60% chance)
     if (Math.random() < 0.85) {
       try { console.log('   📡 Attempting Farcaster poetry cross-post...'); await crossPostText(poem); } catch(e) { console.log('   ⚠️ FC poetry error: ' + e.message); }
-      // X posting disabled: try { await crossPostToX(poem); } catch(e) {}
+      // X cross-post (40% chance per poem)
+      if (Math.random() < 0.40) {
+        try { await crossPostToX(poem); } catch(e) { console.log('   ⚠️ X poetry error: ' + e.message); }
+      }
     }
     const encoded = JSON.parse(_srPoetry.stdout);
 

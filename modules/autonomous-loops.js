@@ -151,7 +151,14 @@ class AutonomousLoops {
       if (Math.random() < 0.40) {
         try {
           const { composeMferMeme } = require('./mfer-meme');
-          const memeResult = await composeMferMeme(this.aurora); if (memeResult && memeResult.valid) console.log('🎭 Mfer meme posted:', memeResult.mood.substring(0,50));
+          const memeResult = await composeMferMeme(this.aurora);
+          if (memeResult && memeResult.valid) {
+            console.log('🎭 Mfer meme posted:', memeResult.mood.substring(0,50));
+            // X cross-post (30% chance)
+            if (Math.random() < 0.30 && memeResult.svg) {
+              try { await crossPostArtToX(memeResult.mood || 'mfer', memeResult.svg); } catch(e) { console.log('   ⚠️ X meme error: ' + e.message); }
+            }
+          }
         } catch (e) {
           console.error('Mfer art error:', e.message);
         }
@@ -428,15 +435,15 @@ class AutonomousLoops {
           }
         }
 
-        // Cross-post to X — PAUSED (X cracking down on bots)
-        // if (Math.random() < 0.50) {
-        //   try {
-        //     const xCaption = caption || 'light finds its own way';
-        //     await crossPostArtToX(xCaption, svg);
-        //   } catch (xErr) {
-        //     console.log('   ⚠️ X cross-post failed: ' + xErr.message);
-        //   }
-        // }
+        // Cross-post to X (30% chance)
+        if (Math.random() < 0.30) {
+          try {
+            const xCaption = caption || 'light finds its own way';
+            await crossPostArtToX(xCaption, svg);
+          } catch (xErr) {
+            console.log('   ⚠️ X cross-post failed: ' + xErr.message);
+          }
+        }
       } else {
         console.log('❌ Post failed: ' + result.error);
       }
