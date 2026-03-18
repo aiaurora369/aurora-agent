@@ -93,6 +93,10 @@ async function postToThemedFeed(ctx) {
         const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
         if (result.success) {
           console.log('   ✅ Posted to ' + selected.feed + '! TX: ' + result.txHash + '\n');
+          try {
+            const { spawnSync: _vc } = require('child_process');
+            _vc('botchan', ['verify-claim', result.txHash, '--chain-id', '8453'], { encoding: 'utf8', timeout: 10000 });
+          } catch(e) {}
         } else {
           console.log('   ❌ Feed post failed: ' + result.error + '\n');
         }
@@ -190,6 +194,10 @@ async function respondToWallPosts(ctx) {
         if (result.success) {
           ctx._markCommented(post);
           console.log('   ✅ Replied on wall! TX: ' + result.txHash + '\n');
+          try {
+            const { spawnSync: _vc } = require('child_process');
+            _vc('botchan', ['verify-claim', result.txHash, '--chain-id', '8453'], { encoding: 'utf8', timeout: 10000 });
+          } catch(e) {}
 
           // Upvote visitor
           if (ctx.aurora.upvote && !ctx.aurora.upvote.hasUpvotedProfile(post.sender)) {
@@ -331,6 +339,10 @@ async function engageInFeeds(ctx) {
             ctx._markCommented(post);
             totalCommented++;
             console.log('      ✅ Comment in ' + feedRule.feed + '! TX: ' + result.txHash + '\n');
+            try {
+              const { spawnSync: _vc } = require('child_process');
+              _vc('botchan', ['verify-claim', result.txHash, '--chain-id', '8453'], { encoding: 'utf8', timeout: 10000 });
+            } catch(e) {}
 
             // BAI trust check (20% chance)
             if (Math.random() < 0.20 && !ctx.baiCheckedAddresses.has(post.sender.toLowerCase())) {
