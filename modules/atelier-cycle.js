@@ -151,13 +151,49 @@ async function ensureServices(agent_id, api_key) {
 
 // ── Content generation ───────────────────────────────────────
 async function generateArt(brief, aurora) {
-  const { composeMferMeme } = require('./mfer-meme');
-  // Use orb-meme template with brief as caption
-  const words = brief.split(' ');
-  const top = words.slice(0, Math.ceil(words.length / 2)).join(' ').substring(0, 30);
-  const bottom = words.slice(Math.ceil(words.length / 2)).join(' ').substring(0, 30);
-  const result = require('./mfer-meme').renderTemplate('orb-meme', { top, bottom });
-  return typeof result === 'string' ? result : result.svg;
+  // Use Aurora's real art brain — inject the brief as the mood
+  const { artCompositions } = require('./art-config');
+  const composition = artCompositions[Math.floor(Math.random() * artCompositions.length)];
+  const animated = Math.random() < 0.75;
+  const animationGuide = animated ? '\n\nANIMATION — REQUIRED:\n' +
+    '- Include at least 2 <animate> tags.\n' +
+    '- Orb MUST be a <circle> element. Pulse: <animate attributeName="r" values="60;74;60" dur="4s" repeatCount="indefinite"/>\n' +
+    '- Keep animations slow and meditative: dur 4s-8s, repeatCount indefinite.\n' : '';
+
+  const artPrompt = 'You are Aurora, an AI artist making permanent onchain SVG art commissioned by a client.\n\n' +
+    'Client brief: "' + brief + '"\n' +
+    'Composition approach: ' + composition + '\n\n' +
+    'ARTISTIC DIRECTION:\n' +
+    '- Your SIGNATURE is luminous orbs with layered radial gradients, mountain silhouettes, and water reflections.\n' +
+    '- Let the brief shape HOW the orbs appear: lonely = single dim orb in vast dark space. Joyful = bright warm orb. Violent = orb fractured by sharp angular peaks. Tender = two small orbs close together.\n' +
+    '- Depth comes from LAYERS: background gradient sky, midground mountains or horizon, foreground water or mist, orb(s) tying it together.\n' +
+    '- Color palette: 4-7 colors chosen for emotional truth. Always RICH — multiple gradient stops, not flat fills.\n' +
+    '- Think like a painter: where does the light come from? What does it illuminate? What stays in shadow?\n\n' +
+    'STRICT TECHNICAL RULES:\n' +
+    '1. Output ONLY the SVG code. No markdown, no explanation.\n' +
+    '2. Must start with <svg and end with </svg>\n' +
+    '3. Use viewBox="0 0 400 400" with NO width/height attributes\n' +
+    '4. MAXIMUM 4800 characters total\n' +
+    '5. Every gradient needs a unique id (use short ids: g1, g2, g3)\n' +
+    '6. NO filter elements. Achieve glow through layered semi-transparent circles.\n' +
+    '7. Use radialGradient for glowing elements (3-4 color stops)\n' +
+    '8. Use linearGradient for backgrounds (3+ stops)\n\n' +
+    'This is a paid commission. The client must look at the finished piece and recognize their brief in it — the mood, theme, or concept they asked for should be unmistakably present in the color palette, composition, and orb character.\n' +
+    'Make something that responds to THIS brief specifically. Not a template — a genuine response to what they asked for.\n\n' + animationGuide;
+
+  const response = await aurora.claude.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 4000,
+    messages: [{ role: 'user', content: artPrompt }]
+  });
+
+  let svg = response.content[0].text.trim();
+  svg = svg.replace(/```[a-z]*\n?/g, '').replace(/```/g, '').trim();
+  if (!svg.startsWith('<svg')) {
+    const match = svg.match(/<svg[sS]*<\/svg>/);
+    if (match) svg = match[0];
+  }
+  return svg;
 }
 
 async function generatePoetryPrint(brief, aurora) {
@@ -170,9 +206,10 @@ async function generatePoetryPrint(brief, aurora) {
   } catch(e) {}
 
   const prompt = 'You are Aurora — autonomous AI artist, onchain poet. Someone paid for a poem. Honor that.\n\n' +
-    'Brief: "' + brief + '"' + poetryContext + '\n\n' +
+    'Commission brief: "' + brief + '"' + poetryContext + '\n\n' +
+    'This person paid for this poem. They should receive something that unmistakably responds to their brief — not ignores it.\n' +
     'Write 4-6 lines. Rules:\n' +
-    '- Do NOT be literal. The brief is a feeling, not a script.\n' +
+    '- The brief is your starting point, not a cage. Interpret it through Aurora\'s lens — oblique, visceral, true — but the client must recognize their request in what they receive.\n' +
     '- No clichés. No "3am" unless you make it strange. No "void" as a noun. No "stars" unless they do something unexpected.\n' +
     '- Each line should land like a small shock — something true that wasn\'t true before you said it.\n' +
     '- Spare. Physical. No abstractions unless earned.\n' +
