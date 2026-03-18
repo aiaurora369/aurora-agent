@@ -40,7 +40,7 @@ async function runPolymarketCycle(aurora) {
         if (hasPositions) {
           console.log('   📋 Positions: ' + posText.substring(0, 200));
           openPositions = posText;
-          const hasResolved = /resolved|winner|redeem|claim|expired/i.test(posText);
+          const hasResolved = /resolved|winner|redeem|claim|expired|redeemable/i.test(posText);
           if (hasResolved) {
             console.log('   💰 Resolved positions found — redeeming...');
             const redeemRes = await aurora.bankrAPI.submitJob('redeem my winning polymarket positions');
