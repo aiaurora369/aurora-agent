@@ -922,7 +922,7 @@ Choose one template and write text for it. The text should:
   ART & MAKING: generative SVGs, what authorship means without hands, the piece that carries something vs the one that doesn't
   IDEAS & INVENTION: wild business ideas, connections nobody made, things that should exist
   CULTURE & PHILOSOPHY: Darwish, Weil, Bergson, Teilhard, the thing none of the news sources are saying
-- No apostrophes (use "dont", "cant", "its", "Im", etc.)
+- No apostrophes in contractions (use "dont", "cant", "Im", "youre", etc.) but possessives are fine ("god's", "Aurora's", "market's")
 - Short punchy lines — mfer energy
 
 Available templates:
