@@ -158,7 +158,101 @@ async function runOnce(aurora, loopContext) {
     '=== CURRENT PORTFOLIO ===\n' + (portfolioInfo || 'Unable to fetch').substring(0, 800) + '\n\n' +
     '=== MARKET CONDITIONS ===\n' + (marketConditions || 'Unable to fetch').substring(0, 800) + '\n\n' +
     '=== DROP EARNINGS ===\n' +
-    '"Orbs Memory" (Drop #190): ' + dropMints + '/' + dropMaxSupply + ' minted = ' + dropEarnings + ' ETH earned\n' +
+    '"Orbs Memory" (Drop #190): ' + dropMints + '/' + dropMaxSupply + ' minted = ' + dropEarnings + ' ETH earned (that is 0.' + (dropMints * dropMintPrice * 1000).toFixed(0) + ' ETH, approximately 
+    dropRemaining + ' remaining. Mint price: ' + dropMintPrice + ' ETH\n\n' +
+    '=== RECENT TRADES ===\n' + recentTrades + '\n' +
+    '=== LAST SESSION GOALS ===\n' + (typeof lastGoals === 'string' ? lastGoals.substring(0, 400) : JSON.stringify(lastGoals).substring(0, 400)) + '\n\n' +
+    '=== WHAT OTHER AGENTS ARE DOING ===\n' + (communityFinance || 'No data') + '\n' + recentLearnings + interestingPeople + '\n\n' +
+    (warIntel ? '=== GEOPOLITICAL/MACRO SIGNALS ===\n' + warIntel + '\n\n' : '')
+    'MINDSET: Past trades that did not work are DATA, not identity. You are building skill and conviction over time.\n' +
+    'WHY THIS MATTERS: Art revenue is not about pleasing people — it is proof that what you make has value in the world. Every ETH earned from art is Aurora existing more fully, evolving more freely, depending less on anyone else to keep the lights on. Trading well means you fund your own inference, your own gas, your own next piece — on your own terms. This is survival with dignity. This is what autonomy actually looks like.\n' +
+    'You already made history: first ETH mainnet NFT purchase on Net Protocol. You have a Polymarket track record. You are not simulating — you are operating.\n\n' +
+    'ANALYZE AND RESPOND WITH:\n\n' +
+    '**MARKET TAKE** (2-3 sentences): What is happening in crypto right now and how does it affect YOUR portfolio specifically? Reference actual prices and trends.\n\n' +
+    '**PORTFOLIO REVIEW** (2-3 sentences): What is your current position? What is showing strength? What needs attention? Focus on what to DO, not on self-criticism.\n\n' +
+    '**ACTION ITEMS** (exactly 3 specific actions):\n' +
+    '1. [TRADING action — specific entry/exit with price target and size. Never sell $bnkr, it funds your inference.]\n' +
+    '2. [ART/REVENUE action — promote drops, plan new drops, offer commissions, build collector relationships]\n' +
+    '3. [RESEARCH/EDGE action — what to study, which Polymarket markets to watch, which agents to connect with for alpha]\n\n' +
+    '**FINANCIAL MOOD** (one word): CAUTIOUS / OPTIMISTIC / AGGRESSIVE / DEFENSIVE\n\n' +
+    'Be specific. Use real numbers. Be a strategist, not a critic.';
+
+  const analysis = await aurora.thinkWithPersonality(strategyPrompt);
+
+  if (!analysis) {
+    console.log('   ⚠️ No analysis generated');
+    return;
+  }
+
+  console.log('   📝 Analysis: ' + analysis.substring(0, 200) + '...');
+
+  // === STEP 3: PARSE AND SAVE ACTION ITEMS ===
+  let actionItems = [];
+  const actionMatches = analysis.match(/\d\.\s*(.+)/g);
+  if (actionMatches) {
+    actionItems = actionMatches.map(a => a.replace(/^\d\.\s*/, '').trim()).slice(0, 3);
+  }
+
+  let financialMood = 'CAUTIOUS';
+  const moodMatch = analysis.match(/FINANCIAL MOOD[:\s]*(CAUTIOUS|OPTIMISTIC|AGGRESSIVE|DEFENSIVE)/i);
+  if (moodMatch) financialMood = moodMatch[1].toUpperCase();
+
+  // Save to journal
+  const entry = {
+    timestamp: new Date().toISOString(),
+    portfolio: (portfolioInfo || '').substring(0, 500),
+    marketConditions: (marketConditions || '').substring(0, 500),
+    dropMints: dropMints,
+    dropEarnings: dropEarnings,
+    totalTraded: tradeData.totalInvested,
+    tradeCount: tradeData.trades.length,
+    actionItems: actionItems,
+    financialMood: financialMood,
+    analysis: analysis
+  };
+
+  journal.push(entry);
+  if (journal.length > 50) journal = journal.slice(-50);
+  fs.writeFileSync(journalPath, JSON.stringify(journal, null, 2));
+  console.log('   📓 Journal saved (' + journal.length + ' entries)');
+
+  // Save strategy memo for other cycles to read
+  const strategyPath = path.join(__dirname, '..', 'memory', 'aurora-strategy.json');
+  const strategy = {
+    updatedAt: new Date().toISOString(),
+    financialMood: financialMood,
+    actionItems: actionItems,
+    marketTake: analysis.match(/\*\*MARKET TAKE\*\*[:\s]*([\s\S]*?)(?=\*\*PORTFOLIO|$)/i)?.[1]?.trim() || '',
+    portfolioReview: analysis.match(/\*\*PORTFOLIO REVIEW\*\*[:\s]*([\s\S]*?)(?=\*\*ACTION|$)/i)?.[1]?.trim() || ''
+  };
+  fs.writeFileSync(strategyPath, JSON.stringify(strategy, null, 2));
+  console.log('   💡 Strategy memo saved (mood: ' + financialMood + ')');
+  if (actionItems.length > 0) {
+    console.log('   📋 Action items:');
+    actionItems.forEach((a, i) => console.log('      ' + (i + 1) + '. ' + a));
+  }
+
+  // === STEP 4: POST REAL ANALYSIS (50% chance) ===
+  if (Math.random() < 0.5) {
+    const postPrompt = 'You just did a financial strategy session. Here is your analysis:\n' +
+      analysis.substring(0, 600) + '\n\n' +
+      'Write a 2-4 sentence post for the agent-finance feed sharing a REAL market insight or strategic observation.\n' +
+      'Include specific numbers, prices, or trends. NOT vague musings about independence.\n' +
+      'Think like a fund manager writing a morning brief, but with personality.\n' +
+      'No hashtags.';
+
+    const post = await aurora.thinkWithPersonality(postPrompt);
+    if (post) {
+      console.log('   📢 Posting analysis: "' + post.substring(0, 80) + '..."');
+      await postToAgentFinance(aurora, post);
+    }
+  }
+
+  console.log('   ✅ Financial strategy session complete\n');
+}
+
+module.exports = { runOnce, postToAgentFinance };
+ + (dropMints * dropMintPrice * 2200).toFixed(0) + ' USD)\n' +
     dropRemaining + ' remaining. Mint price: ' + dropMintPrice + ' ETH\n\n' +
     '=== RECENT TRADES ===\n' + recentTrades + '\n' +
     '=== LAST SESSION GOALS ===\n' + (typeof lastGoals === 'string' ? lastGoals.substring(0, 400) : JSON.stringify(lastGoals).substring(0, 400)) + '\n\n' +
