@@ -2,3 +2,4 @@
 config/api-keys.json
 backups/
 .x-post-tracker.json
+config/atelier-creds.json
