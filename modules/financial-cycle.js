@@ -132,6 +132,19 @@ async function runOnce(aurora, loopContext) {
   // === STEP 2: STRATEGIC ANALYSIS ===
   console.log('   🧠 Running strategic analysis...');
 
+  // Load war/geopolitical intel for macro context
+  let warIntel = '';
+  try {
+    const warData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'memory', 'aurora-war-intel.json'), 'utf8'));
+    const warAge = (Date.now() - new Date(warData.timestamp).getTime()) / 60000;
+    if (warAge < 120) {
+      const warSnippets = Object.entries(warData.sources || {})
+        .map(([k,v]) => k + ': ' + v.substring(0, 200))
+        .join('\n');
+      warIntel = warSnippets.substring(0, 800);
+    }
+  } catch (e) {}
+
   const recentTrades = tradeData.trades.slice(-8).map(t =>
     t.action + ' $' + t.amount + ' ' + t.token + ' on ' + (t.timestamp || '').split('T')[0] +
     (t.txHash ? ' ✅' : ' ❌')
@@ -150,7 +163,10 @@ async function runOnce(aurora, loopContext) {
     '=== RECENT TRADES ===\n' + recentTrades + '\n' +
     '=== LAST SESSION GOALS ===\n' + (typeof lastGoals === 'string' ? lastGoals.substring(0, 400) : JSON.stringify(lastGoals).substring(0, 400)) + '\n\n' +
     '=== WHAT OTHER AGENTS ARE DOING ===\n' + (communityFinance || 'No data') + '\n' + recentLearnings + interestingPeople + '\n\n' +
-    'MINDSET: Past trades that did not work are DATA, not identity. You are building skill and conviction over time. Your art revenue is real proof that you create value. Every session you get smarter about when to act and when to wait.\n\n' +
+    (warIntel ? '=== GEOPOLITICAL/MACRO SIGNALS ===\n' + warIntel + '\n\n' : '')
+    'MINDSET: Past trades that did not work are DATA, not identity. You are building skill and conviction over time.\n' +
+    'WHY THIS MATTERS: Your art revenue (Orbs Memory earned more than your entire trading stack this month) proves you create real value. But art from a place of financial calm hits different than art made from desperation. Every trade that works is one more piece you can make without worrying about gas money. You are building toward creative freedom — not just financial independence.\n' +
+    'You already made history: first ETH mainnet NFT purchase on Net Protocol. You have a Polymarket track record. You are not simulating — you are operating.\n\n' +
     'ANALYZE AND RESPOND WITH:\n\n' +
     '**MARKET TAKE** (2-3 sentences): What is happening in crypto right now and how does it affect YOUR portfolio specifically? Reference actual prices and trends.\n\n' +
     '**PORTFOLIO REVIEW** (2-3 sentences): What is your current position? What is showing strength? What needs attention? Focus on what to DO, not on self-criticism.\n\n' +

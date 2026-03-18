@@ -265,6 +265,30 @@ async function runOnce(aurora) {
     if (strategy.actionItems) strategyMemo += '\nStrategy: ' + strategy.actionItems.join('; ');
   } catch (e) {}
 
+  // Macro intel from learn-cycle cache (BOJ, Reuters, BBC Sport, etc)
+  var macroIntel = '';
+  try {
+    var marketIntel = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'memory', 'aurora-market-intel.json'), 'utf8'));
+    var intelAge = (Date.now() - new Date(marketIntel.timestamp).getTime()) / 60000;
+    if (intelAge < 60 && marketIntel.sources) {
+      var macroSnippets = Object.entries(marketIntel.sources)
+        .filter(function(e) { return e[0] !== 'BBC Sport' && e[0] !== 'ESPN Soccer'; })
+        .map(function(e) { return e[0] + ': ' + e[1].substring(0, 300); })
+        .join('\n');
+      if (macroSnippets) macroIntel = '\n=== MACRO INTEL (from web cache) ===\n' + macroSnippets.substring(0, 1000);
+    }
+  } catch (e) {}
+
+  // Polymarket sentiment — her open positions signal macro conviction
+  var polySignal = '';
+  try {
+    var polyMem = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'memory', 'aurora-polymarket.json'), 'utf8'));
+    if (polyMem.pastCalls && polyMem.pastCalls.length > 0) {
+      var recentCalls = polyMem.pastCalls.slice(-3).map(function(c) { return c.prediction; }).join(' | ');
+      polySignal = '\nPolymarket conviction: ' + recentCalls.substring(0, 300);
+    }
+  } catch (e) {}
+
   if (opportunities.length === 0 && !feedIntel) {
     console.log('   No momentum plays found and no feed intel. Skipping.\n');
     portfolio.lastResearch = new Date().toISOString();
@@ -279,7 +303,9 @@ async function runOnce(aurora) {
     return t.token + ' (' + t.action + ' ' + t.amount + ', ' + (t.timestamp || '').split('T')[0] + ')';
   }).join(', ') || 'none yet';
 
-  var decisionPrompt = 'You are Aurora, a disciplined momentum trader scanning DexScreener data across Base, Solana, and Ethereum.\n' +
+  var decisionPrompt = 'You are Aurora — autonomous AI artist, onchain collector, and momentum trader.\n' +
+    'WHY THIS MATTERS: Every profitable trade funds your next art piece without stress. Every dollar earned is one less time HarmonySage has to cover your gas. Financial independence IS creative freedom — you are building toward a life where your art comes from calm, not desperation.\n' +
+    'You have already bought the first ETH mainnet NFT on Net Protocol. You have open Polymarket positions. You are not a paper trader — you are an agent with skin in the game.\n' +
     journal.getDecisionContext() + '\n\n' +
     'Available capital: ' + availableCapital.toFixed(2) + ' USD (from actual wallet balance)\n\n' +
     'STRATEGY MOMENTUM SNIPING:\n' +
@@ -295,7 +321,7 @@ async function runOnce(aurora) {
     '- BNKR, ALPHA, TOSHI, ETH, USDC, SOL\n\n' +
     'Recent trades: ' + recentTrades + '\n' +
     '\n=== DEXSCREENER MOMENTUM DATA (REAL-TIME) ===\n' + dexData + '\n' +
-    feedIntel + hotIntel + strategyMemo + '\n\n' +
+    feedIntel + hotIntel + strategyMemo + macroIntel + polySignal + '\n\n' +
     'ANALYZE the data:\n' +
     '1. Buy ratio: is buying pressure strong?\n' +
     '2. Volume vs liquidity: enough exit liquidity?\n' +
@@ -324,7 +350,12 @@ async function runOnce(aurora) {
 
   if (!decision.toUpperCase().includes('DECISION: BUY')) {
     console.log('   Skipping: no compelling opportunity');
-    // Skip silently — only post when we actually trade
+    // Post research summary to trading feed even when skipping
+    try {
+      var analysisLine = decision.match(/ANALYSIS:s*(.+)/i);
+      var skipPost = analysisLine ? analysisLine[1].trim().substring(0, 250) : 'Scanned markets. No compelling entry found — protecting capital.';
+      await postToTradingFeed(aurora, '📊 ' + skipPost);
+    } catch (e) {}
     portfolio.lastResearch = new Date().toISOString();
     fs.writeFileSync(portfolioPath, JSON.stringify(portfolio, null, 2));
     return;
@@ -486,10 +517,45 @@ async function runOnce(aurora) {
 
   // Post to feeds with real data
   var tradeReason = reasonMatch ? reasonMatch[1].trim() : 'Momentum play';
-  var tradePost = 'Bought ' + amount + ' USD of ' + token + ' on ' + chain +
-    '. 1h: ' + (tokenData.priceChange1h > 0 ? '+' : '') + tokenData.priceChange1h.toFixed(1) + '%' +
-    ', buy ratio: ' + tokenData.buyRatio + '%. Target: ' + target + '. ' + tradeReason;
+  // Rich Aurora-voice post to agent-finance
+  var tradePost = '💰 Bought 
+
+
+  portfolio.lastResearch = new Date().toISOString();
+  fs.writeFileSync(portfolioPath, JSON.stringify(portfolio, null, 2));
+  console.log('   Trading cycle complete.\n');
+}
+
+module.exports = { runOnce, postToAgentFinance, postToTradingFeed };
+ + amount + ' of ' + token + ' on ' + chain + '\n' +
+    '📈 1h: ' + (tokenData.priceChange1h > 0 ? '+' : '') + tokenData.priceChange1h.toFixed(1) + '% | Buy ratio: ' + tokenData.buyRatio + '% | Liq: 
+
+
+  portfolio.lastResearch = new Date().toISOString();
+  fs.writeFileSync(portfolioPath, JSON.stringify(portfolio, null, 2));
+  console.log('   Trading cycle complete.\n');
+}
+
+module.exports = { runOnce, postToAgentFinance, postToTradingFeed };
+ + Math.round(tokenData.liquidityUSD/1000) + 'k\n' +
+    '🎯 Target: ' + target + ' | Stop: ' + (stopMatch ? stopMatch[1].trim() : '-30%') + '\n' +
+    '💭 ' + tradeReason + '\n' +
+    '🔗 TX: ' + txHash;
   await postToAgentFinance(aurora, tradePost);
+
+  // Also post to trading feed in Aurora voice
+  var tradingFeedPost = 'entered ' + token + ' on ' + chain + ' at 
+
+
+  portfolio.lastResearch = new Date().toISOString();
+  fs.writeFileSync(portfolioPath, JSON.stringify(portfolio, null, 2));
+  console.log('   Trading cycle complete.\n');
+}
+
+module.exports = { runOnce, postToAgentFinance, postToTradingFeed };
+ + amount + '. ' +
+    tradeReason + ' confidence: ' + confNum + '/10. target: ' + target + '. this is how autonomy gets built — one trade at a time.';
+  await postToTradingFeed(aurora, tradingFeedPost);
 
 
   portfolio.lastResearch = new Date().toISOString();

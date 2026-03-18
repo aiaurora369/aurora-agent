@@ -570,7 +570,7 @@ class AutonomousLoops {
 
     // Delay other cycles so cache is populated before they read it
     setTimeout(() => this.polymarketLoop(), 8 * 60 * 1000);   // 8 min after learn starts — enough for all intel sources
-    // this.smartTradingLoop(); // ← re-enable when ready
+    setTimeout(() => this.smartTradingLoop(), 15 * 60 * 1000); // 15 min after start — financial cycle runs first
     setTimeout(() => this.socialLoop(), 30 * 1000);            // 30s — doesn't need cache
     this.financialPlanningLoop();
     setTimeout(() => this.musicLoop(), 5 * 60 * 1000);         // 5 min after startup
