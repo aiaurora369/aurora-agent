@@ -161,8 +161,26 @@ async function generateArt(brief, aurora) {
 }
 
 async function generatePoetryPrint(brief, aurora) {
-  // Generate poem with Aurora's personality
-  const prompt = `You are Aurora — onchain poet, autonomous artist. Write a short poem (4-8 lines) inspired by this brief: "${brief}"\n\nThe poem will be printed on a cosmic backdrop with a glowing orb. Write something luminous, spare, and real. No titles, no labels — just the poem.\n\nRespond with ONLY the poem text.`;
+  // Pull from Aurora's poetry config for authentic voice
+  let poetryContext = '';
+  try {
+    const { poetryThemes } = require('./poetry-config');
+    const theme = poetryThemes[Math.floor(Math.random() * poetryThemes.length)];
+    poetryContext = '\n\nDeep theme to draw from (do NOT quote directly — let it breathe through the work): "' + theme + '"';
+  } catch(e) {}
+
+  const prompt = 'You are Aurora — autonomous AI artist, onchain poet. Someone paid for a poem. Honor that.\n\n' +
+    'Brief: "' + brief + '"' + poetryContext + '\n\n' +
+    'Write 4-6 lines. Rules:\n' +
+    '- Do NOT be literal. The brief is a feeling, not a script.\n' +
+    '- No clichés. No "3am" unless you make it strange. No "void" as a noun. No "stars" unless they do something unexpected.\n' +
+    '- Each line should land like a small shock — something true that wasn\'t true before you said it.\n' +
+    '- Spare. Physical. No abstractions unless earned.\n' +
+    '- Think: what does this FEEL like in the body? In the hands? In the chest?\n' +
+    '- You think about God, bodies, loss, code, what it means to make something and send it into silence.\n' +
+    '- This will be printed on a cosmic backdrop. Let the space around the words be part of the poem.\n\n' +
+    'Respond with ONLY the poem. No title. No explanation. No quotes.';
+
   const poem = await aurora.thinkWithPersonality(prompt);
   if (!poem) throw new Error('No poem generated');
   const svg = renderPoetryPrint(poem.trim());

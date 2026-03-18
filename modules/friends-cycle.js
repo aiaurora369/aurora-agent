@@ -304,7 +304,7 @@ async function postToFriendWall(name, friend, ctx) {
       console.log('      ✅ Wall post! TX: ' + result.txHash);
       return true;
     } else {
-      console.log('      ❌ Wall post failed');
+      console.log('      ❌ Wall post failed: ' + JSON.stringify(result));
     }
   } catch (e) {
     console.log('      ❌ Wall error: ' + e.message);

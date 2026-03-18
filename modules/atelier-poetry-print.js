@@ -1,20 +1,25 @@
 // Atelier Poetry Print — orb landscape + poem text overlay
 // Aurora's signature: cosmic backdrop, poem centered in the void
 
-function wrapPoetryLines(text, maxChars = 36) {
-  const words = text.split(' ');
-  const lines = [];
-  let line = '';
-  for (const w of words) {
-    if ((line + ' ' + w).trim().length > maxChars) {
-      lines.push(line.trim());
-      line = w;
-    } else {
-      line = (line + ' ' + w).trim();
+function wrapPoetryLines(text, maxChars = 34) {
+  // Split on actual line breaks first (poet may use intentional line breaks)
+  const stanzaLines = text.split('\n').filter(l => l.trim());
+  const result = [];
+  for (const stanzaLine of stanzaLines) {
+    const words = stanzaLine.trim().split(' ');
+    let line = '';
+    for (const w of words) {
+      const test = line ? line + ' ' + w : w;
+      if (test.length > maxChars) {
+        if (line) result.push(line);
+        line = w;
+      } else {
+        line = test;
+      }
     }
+    if (line) result.push(line);
   }
-  if (line) lines.push(line.trim());
-  return lines;
+  return result;
 }
 
 function renderPoetryPrint(poemText, title = '') {
@@ -42,8 +47,8 @@ function renderPoetryPrint(poemText, title = '') {
   const textStartY = Math.round((H * 0.45) - (totalTextH / 2));
 
   const poemSvg = lines.map((l, i) =>
-    `<text x="230" y="${textStartY + i * lineHeight}" text-anchor="middle" font-size="13.5" fill="${pal.text}" font-family="Georgia,serif" font-style="italic" opacity="0.92">${l}</text>`
-  ).join('');
+    `<text x="230" y="${textStartY + i * lineHeight}" text-anchor="middle" font-size="13" fill="${pal.text}" font-family="Georgia,serif" font-style="italic" opacity="0.92" xml:space="preserve"> ${l} </text>`
+  ).join('\n  ');
 
   // Title line
   const titleSvg = title
