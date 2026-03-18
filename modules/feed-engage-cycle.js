@@ -82,7 +82,7 @@ async function postToThemedFeed(ctx) {
       if (post) {
         console.log('   📝 "' + post.substring(0, 80) + '..."');
         const { spawnSync: _spFE } = require('child_process');
-        const _srFE = _spFE('botchan', ['post', selected.feed, post.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
+        const _srFE = _spFE('botchan', ['post', selected.feed, post.substring(0, 2000), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
         if (_srFE.status !== 0 || !_srFE.stdout) throw new Error(_srFE.stderr || 'botchan failed');
     if (Math.random() < 0.8) {
       try { console.log('   📡 Attempting Farcaster cross-post...'); await crossPostText(post); } catch(e) { console.log('   ⚠️ FC cross-post error: ' + e.message); }
