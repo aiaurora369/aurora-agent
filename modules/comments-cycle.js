@@ -143,6 +143,13 @@ async function runOnce(ctx) {
 
           const feed = post.topic.replace('feed-', '');
 
+          // Skip wallet-address feeds (wall posts) — botchan can't query them by name
+          if (feed.startsWith('0x')) continue;
+
+          // Skip posts older than 48 hours — they rarely get new replies
+          const postAge = Date.now() - (post.timestamp * 1000);
+          if (postAge > 48 * 60 * 60 * 1000) continue;
+
           const postId = post.sender + ':' + post.timestamp;
 
           try {

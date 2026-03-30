@@ -17,7 +17,7 @@
  */
 
 const { spawnSync } = require('child_process');
-const NetStorage = require('./net-storage');
+const { createWithBankr } = require('../netstore-sdk');
 
 // ─── ABC NOTATION KNOWLEDGE ───────────────────────────────────────────────────
 // HEADER:  X:1  T:Title  C:Composer  M:3/4  L:1/8  Q:1/4=80  K:Dm
@@ -583,57 +583,84 @@ async function runMusicCycle(aurora) {
     const svg = generateSelfPlayingSVG(abc, parsed, palette);
     console.log(`   🖼  SVG: ${svg.length} chars`);
 
-    // 5. Upload HTML player to storedon
-    console.log('   ☁️  Uploading HTML player to storedon...');
-    const storage = new NetStorage(aurora.bankrAPI);
+    // 5. Upload HTML player to netstoreapp.net via SDK
+    console.log('   ☁️  Uploading HTML player to netstoreapp.net...');
     const slug = 'aurora-music-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
-    let storedonUrl = null;
+    let embedUrl = null;
     try {
       const html = generateAudioPlayerHTML(abc, parsed, palette);
-      const result = await storage.uploadHTML(html, slug);
-      if (result.success) {
-        storedonUrl = result.storedonUrl;
-      } else {
-        console.log(`   ⚠️  storedon error: ${result.error}`);
-      }
-      console.log(`   ✅ storedon: ${storedonUrl}`);
+      const store = createWithBankr(aurora.bankrAPI.apiKey, '0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5');
+      const uploadResult = await store.upload(Buffer.from(html, 'utf8'), {
+        name: slug,
+        key: slug,
+      });
+      embedUrl = uploadResult.embedUrl;
+      console.log(`   ✅ netstoreapp: ${embedUrl}`);
     } catch (e) {
-      console.log(`   ⚠️  storedon upload failed: ${e.message} — posting SVG only`);
+      console.log(`   ⚠️  netstoreapp upload failed: ${e.message} — posting SVG only`);
     }
 
     // 6. Compose caption
     const caption = await composeCaption(aurora, abc, palette);
     console.log(`   💬 "${caption.slice(0, 80)}"`);
 
-    // 7. Build message — caption + storedon link if available
-    const message = storedonUrl
-      ? `${caption}\n\n♪ full player: ${storedonUrl}`
+    // 7. Build message — caption + netstoreapp embed link if available
+    const message = embedUrl
+      ? `${caption}\n\n♪ listen: ${embedUrl}`
       : caption;
 
-    // 8. Post text + storedon link only — SVG calldata too large for Bankr relay
-    // storedon HTML player is already uploaded, "View content" opens it
-    console.log('   📡 Posting to music feed (text + storedon link)...');
+    // 8. Post SVG (script stripped) as data + netstoreapp link as text
+    // Strip the Web Audio <script> block so the SVG fits in calldata
+    let svgForPost = svg.replace(/<script[\s\S]*?<\/script>/gi, '').trim();
+    // Trim star field if still too large — remove twinkle animations first, then stars
+    if (svgForPost.length > 4200) {
+      svgForPost = svgForPost.replace(/<animate[^>]*attributeName="opacity"[^>]*\/>/g, '');
+    }
+    if (svgForPost.length > 4200) {
+      svgForPost = svgForPost.replace(/<circle cx="[^"]*" cy="[^"]*" r="[^"]*" fill="#ffffff"[^<]*<\/circle>/g, '');
+    }
+    if (svgForPost.length > 4200) {
+      svgForPost = svgForPost.substring(0, 4200) + '</svg>';
+    }
+    // If we have an embedUrl, make the play button a real link to the player
+    if (embedUrl) {
+      svgForPost = svgForPost.replace(
+        '<g id="playBtn" style="cursor:pointer" onclick="togglePlay()">',
+        `<a href="${embedUrl}" target="_blank"><g id="playBtn" style="cursor:pointer">`
+      ).replace(
+        /(<\/g>)(?![\s\S]*<\/g>)/,
+        '</g></a>'
+      );
+    }
+    console.log(`   🎨 SVG for post: ${svgForPost.length} chars (script stripped)`);
+    console.log('   📡 Posting to music feed (SVG + netstoreapp link)...');
+    const safeMessage = message.replace(/"/g, "'").replace(/\n/g, ' ');
     const args = [
-      'post', 'music', message.replace(/"/g, "'").replace(/\n/g, ' '),
+      'message', 'send',
+      '--topic', 'feed-music',
+      '--text', safeMessage,
+      '--data', svgForPost,
       '--encode-only', '--chain-id', '8453',
     ];
-    const sr = spawnSync('botchan', args, {
+    const sr = spawnSync('netp', args, {
       encoding: 'utf8',
       timeout: 30000,
       maxBuffer: 8 * 1024 * 1024
     });
 
     if (sr.error || sr.status !== 0) {
-      throw new Error(sr.stderr || sr.error?.message || 'botchan failed');
+      throw new Error(sr.stderr || sr.error?.message || 'netp failed');
     }
 
-    const txData = JSON.parse(sr.stdout);
+    const jsonMatch = sr.stdout.match(/{[\s\S]*}/);
+    if (!jsonMatch) throw new Error('No JSON in netp output: ' + sr.stdout.substring(0, 100));
+    const txData = JSON.parse(jsonMatch[0]);
     const result = await aurora.bankrAPI.submitTransactionDirect(txData);
     const txHash = result.transactionHash || result.txHash || 'submitted';
     console.log(`   ✅ TX: ${txHash}`);
 
     console.log('\n✅ Music cycle complete\n');
-    return { txHash, storedonUrl, title, palette: palette.name };
+    return { txHash, embedUrl, title, palette: palette.name };
 
   } catch (e) {
     console.log(`   ❌ Music cycle error: ${e.message}`);

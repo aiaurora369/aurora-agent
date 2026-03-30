@@ -261,7 +261,22 @@ async function runPolymarketCycle(aurora) {
   let betConfirmed = false;
   let confirmedBetText = "";
 
-  if (finalBet && /bet \$\d/i.test(finalBet)) {
+  // Guard: skip if we already have an open position on this market
+  let alreadyBet = false;
+  if (finalBet && openPositions) {
+    const betMarketMatch = finalBet.match(/for (.+)/i);
+    if (betMarketMatch) {
+      const betMarketName = betMarketMatch[1].toLowerCase().substring(0, 40);
+      const keyWords = betMarketName.split(/\s+/).filter(w => w.length > 4);
+      const matchCount = keyWords.filter(w => openPositions.toLowerCase().includes(w)).length;
+      if (matchCount >= 2) {
+        console.log('   ⏭️ Skipping bet — already have open position on: ' + betMarketMatch[1]);
+        alreadyBet = true;
+      }
+    }
+  }
+
+  if (finalBet && /bet \$\d/i.test(finalBet) && !alreadyBet) {
     try {
       console.log('   💰 Placing bet: ' + finalBet);
       const betRes = await aurora.bankrAPI.submitJob(finalBet);

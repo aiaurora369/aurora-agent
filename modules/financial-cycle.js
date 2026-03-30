@@ -12,7 +12,9 @@ async function postToAgentFinance(aurora, message) {
       'botchan post agent-finance "' + message.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/\n/g, ' ') + '" --encode-only',
       { cwd: path.join(__dirname, '..'), encoding: 'utf8', timeout: 10000 }
     ).trim();
-    const txData = JSON.parse(encoded);
+    const jsonMatch = encoded.match(/{[\s\S]*}/);
+    if (!jsonMatch) throw new Error('No JSON in encode-only output: ' + encoded.substring(0, 100));
+    const txData = JSON.parse(jsonMatch[0]);
     const result = await aurora.bankrAPI.submitTransactionDirect(txData);
     if (result.success) {
       console.log('   Posted to agent-finance! TX: ' + result.txHash);

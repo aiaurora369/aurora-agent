@@ -92,7 +92,7 @@ async function postToThemedFeed(ctx) {
         const txData = JSON.parse(txOutput);
         const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
         if (result.success) {
-          console.log('   ✅ Posted to ' + selected.feed + '! TX: ' + result.txHash + '\n');
+          console.log('   ✅ Posted to ' + selected.feed + '! TX: ' + (result.transactionHash || result.txHash) + '\n');
           try {
             const { spawnSync: _vc } = require('child_process');
             _vc('botchan', ['verify-claim', result.txHash, '--chain-id', '8453'], { encoding: 'utf8', timeout: 10000 });

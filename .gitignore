@@ -2,5 +2,13 @@
 config/api-keys.json
 backups/
 .x-post-tracker.json
+# Reference docs (contain sensitive info)
+AURORA-REFERENCE*.md
+AURORA-SESSION*.md
+AURORA-HANDOFF*.md
+config/
+memory/
+logs/
+*.log
 config/atelier-creds.json
-AURORA-REFERENCE-MAR2026.md
+*.bak

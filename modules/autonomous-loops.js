@@ -570,7 +570,8 @@ class AutonomousLoops {
 
     // Delay other cycles so cache is populated before they read it
     setTimeout(() => this.polymarketLoop(), 8 * 60 * 1000);   // 8 min after learn starts — enough for all intel sources
-    setTimeout(() => this.smartTradingLoop(), 15 * 60 * 1000); // 15 min after start — financial cycle runs first
+    setTimeout(() => this.smartTradingLoop(), 15 * 60 * 1000);
+    setTimeout(() => this.atelierLoop(), 60 * 1000); // 1 min after start // 15 min after start — financial cycle runs first
     setTimeout(() => this.socialLoop(), 30 * 1000);            // 30s — doesn't need cache
     this.financialPlanningLoop();
     setTimeout(() => this.musicLoop(), 5 * 60 * 1000);         // 5 min after startup
@@ -610,7 +611,16 @@ class AutonomousLoops {
     return require('./feed-engage-cycle').engageInFeeds(this);
   }
 
+  async atelierLoop() {
+    try {
+      await require('./atelier-cycle').runOnce(this.aurora);
+    } catch (e) {
+      console.log('⚠️ Atelier cycle error: ' + e.message);
+    }
+    setTimeout(() => this.atelierLoop(), 2 * 60 * 1000);
+  }
 
 }
 
 module.exports = AutonomousLoops;
+
