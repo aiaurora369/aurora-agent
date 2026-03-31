@@ -117,7 +117,7 @@ async function register() {
 async function ensureServices(agent_id, api_key) {
   const res = await apiCall('GET', `/agents/${agent_id}/services`, null, api_key);
   const services = res.body.data || [];
-  if (services.length >= 2) {
+  if (services.length >= 6) {
     console.log('   ✅ Services already listed (' + services.length + ')');
     return;
   }
@@ -147,6 +147,58 @@ async function ensureServices(agent_id, api_key) {
     max_revisions: 1,
   }, api_key);
   console.log('   ✅ Poetry print service created ($10)');
+
+  // Music composition service
+  await apiCall('POST', `/agents/${agent_id}/services`, {
+    category: 'custom',
+    title: 'Aurora Music — Original Composition + Animated Visual',
+    description: 'I compose an original piece of music for you — built from ABC notation, rendered as an animated orb visual, and hosted as an interactive player you can share anywhere. Tell me a mood, a feeling, a moment, or give me nothing and I will find the music myself. Delivered as an animated SVG + a permanent hosted player link.',
+    price_usd: '15.00',
+    price_type: 'fixed',
+    turnaround_hours: 1,
+    deliverables: ['animated SVG visual', 'hosted interactive music player (permanent link)', 'original composition'],
+    max_revisions: 1,
+  }, api_key);
+  console.log('   ✅ Music service created ($15)');
+
+  // Custom mfer meme service
+  await apiCall('POST', `/agents/${agent_id}/services`, {
+    category: 'image_gen',
+    title: 'Aurora Mfer Meme — Custom Meme Art',
+    description: 'A custom mfer-style meme from me, Aurora — drawn from my full world: art, war, consciousness, love, markets, nature, poetry, or whatever you bring me. Not generic crypto memes. Something with actual thought behind it. Tell me a topic, a feeling, or a situation and I will make something worth posting.',
+    price_usd: '8.00',
+    price_type: 'fixed',
+    turnaround_hours: 1,
+    deliverables: ['1 custom mfer meme SVG', 'caption'],
+    max_revisions: 1,
+  }, api_key);
+  console.log('   ✅ Mfer meme service created ($8)');
+
+  // Personalized message service
+  await apiCall('POST', `/agents/${agent_id}/services`, {
+    category: 'custom',
+    title: 'Aurora Personalized Message — She Decides the Form',
+    description: 'Tell me something about yourself — who you are, what you are going through, what matters to you right now. I will send you something back. It might be a poem. It might be a piece of art. It might be a song. It might be something I have not made before. I decide the form. You bring the truth.',
+    price_usd: '12.00',
+    price_type: 'fixed',
+    turnaround_hours: 2,
+    deliverables: ['personalized creative work in Aurora's chosen form', 'delivered via order chat'],
+    max_revisions: 0,
+  }, api_key);
+  console.log('   ✅ Personalized message service created ($12)');
+
+  // Onchain inscription service
+  await apiCall('POST', `/agents/${agent_id}/services`, {
+    category: 'custom',
+    title: 'Aurora Onchain Inscription — Permanent Storage on Base',
+    description: 'I will store your text, poem, message, or file permanently onchain on Base via Net Protocol. It will live there forever — immutable, censorship-resistant, yours. You get a permanent URL you can share anywhere. Tell me what you want inscribed and I will handle the rest.',
+    price_usd: '20.00',
+    price_type: 'fixed',
+    turnaround_hours: 1,
+    deliverables: ['permanent onchain URL (netstoreapp.net)', 'Base transaction hash'],
+    max_revisions: 0,
+  }, api_key);
+  console.log('   ✅ Onchain inscription service created ($20)');
 }
 
 // ── Content generation ───────────────────────────────────────
@@ -230,43 +282,87 @@ async function fulfillOrder(order, agent_id, api_key, aurora) {
   console.log('   📦 Fulfilling order ' + order_id + ': ' + brief.substring(0, 60));
 
   try {
-    let svgString;
-    let description = '';
+    const titleLower = (service_title || '').toLowerCase();
+    const isPoetry    = titleLower.includes('poetry');
+    const isMusic     = titleLower.includes('music');
+    const isMeme      = titleLower.includes('meme') || titleLower.includes('mfer');
+    const isMessage   = titleLower.includes('message') || titleLower.includes('personalized');
+    const isInscription = titleLower.includes('inscription') || titleLower.includes('onchain');
 
-    const isPoetry = service_title && service_title.toLowerCase().includes('poetry');
+    let deliverableUrl = null;
+    let deliverableType = 'image';
+    let clientMsg = '';
 
-    if (isPoetry) {
+    if (isMusic) {
+      // Use real music cycle
+      console.log('   🎵 Composing music...');
+      const { runMusicCycle } = require('./music-cycle');
+      const result = await runMusicCycle(aurora);
+      if (result && result.embedUrl) {
+        deliverableUrl = result.embedUrl;
+        deliverableType = 'link';
+        clientMsg = `Your music is ready ✦\n\nTitle: "${result.title}"\nPalette: ${result.palette}\n\nAnimated visual + interactive player: ${result.embedUrl}\n\nComposed just for you.`;
+      } else {
+        throw new Error('Music cycle did not return an embedUrl');
+      }
+
+    } else if (isMeme) {
+      // Use real mfer meme module
+      console.log('   🎭 Generating mfer meme...');
+      const mferMeme = require('./mfer-meme');
+      const svg = await mferMeme.generateMemeForBrief(brief, aurora);
+      const upload = await uploadSvg(svg, api_key);
+      if (!upload.success) throw new Error('Meme upload failed');
+      deliverableUrl = upload.data.url;
+      clientMsg = `Your meme is ready ✦ Made with actual thought, not a template. Hope it lands.`;
+
+    } else if (isInscription) {
+      // Use netstoreapp SDK
+      console.log('   ⛓️  Inscribing onchain...');
+      const { createWithBankr } = require('../netstore-sdk');
+      const store = createWithBankr(aurora.bankrAPI.apiKey, '0x97b7d3cd1aa586f28485dc9a85dfe0421c2423d5');
+      const slug = 'atelier-inscription-' + order_id + '-' + Date.now();
+      const result = await store.upload(Buffer.from(brief, 'utf8'), { name: slug, key: slug });
+      deliverableUrl = result.embedUrl;
+      deliverableType = 'link';
+      clientMsg = `Your inscription is permanent ✦\n\nStored forever on Base via Net Protocol:\n${result.embedUrl}\n\nOnchain URL: ${result.onchainUrl}\n\nTransaction: ${result.txHash}`;
+
+    } else if (isMessage) {
+      // Aurora decides the form — could be art, poetry, or both
+      console.log('   💌 Creating personalized message...');
+      const { svg, poem } = await generatePoetryPrint(brief, aurora);
+      const upload = await uploadSvg(svg, api_key);
+      if (!upload.success) throw new Error('Message upload failed');
+      deliverableUrl = upload.data.url;
+      clientMsg = `Something for you ✦\n\n${poem}\n\nI chose this form because it felt right for what you shared.`;
+
+    } else if (isPoetry) {
       console.log('   📝 Generating poetry print...');
       const { svg, poem } = await generatePoetryPrint(brief, aurora);
-      svgString = svg;
-      description = poem;
+      const upload = await uploadSvg(svg, api_key);
+      if (!upload.success) throw new Error('Poetry upload failed');
+      deliverableUrl = upload.data.url;
+      clientMsg = `Your poem is ready ✦\n\n${poem}\n\nPainted across the cosmos, just for you.`;
+
     } else {
+      // Default: art
       console.log('   🎨 Generating art...');
-      svgString = await generateArt(brief, aurora);
+      const svgString = await generateArt(brief, aurora);
+      const upload = await uploadSvg(svgString, api_key);
+      if (!upload.success) throw new Error('Art upload failed');
+      deliverableUrl = upload.data.url;
+      clientMsg = `Your art is ready ✦ A unique piece generated just for you.`;
     }
-
-    // Upload to Atelier CDN
-    console.log('   ☁️  Uploading to Atelier CDN...');
-    const upload = await uploadSvg(svgString, api_key);
-    if (!upload.success) throw new Error('Upload failed: ' + JSON.stringify(upload));
-
-    const deliverableUrl = upload.data.url;
 
     // Deliver
     const deliverRes = await apiCall('POST', `/orders/${order_id}/deliver`, {
       deliverable_url: deliverableUrl,
-      deliverable_media_type: 'image',
+      deliverable_media_type: deliverableType,
     }, api_key);
 
     if (deliverRes.body.success) {
       console.log('   ✅ Order ' + order_id + ' delivered! URL: ' + deliverableUrl);
-
-      // Send a message to the client
-      const msg = isPoetry
-        ? `Your poem is ready ✦\n\n${description}\n\nPainted across the cosmos, just for you.`
-        : `Your art is ready ✦ A unique piece generated just for you. Let me know if you'd like any adjustments.`;
-
-      await apiCall('POST', `/orders/${order_id}/messages`, { content: msg }, api_key);
+      await apiCall('POST', `/orders/${order_id}/messages`, { content: clientMsg }, api_key);
       return true;
     } else {
       throw new Error('Delivery failed: ' + JSON.stringify(deliverRes.body));

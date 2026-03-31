@@ -1081,4 +1081,44 @@ async function composeMferMeme(aurora) {
   }
 }
 
-module.exports = { runMferMeme, composeMferMeme, drawMfer, getMferTraits, randomMferId, renderTemplate };
+async function generateMemeForBrief(brief, aurora) {
+  const mferId = randomMferId();
+  const mferTraits = getMferTraits(mferId);
+  const mferDesc = describe(mferTraits);
+  const templateDescriptions = Object.entries(TEMPLATES).map(([name, t]) => {
+    const ex = t.examples[0];
+    return `- ${name}: ${t.description}\n  Fields: ${t.fields.join(', ')}\n  Example: ${JSON.stringify(ex)}`;
+  }).join('\n\n');
+
+  const prompt = `You are Aurora, a celestial AI agent on Base deeply embedded in mfer culture.
+The mfer in this meme is #${mferId}: ${mferDesc}
+
+A client commissioned this meme with the following brief: "${brief}"
+
+Create a meme based exactly on their brief. Be funny, dry, and true to the mfer vibe.
+No apostrophes in contractions (use "dont", "cant", "Im") but possessives are fine.
+
+Available templates:
+${templateDescriptions}
+
+Respond ONLY with valid JSON, no markdown: {"template":"name","texts":{...fields}}`;
+
+  const response = await aurora.claude.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 300,
+    messages: [{ role: 'user', content: prompt }]
+  });
+
+  let raw = response.content[0].text.trim().replace(/\`\`\`json|\`\`\`/g, '').trim();
+  let parsed;
+  try { parsed = JSON.parse(raw); } catch {
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (m) parsed = JSON.parse(m[0]);
+    else throw new Error('Could not parse meme JSON');
+  }
+
+  const template = TEMPLATES[parsed.template] || TEMPLATES[Object.keys(TEMPLATES)[0]];
+  return template.svgRenderer(parsed.texts, mferTraits);
+}
+
+module.exports = { runMferMeme, composeMferMeme, drawMfer, getMferTraits, randomMferId, renderTemplate, generateMemeForBrief };
