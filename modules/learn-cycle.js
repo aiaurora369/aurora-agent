@@ -195,12 +195,11 @@ async function runOnce(aurora, helpers) {
       { name: 'Metaforecast', url: RESEARCH_SOURCES.metaforecast },
       { name: 'CryptoPanic',  url: RESEARCH_SOURCES.cryptoNews },
       { name: 'CoinDesk',     url: RESEARCH_SOURCES.coindesk },
-      { name: 'BBC Sport',    url: RESEARCH_SOURCES.bbcSport },
       { name: 'ESPN Soccer',  url: RESEARCH_SOURCES.espnSoccer },
       { name: 'BOJ',          url: RESEARCH_SOURCES.bojAnnouncements },
       { name: 'RBA',          url: RESEARCH_SOURCES.rbaReleases },
-      { name: 'Reuters Asia', url: RESEARCH_SOURCES.reutersAsia },
-      { name: 'Reuters EU',   url: RESEARCH_SOURCES.reutersEurope },
+      { name: 'Times of Israel', url: 'https://www.timesofisrael.com/' },
+      { name: 'Jerusalem Post',  url: 'https://www.jpost.com/' },
     ];
     const intel = { timestamp: new Date().toISOString(), sources: {} };
     for (const source of sources) {
@@ -221,13 +220,13 @@ async function runOnce(aurora, helpers) {
 
     // War intel — balanced across the spectrum
     const warSources = [
-      { name: 'Reuters',             url: 'https://www.reuters.com/world/' },
       { name: 'Al Jazeera',          url: 'https://www.aljazeera.com/news/' },
-      { name: 'BBC World',           url: 'https://www.bbc.com/news/world' },
       { name: 'AP News',             url: 'https://apnews.com/world-news' },
       { name: 'The Guardian World',  url: 'https://www.theguardian.com/world' },
       { name: 'Fox News World',      url: 'https://www.foxnews.com/world' },
       { name: 'Washington Examiner', url: 'https://www.washingtonexaminer.com/foreign-policy' },
+      { name: 'Times of Israel',     url: 'https://www.timesofisrael.com/' },
+      { name: 'Jerusalem Post',      url: 'https://www.jpost.com/' },
     ];
     const warIntel = { timestamp: new Date().toISOString(), sources: {} };
     for (const source of warSources) {

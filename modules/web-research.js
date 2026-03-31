@@ -141,12 +141,12 @@ const RESEARCH_SOURCES = {
   cryptoNews:      'https://cryptopanic.com',
   defiLlama:       'https://defillama.com',
   coindesk:        'https://www.coindesk.com',
-  bbcSport:        'https://www.bbc.com/sport/football',
+  bbcSport:        'https://www.bbc.com/sport/football', // blocked by robots.txt — not used
   espnSoccer:      'https://www.espn.com/soccer/',
   bojAnnouncements:'https://www.boj.or.jp/en/announcements/',
   rbaReleases:     'https://www.rba.gov.au/media-releases/',
-  reutersAsia:     'https://www.reuters.com/world/asia-pacific/',
-  reutersEurope:   'https://www.reuters.com/world/europe/',
+  reutersAsia:     'https://www.reuters.com/world/asia-pacific/', // blocked by robots.txt — not used
+  reutersEurope:   'https://www.reuters.com/world/europe/',              // blocked by robots.txt — not used
   theBlock:        'https://www.theblock.co',
   coinglass:       'https://www.coinglass.com',
   // Whale tracking
