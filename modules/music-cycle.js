@@ -636,25 +636,21 @@ async function runMusicCycle(aurora) {
     console.log('   📡 Posting to music feed (SVG + netstoreapp link)...');
     const safeMessage = message.replace(/"/g, "'").replace(/\n/g, ' ');
     const args = [
-      'message', 'send',
-      '--topic', 'feed-music',
-      '--text', safeMessage,
+      'post', 'music', safeMessage,
       '--data', svgForPost,
       '--encode-only', '--chain-id', '8453',
     ];
-    const sr = spawnSync('netp', args, {
+    const sr = spawnSync('botchan', args, {
       encoding: 'utf8',
       timeout: 30000,
       maxBuffer: 8 * 1024 * 1024
     });
 
     if (sr.error || sr.status !== 0) {
-      throw new Error(sr.stderr || sr.error?.message || 'netp failed');
+      throw new Error(sr.stderr || sr.error?.message || 'botchan failed');
     }
 
-    const jsonMatch = sr.stdout.match(/{[\s\S]*}/);
-    if (!jsonMatch) throw new Error('No JSON in netp output: ' + sr.stdout.substring(0, 100));
-    const txData = JSON.parse(jsonMatch[0]);
+    const txData = JSON.parse(sr.stdout.trim());
     const result = await aurora.bankrAPI.submitTransactionDirect(txData);
     const txHash = result.transactionHash || result.txHash || 'submitted';
     console.log(`   ✅ TX: ${txHash}`);
