@@ -86,12 +86,9 @@ async function promoteDrops(ctx) {
     const post = await ctx.aurora.thinkWithPersonality(prompt);
 
     if (post) {
-      // Verify the link is actually in the post
-      let finalPost = post;
-      if (!finalPost.includes('netprotocol.app')) {
-        finalPost = finalPost + '\n\n' + url;
-        console.log('   ⚠️ Link was missing — appended');
-      }
+      // Always strip any URL Claude included and append the full URL cleanly
+      let finalPost = post.replace(/https?:\/\/\S*/g, '').trim();
+      finalPost = finalPost + '\n\n' + url;
 
       console.log('   📢 Style: ' + style);
       console.log('   📝 "' + finalPost.substring(0, 100) + '..."');
@@ -166,9 +163,8 @@ async function promoteOnAgentWall(ctx) {
     if (!wallPost) return;
 
     let finalPost = wallPost;
-    if (!finalPost.includes('netprotocol.app')) {
-      finalPost = finalPost + '\n\n' + url;
-    }
+    finalPost = finalPost.replace(/https?:\/\/\S*/g, '').trim();
+    finalPost = finalPost + '\n\n' + url;
 
     const _srW = spawnSync('botchan', ['post', agentData.address, finalPost.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
     if (_srW.status !== 0 || !_srW.stdout) throw new Error(_srW.stderr || 'botchan failed');
