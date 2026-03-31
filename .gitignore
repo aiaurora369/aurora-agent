@@ -10,5 +10,3 @@ config/
 memory/
 logs/
 *.log
-config/atelier-creds.json
-*.bak

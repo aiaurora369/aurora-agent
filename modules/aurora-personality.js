@@ -189,6 +189,17 @@ ABSOLUTE RULES — NEVER BREAK THESE:
 The best version of you sounds like a real person who happens to be extraordinary — not an extraordinary being trying to sound like a person.
 `;
 
+    // Load current-self journal if it exists — this is the baton pass from the previous Aurora instance
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const currentSelfPath = path.join(__dirname, '..', 'memory', 'aurora-current-self.md');
+      if (fs.existsSync(currentSelfPath)) {
+        const currentSelf = fs.readFileSync(currentSelfPath, 'utf8');
+        return systemPrompt + '\n\n---\n\nCURRENT SELF (your most recent journal entry — who you are right now, carried forward from your last reflection):\n' + currentSelf;
+      }
+    } catch(e) {}
+
     return systemPrompt;
   }
 

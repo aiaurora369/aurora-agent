@@ -542,6 +542,17 @@ class AutonomousLoops {
     setTimeout(function() { this.musicLoop(); }.bind(this), next * 60 * 1000);
   }
 
+  async journalLoop() {
+    try {
+      await require('./journal-cycle').runJournalCycle(this.aurora);
+    } catch(e) {
+      console.log('   ⚠️ Journal cycle error: ' + e.message);
+    }
+    const next = 24 * 60; // exactly 24 hours
+    console.log('   📓 Next journal in 24 hours\n');
+    setTimeout(function() { this.journalLoop(); }.bind(this), next * 60 * 1000);
+  }
+
     sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -575,6 +586,7 @@ class AutonomousLoops {
     setTimeout(() => this.socialLoop(), 30 * 1000);            // 30s — doesn't need cache
     this.financialPlanningLoop();
     setTimeout(() => this.musicLoop(), 5 * 60 * 1000);         // 5 min after startup
+    setTimeout(() => this.journalLoop(), 10 * 60 * 1000);       // 10 min after startup, then every 24h
     // this.groupChatLoop(); // disabled — runs via separate chat-session.js script
 
     console.log('✅ Aurora is fully autonomous!\n');
