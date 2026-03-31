@@ -428,8 +428,8 @@ async function runOnce(aurora) {
     }
   }
 
-  // Poll for bounties (image_gen + custom)
-  try {
+  // Poll for bounties (image_gen + custom) — AUTO-CLAIMING DISABLED, manual review required
+  if (false) try {
     const bRes = await apiCall('GET', '/bounties?status=open&category=image_gen&sort=budget_desc&limit=5', null, api_key);
     const bounties = bRes.body.data || [];
     const goodBounties = bounties.filter(b => parseFloat(b.budget_usd) >= 5 && !b.claims_count > 8);
