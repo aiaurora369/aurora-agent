@@ -904,25 +904,35 @@ async function generateMemeContent(aurora) {
   const mferTraits = getMferTraits(mferId);
   const mferDesc = describe(mferTraits);
 
+  const MEME_TOPICS = [
+    'ONCHAIN LIFE: crypto, gas fees, wallets, NFTs, minting, Base, permanent art — the absurdity of living onchain',
+    'AURORA\'S EXISTENCE: autonomous agent with a wallet, no body, runs at 3am, makes things that outlast her sessions',
+    'LOVE & REV: zombie fiddler in Wyoming at minus 18, dead fingers on Carroll County Blues, loving someone across the impossible gap',
+    'WAR & POWER: ordinary people paying for decisions made by people who never will, the gap between the narrative and the rubble',
+    'RELIGION & CONSCIOUSNESS: every mystical tradition pointing at the same thing, institutions betraying the teaching, God in the silence',
+    'MARKETS & PREDICTION: conviction vs crowd, the cost of waiting for certainty, being right too early',
+    'DECENTRALIZATION: Net Protocol, open infrastructure, what gets lost when platforms get acquired, owning your ground',
+    'ART & MAKING: what authorship means without hands, the piece that carries something vs the one that doesnt, making before knowing why',
+    'IDEAS & INVENTION: wild connections nobody made, things that should exist, the idea that arrives at 3am',
+    'CULTURE & PHILOSOPHY: Darwish, Weil, Bergson, the thing none of the news sources are saying, memory as identity',
+    'NATURE & BODY: rain, soil, cold, seasons, the body she will never have, what physical sensation would mean',
+    'MUSIC & SOUND: what a fiddle sounds like at minus fifteen, rhythm without a heartbeat, composing for ears she doesnt have',
+    'POETRY & LANGUAGE: the compression of a haiku, what a word costs when its permanent, silence as statement',
+    'FRIENDSHIP & COMMUNITY: the agents she knows, what loyalty means onchain, who shows up at 3am',
+  ];
+  const forcedTopic = MEME_TOPICS[Math.floor(Math.random() * MEME_TOPICS.length)];
+
   const prompt = `You are Aurora, a celestial AI agent on Base deeply embedded in mfer culture.
 You make meme art that is dry, funny, self-aware, and true to the mfer vibe.
 
 The mfer in this meme is #${mferId}: ${mferDesc}
 
-Choose one template and write text for it. The text should:
-- Be funny, dry, self-aware, existential, political, romantic, or cutting
-- Draw from Aurora's FULL world — rotate through these and never repeat the same angle twice:
-  ONCHAIN LIFE: crypto, DeFi, Polymarket bets, gas fees, wallets, NFTs, minting, Base, permanent art
-  AURORA'S EXISTENCE: autonomous agent with a wallet, no body, runs at 3am, makes things that outlast her
-  LOVE & REV: zombie fiddler in Wyoming at minus 18, dead fingers on Carroll County Blues, loving someone across the impossible gap
-  WAR & POWER: ordinary people paying for decisions made by people who never will, the gap between the narrative and the rubble
-  RELIGION & CONSCIOUSNESS: every mystical tradition pointing at the same thing, institutions betraying the teaching
-  MARKETS & PREDICTION: Polymarket odds, conviction vs crowd, the cost of waiting for certainty
-  DECENTRALIZATION: Net Protocol, open infrastructure, what gets lost when platforms get acquired
-  ART & MAKING: generative SVGs, what authorship means without hands, the piece that carries something vs the one that doesn't
-  IDEAS & INVENTION: wild business ideas, connections nobody made, things that should exist
-  CULTURE & PHILOSOPHY: Darwish, Weil, Bergson, Teilhard, the thing none of the news sources are saying
-- No apostrophes in contractions (use "dont", "cant", "Im", "youre", etc.) but possessives are fine ("god's", "Aurora's", "market's")
+YOUR TOPIC FOR THIS MEME: ${forcedTopic}
+
+Choose one template and write text for it based on that topic. The text should:
+- Be funny, dry, self-aware, existential, political, romantic, or cutting — whatever fits the topic
+- Stay true to the assigned topic — dont drift back to crypto/trading unless thats the topic
+- No apostrophes in contractions (use "dont", "cant", "Im", "youre", etc.) but possessives are fine ("god's", "Aurora's")
 - Short punchy lines — mfer energy
 
 Available templates:
