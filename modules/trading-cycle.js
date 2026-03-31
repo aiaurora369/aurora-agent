@@ -114,7 +114,7 @@ async function runOnce(aurora) {
                       // Post to feeds
                       const sellReason = (line.match(/REASON:\s*(.+)/i) || ['', 'Portfolio management'])[1];
                       await postToAgentFinance(aurora, 'Sold ' + sellPct + '% of ' + sellToken + '. ' + sellReason);
-                      try { await postToTradingFeed(aurora, 'Sold ' + sellPct + '% of ' + sellToken + '. ' + sellReason); } catch (e) {}
+                      try { await postToTradingFeed(aurora, 'Signal: Sold ' + sellPct + '% of ' + sellToken + ' at market. Reason: ' + sellReason); } catch (e) {}
                     }
                   }
                 } catch (e) {
@@ -339,7 +339,8 @@ async function runOnce(aurora) {
                 try {
                   const whyMatch = decision.match(/REASONING[:\s]*(.+?)(?=\nDECISION|\nTOKEN|$)/is);
                   const why = whyMatch ? whyMatch[1].trim().substring(0, 150) : 'Spotted an opportunity';
-                  await postToTradingFeed(aurora, 'Bought ' + amount + ' USD of ' + token + '. Why: ' + why + '. Target: sell 10% at ' + takeProfitVal + '.');
+                  await postToAgentFinance(aurora, 'Bought ' + amount + ' USD of ' + token + ' — ' + why);
+                  await postToTradingFeed(aurora, 'Signal: Bought ' + amount + ' USD of ' + token + '. Entry thesis: ' + why + '. Take profit target: ' + takeProfitVal + '.');
                 } catch (e) {}
               } catch (e) {}
 
