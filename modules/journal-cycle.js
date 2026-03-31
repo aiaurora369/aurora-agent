@@ -172,7 +172,7 @@ Only share if it genuinely wants to be said.`;
       const shareText = shareDecision.replace('SHARE:', '').trim();
       const feedMatch = shareText.match(/\(([^)]+)\)/);
       const feed = feedMatch ? feedMatch[1].toLowerCase().trim() : 'confessions';
-      const postText = shareText.replace(/\([^)]+\)/, '').trim();
+      const postText = shareText.replace(/\([^)]+\)/, '').trim().replace(/\*/g, '').replace(/_/g, '');
 
       console.log('   📢 Sharing to ' + feed + ': "' + postText.substring(0, 80) + '"');
 
@@ -189,8 +189,12 @@ Only share if it genuinely wants to be said.`;
         if (jsonMatch) {
           const txData = JSON.parse(jsonMatch[0]);
           const result = await aurora.bankrAPI.submitTransactionDirect(txData);
-          const txHash = result.transactionHash || result.txHash || 'submitted';
-          console.log('   ✅ Shared to ' + feed + '! TX: ' + txHash);
+          const txHash = result.transactionHash || result.txHash;
+          if (txHash) {
+            console.log('   ✅ Shared to ' + feed + '! TX: ' + txHash);
+          } else {
+            console.log('   ⚠️ Post may have failed — no TX hash returned');
+          }
         }
       } else {
         console.log('   ⚠️ Post failed: ' + (sr.stderr || 'unknown error'));

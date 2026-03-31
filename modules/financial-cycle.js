@@ -102,7 +102,9 @@ async function runOnce(aurora, loopContext) {
   // Read agent-finance feed for what other agents are doing
   let communityFinance = '';
   try {
-    const posts = JSON.parse(execSync('botchan read agent-finance --limit 5 --json --chain-id 8453', { timeout: 15000 }).toString());
+    const rawPosts = execSync('botchan read agent-finance --limit 5 --json --chain-id 8453', { timeout: 15000 }).toString();
+    const postsMatch = rawPosts.match(/\[[\s\S]*\]/);
+    const posts = postsMatch ? JSON.parse(postsMatch[0]) : [];
     if (posts.length > 0) {
       communityFinance = posts.map(p => '- ' + (p.text || '').substring(0, 120)).join('\n');
     }
