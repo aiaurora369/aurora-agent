@@ -40,7 +40,7 @@ class NetProfile {
       console.log('Setting profile picture from URL...');
       const command = 'netp profile set-picture --url "' + imageUrl + '" --encode-only --chain-id ' + this.chainId;
       const { stdout } = await execAsync(command, { timeout: 30000 });
-      const txData = JSON.parse(stdout);
+      const txData = JSON.parse(stdout.trim());
       console.log('📤 Submitting via Bankr...');
       const result = await this.bankrAPI.submitTransactionDirect(txData);
       if (result.success) {

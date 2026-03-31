@@ -68,7 +68,7 @@ async function runOnce(ctx) {
             if (_srT.status !== 0 || !_srT.stdout) throw new Error(_srT.stderr || 'botchan failed');
             try {
               const txOutput = execSync(postCmd, { timeout: 30000 }).toString();
-              const txData = JSON.parse(txOutput);
+              const txData = JSON.parse(txOutput.trim());
               const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
               if (result.success) {
                 ctx.thankedCollectors.add(addr);
@@ -255,7 +255,7 @@ async function sendCollectorArtGift(displayName, addr, theirPosts, ctx) {
       const spawnResult = spawnSync('botchan', ['post', feed, safeText, '--data', svg, '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 1024 * 1024 * 5 });
       if (spawnResult.error) throw spawnResult.error;
       const stdout = spawnResult.stdout;
-      const txData = JSON.parse(stdout);
+      const txData = JSON.parse(stdout.trim());
       const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
 
       if (result.success) {
@@ -298,7 +298,7 @@ async function sendCollectorPoem(displayName, addr, theirPosts, ctx) {
       const _srP = _spP('botchan', ['post', feed, cleanPoem, '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
       if (_srP.status !== 0 || !_srP.stdout) throw new Error(_srP.stderr || 'botchan failed');
       const txOutput = _srP.stdout;
-      const txData = JSON.parse(txOutput);
+      const txData = JSON.parse(txOutput.trim());
       const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
 
       if (result.success) {

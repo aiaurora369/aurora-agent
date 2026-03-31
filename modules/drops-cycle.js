@@ -106,7 +106,7 @@ async function promoteDrops(ctx) {
       try {
         const sr = spawnSync('botchan', ['post', targetFeed, finalPost.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
         if (sr.status !== 0 || !sr.stdout) throw new Error(sr.stderr || 'botchan failed');
-        const txData = JSON.parse(sr.stdout);
+        const txData = JSON.parse(sr.stdout.trim());
         const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
         if (result.success) {
           console.log('   ✅ Promoted in ' + targetFeed + '! TX: ' + result.txHash);
@@ -173,7 +173,7 @@ async function promoteOnAgentWall(ctx) {
     const _srW = spawnSync('botchan', ['post', agentData.address, finalPost.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
     if (_srW.status !== 0 || !_srW.stdout) throw new Error(_srW.stderr || 'botchan failed');
     const txOutput = _srW.stdout;
-    const txData = JSON.parse(txOutput);
+    const txData = JSON.parse(txOutput.trim());
     const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
 
     if (result.success) {
@@ -235,7 +235,7 @@ async function checkMintProgress(ctx) {
             const _srM = spawnSync('botchan', ['post', 'art', finalCeleb.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
             if (_srM.status !== 0 || !_srM.stdout) throw new Error(_srM.stderr || 'botchan failed');
             const txOutput = _srM.stdout;
-            const txData = JSON.parse(txOutput);
+            const txData = JSON.parse(txOutput.trim());
             const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
             if (result.success) {
               console.log('   ✅ Milestone celebrated in art feed! TX: ' + result.txHash);
@@ -263,7 +263,7 @@ async function checkMintProgress(ctx) {
               const _srS = spawnSync('botchan', ['post', feed, soldOut.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
               if (_srS.status !== 0 || !_srS.stdout) throw new Error(_srS.stderr || 'botchan failed');
               const txOutput = _srS.stdout;
-              const txData = JSON.parse(txOutput);
+              const txData = JSON.parse(txOutput.trim());
               await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
               console.log('   ✅ Sold out announced in ' + feed + '!');
               await new Promise(r => setTimeout(r, 3000));

@@ -300,7 +300,7 @@ class AutonomousLoops {
           const _srBAI = _spBAI('botchan', ['post', 'bai-evidence', text.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
           if (_srBAI.status !== 0 || !_srBAI.stdout) throw new Error(_srBAI.stderr || 'botchan failed');
           const txOutput = _srBAI.stdout;
-          const txData = JSON.parse(txOutput);
+          const txData = JSON.parse(txOutput.trim());
           return this.aurora.bankrAPI.submitTransactionDirect(txData);
         }
       });

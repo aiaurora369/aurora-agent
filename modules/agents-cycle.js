@@ -175,7 +175,7 @@ async function postToAgentWall(name, agent, dropUrl, dropMints, dropRemaining, c
       const _srA = _spA('botchan', ['post', 'feed-' + agent.address.toLowerCase(), post.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
       if (_srA.status !== 0 || !_srA.stdout) throw new Error(_srA.stderr || 'botchan failed');
       const txOutput = _srA.stdout;
-      const txData = JSON.parse(txOutput);
+      const txData = JSON.parse(txOutput.trim());
       const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
       if (result.success) {
         console.log('      \u2705 Wall post! TX: ' + result.txHash + '\n');

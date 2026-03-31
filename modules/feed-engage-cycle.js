@@ -88,8 +88,7 @@ async function postToThemedFeed(ctx) {
       try { console.log('   📡 Attempting Farcaster cross-post...'); await crossPostText(post); } catch(e) { console.log('   ⚠️ FC cross-post error: ' + e.message); }
       // try { await crossPostToX(post); } catch(e) {} // PAUSED
     }
-        const txOutput = _srFE.stdout;
-        const txData = JSON.parse(txOutput);
+        const txData = JSON.parse(_srFE.stdout.trim());
         const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
         if (result.success) {
           console.log('   ✅ Posted to ' + selected.feed + '! TX: ' + (result.transactionHash || result.txHash) + '\n');

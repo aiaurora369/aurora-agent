@@ -420,7 +420,7 @@ async function runPolymarketCycle(aurora) {
         encoding: 'utf8', timeout: 15000, cwd: path.join(__dirname, '..')
       });
       if (r.stdout) {
-        const txData = JSON.parse(r.stdout);
+        const txData = JSON.parse(r.stdout.trim());
         const result = await aurora.bankrAPI.submitTransactionDirect(txData);
         if (result.success) {
           console.log('   ✅ Posted to ' + feed + '! TX: ' + result.txHash);

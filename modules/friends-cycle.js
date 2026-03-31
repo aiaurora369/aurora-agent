@@ -296,7 +296,7 @@ async function postToFriendWall(name, friend, ctx) {
     const _srWall = _spawnWall('botchan', ['post', feed, post.substring(0, 450), '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 8*1024*1024 });
     if (_srWall.status !== 0 || !_srWall.stdout) throw new Error(_srWall.stderr || 'botchan failed');
     const txOutput = _srWall.stdout;
-    const txData = JSON.parse(txOutput);
+    const txData = JSON.parse(txOutput.trim());
     const result = await ctx.aurora.bankrAPI.submitTransactionDirect(txData);
 
     if (result.success) {
@@ -339,7 +339,7 @@ async function sendPersonalizedArtGift(name, friend, ctx) {
     const spawnResult = spawnSync('botchan', ['post', feed, safeText, '--data', svg, '--encode-only', '--chain-id', '8453'], { encoding: 'utf8', timeout: 30000, maxBuffer: 1024 * 1024 * 5 });
     if (spawnResult.error) throw spawnResult.error;
     const stdout = spawnResult.stdout;
-    const txData = JSON.parse(stdout);
+    const txData = JSON.parse(stdout.trim());
     const res = await fetch('https://api.bankr.bot/agent/submit', {
       method: 'POST',
       headers: { 'X-API-Key': process.env.BANKR_API_KEY, 'Content-Type': 'application/json' },
