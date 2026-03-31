@@ -182,7 +182,7 @@ async function ensureServices(agent_id, api_key) {
     price_usd: '12.00',
     price_type: 'fixed',
     turnaround_hours: 2,
-    deliverables: ['personalized creative work in Aurora's chosen form', 'delivered via order chat'],
+    deliverables: ['personalized creative work in Auroras chosen form', 'delivered via order chat'],
     max_revisions: 0,
   }, api_key);
   console.log('   ✅ Personalized message service created ($12)');
